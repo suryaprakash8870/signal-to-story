@@ -1,0 +1,37 @@
+name: Gmail Digest
+
+# Cadence-driven digest send (04-CONNECTORS.md). This fires on a schedule and
+# hits the send-digest endpoint, which batches every approved-but-not-yet-sent
+# output into one email. The endpoint itself reads connectors.cadence; this
+# workflow just needs to run at least as often as the shortest cadence.
+#
+# Weekly cadence → this Monday-09:00-UTC schedule is enough. For bi-weekly,
+# the endpoint still only sends when there's something pending, so running
+# weekly is harmless (an empty run is a no-op). Adjust the cron as needed.
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # every Monday at 09:00 UTC
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger digest send
+        run: |
+          echo "Triggering Gmail digest…"
+          HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+            -X POST "${APP_URL}/api/connectors/gmail/send-digest" \
+            -H "x-cron-secret: ${CRON_SECRET}")
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/resp.json
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "Digest send failed."
+            exit 1
+          fi
+        env:
+          # Set these in the repo's Settings → Secrets and variables → Actions.
+          # APP_URL is the deployed base URL (e.g. https://your-app.vercel.app).
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

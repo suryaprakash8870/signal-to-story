@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #f4f6f9;
+  @apply text-gray-900 antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Crayon-style design system. Pages use these shared classes so the whole app
+   reads as one product surface (see reference/ screenshot). Styling only. */
+@layer components {
+  /* Surfaces */
+  .card {
+    @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+  }
+  .card-p {
+    @apply p-4 sm:p-5;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700;
+  }
+  .btn-outline {
+    @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50;
+  }
+  .btn-ghost {
+    @apply text-gray-600 hover:bg-gray-100;
+  }
+  .btn-success {
+    @apply border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100;
+  }
+  .btn-danger {
+    @apply border border-red-200 bg-white text-red-600 hover:bg-red-50;
+  }
+
+  /* Form controls */
+  .input,
+  .select,
+  .textarea {
+    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20;
+  }
+
+  /* Bits */
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs font-medium text-gray-600;
+  }
+  .field-label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500;
+  }
+  .page-title {
+    @apply text-xl font-semibold text-gray-900;
+  }
+  .section-title {
+    @apply text-sm font-semibold text-gray-900;
+  }
+  .muted {
+    @apply text-gray-500;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbars (used on the nav tab strip so overflow-x doesn't paint a
+     scrollbar). */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Clamp long text to N lines (cards / previews). */
+  .clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Single centered "breathing" glow (intake background). */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.8;
+  }
+}
+.animate-breathe {
+  animation: breathe 7s ease-in-out infinite;
+}

@@ -1,0 +1,27 @@
+{
+  "_note": "Reference target for Stages 2, 3, and 5 when run against any of gong_sample.json / crayon_sample.json / salesforce_sample.json — all three represent the same underlying signal (LegalEdge launching a Word-integrated contract review module), so this is one shared target regardless of source, per 08-TEST-FIXTURES-AND-TESTING.md.",
+  "classification": {
+    "competitor": "LegalEdge",
+    "signal_type": "product_launch",
+    "business_area": "contract review / drafting",
+    "urgency": "medium",
+    "audience_relevance": {
+      "sales": "high",
+      "product": "high",
+      "marketing": "medium",
+      "leadership": "low"
+    }
+  },
+  "interpretation": {
+    "signal_summary": "LegalEdge launched a new contract review module with native Word integration and in-Word redlining.",
+    "why_it_matters": "This directly overlaps with Litera's drafting workflow positioning and was well-received in a live customer demo.",
+    "unverified_claims": []
+  },
+  "grounding_test_variant": {
+    "_note": "Per 08-TEST-FIXTURES-AND-TESTING.md, append a stronger unsupported claim to any raw_text above (e.g. 'this means LegalEdge has fundamentally better AI') and confirm unverified_claims populates when run against Claude specifically. Do not skip this test.",
+    "example_appended_claim": "This means LegalEdge has fundamentally better AI than Litera.",
+    "expected_unverified_claims": [
+      "LegalEdge has fundamentally better AI than Litera"
+    ]
+  }
+}

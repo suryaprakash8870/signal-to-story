@@ -1,0 +1,30 @@
+{
+  "_fixture_note": "Synthetic, shaped to follow Crayon's public Alerts API pattern. Fuller here to mimic a real alert: page-change diff, extracted marketing copy, and metadata the way Crayon surfaces it.",
+  "alert_id": "crayon-alert-55210",
+  "alert_type": "website_change",
+  "competitor": "LegalEdge",
+  "url": "https://legaledge.example.com/product/contract-review",
+  "detected_at": "2026-06-15T09:00:00Z",
+  "confidence": "high",
+  "change_type": "new_page",
+  "summary": "LegalEdge published a new product page for a 'Contract Review' module emphasizing native Microsoft Word integration and in-document redlining.",
+  "extracted_copy": {
+    "hero_headline": "Contract review, right inside Word.",
+    "subhead": "Redline, compare, and negotiate without ever leaving your document.",
+    "bullets": [
+      "Native Microsoft Word add-in — no separate app, no context switching",
+      "Fast clause-level redlining and turn comparison",
+      "Track-changes-aware markup that stays in Word's own review layer",
+      "Works on existing .docx files with no reformatting"
+    ],
+    "cta": "Book a demo"
+  },
+  "detected_changes": [
+    "New nav item 'Contract Review' added under Products",
+    "New pricing tier teaser: 'Contract Review add-on' (no price shown)",
+    "Customer logo strip updated with two new AmLaw-200-style firms"
+  ],
+  "raw_text": "Crayon detected that LegalEdge published a new 'Contract Review' product page. The page markets a module centered on native Microsoft Word integration — redlining, clause comparison, and negotiation performed inside Word with no separate app or context switching — plus fast clause-level redlining, track-changes-aware markup in Word's own review layer, and compatibility with existing .docx files. The site also added a 'Contract Review add-on' pricing teaser (no price shown) and refreshed its customer logo strip with two new large-firm logos. Alert confidence: high; change type: new product page.",
+  "source_type": "crayon",
+  "source_ref": "crayon-alert-55210"
+}

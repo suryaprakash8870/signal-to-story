@@ -1,0 +1,34 @@
+name: Crayon Daily Poll
+
+# Pulls Crayon "Sparks" (competitive-intelligence briefings) once a day and
+# runs each new one through the pipeline. Crayon's Sparks API is a pull, not a
+# push, so we poll on a schedule (see lib/connectors/crayon-connector.ts).
+# Dedup on raw_text_hash means the rolling 30-day window never creates repeats.
+#
+# Requires: the Crayon connector switched to Live Mode with an API key, the app
+# deployed at APP_URL, and the APP_URL / CRON_SECRET repo secrets set.
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # 08:00 UTC daily
+  workflow_dispatch: {}
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Poll Crayon Sparks
+        run: |
+          echo "Polling Crayon Sparks…"
+          HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+            -X POST "${APP_URL}/api/connectors/crayon/fetch" \
+            -H "x-cron-secret: ${CRON_SECRET}")
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/resp.json
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "Crayon poll failed."
+            exit 1
+          fi
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

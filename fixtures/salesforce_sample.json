@@ -1,0 +1,35 @@
+{
+  "_fixture_note": "Explicitly illustrative — low confidence per 08-TEST-FIXTURES-AND-TESTING.md. Field names are NOT confirmed with Litera's Salesforce admin; the adapter reads them from connectors.config, never hardcoded. Notes are richer here to mimic how reps actually log opportunity activity over time.",
+  "config_mapping_example": {
+    "object": "Opportunity",
+    "competitor_field": "Competitor_Mentioned__c",
+    "reason_field": "Loss_Reason__c",
+    "notes_relation": "Notes"
+  },
+  "opportunity": {
+    "Id": "0061x000003abcXYZ",
+    "Name": "Acme Legal - Renewal & Expansion FY26",
+    "StageName": "Negotiation/Review",
+    "Amount": 148000,
+    "CloseDate": "2026-08-31",
+    "Competitor_Mentioned__c": "LegalEdge",
+    "Loss_Reason__c": "Competitor demoed native in-Word contract review with fast redlining; paralegal team responded positively",
+    "Notes": [
+      {
+        "CreatedDate": "2026-06-18",
+        "Body": "Renewal call. GC (Priya Nair) proactively raised LegalEdge. They demoed a new contract review module ~3 weeks ago. Key draw: everything runs natively inside Word — redlining happens in Word, no separate app. Paralegals liked the redline speed on a live MSA."
+      },
+      {
+        "CreatedDate": "2026-06-19",
+        "Body": "Follow-up internal note: Priya emphasized this was a demo, not a pilot. Reliability of our integration for audits still valued. Pricing only mentioned informally by LegalEdge — do not over-index on it. Real stickiness risk is the in-Word paralegal UX."
+      },
+      {
+        "CreatedDate": "2026-06-24",
+        "Body": "Head of KM (Marcus Webb) wants roadmap that reflects how paralegals actually work; requested direct time between our team and his paralegals. Action: AE to share drafting roadmap before renewal."
+      }
+    ]
+  },
+  "raw_text": "A Salesforce renewal/expansion opportunity for Acme Legal (FY26, ~$148K, Negotiation/Review) flags LegalEdge as a competitor. Logged notes across three dates describe: LegalEdge demoing a newly launched contract review module ~3 weeks prior; its main draw being fully native operation inside Microsoft Word (redlining in Word, no separate app) with fast redlining demonstrated on a live master services agreement; the paralegal team responding positively; the customer stressing this was a demo not a pilot; Litera's integration reliability still valued for audits; pricing mentioned only informally; and the customer's Head of Knowledge Management requesting a roadmap that reflects paralegal workflows plus direct time with his paralegals.",
+  "source_type": "salesforce",
+  "source_ref": "0061x000003abcXYZ"
+}
