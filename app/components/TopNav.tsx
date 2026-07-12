@@ -27,7 +27,7 @@ export default function TopNav() {
             S
           </span>
           <span className="hidden items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-800 sm:flex">
-            Signal-to-Story
+            Compete Agent
             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m6 9 6 6 6-6" />
             </svg>

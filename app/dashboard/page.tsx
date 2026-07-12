@@ -37,7 +37,7 @@ function DashboardCard({ row: r }: { row: Row }) {
       {isLong && (
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="mt-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+          className="mt-1 text-xs font-medium text-[#c74a1b] hover:text-[#a83e16]"
         >
           {expanded ? 'Show less' : 'Show more'}
         </button>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
                         onClick={() => setPage(n)}
                         className={`h-8 w-8 rounded-lg text-sm font-medium ${
                           n === currentPage
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-[#c74a1b] text-white'
                             : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                         }`}
                       >

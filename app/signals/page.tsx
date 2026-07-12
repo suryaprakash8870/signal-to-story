@@ -21,7 +21,7 @@ function statusBadge(status: string) {
   if (status === 'packaged' || status === 'published') return 'bg-emerald-50 text-emerald-700';
   if (status === 'error') return 'bg-red-50 text-red-700';
   if (status === 'rejected') return 'bg-gray-100 text-gray-500';
-  if (status === 'draft') return 'bg-blue-50 text-blue-700'; // pending
+  if (status === 'draft') return 'bg-orange-50 text-[#c74a1b]'; // pending
   return 'bg-amber-50 text-amber-700'; // classified / interpreted (processing)
 }
 

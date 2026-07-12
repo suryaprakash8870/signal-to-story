@@ -90,7 +90,7 @@ export default function Sidebar() {
                     href={item.href}
                     title={collapsed ? item.label : undefined}
                     className={`flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
-                      active ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
+                      active ? 'bg-orange-50 text-[#c74a1b]' : 'text-gray-600 hover:bg-gray-100'
                     } ${collapsed ? 'justify-center' : ''}`}
                   >
                     {item.icon}

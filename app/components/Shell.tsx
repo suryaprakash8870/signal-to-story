@@ -20,7 +20,7 @@ export default function Shell({ children }: { children: ReactNode }) {
       <Sidebar />
       <main className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-center border-b border-gray-200 bg-white px-4">
-          <span className="text-2xl font-bold tracking-tight text-gray-900">Signal-to-Story</span>
+          <span className="text-2xl font-bold tracking-tight text-gray-900">Compete Agent</span>
         </header>
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8">{children}</div>
       </main>

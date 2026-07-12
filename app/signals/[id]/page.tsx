@@ -35,15 +35,15 @@ const AUDIENCE_INITIAL: Record<string, string> = {
 // Default recipient per audience — prefilled in the "Send via Email" box, but
 // always editable before sending.
 const AUDIENCE_EMAIL: Record<string, string> = {
-  sales: 'antony@onegtmlab.com',
-  product: 'ajay@onegtmlab.com',
-  marketing: 'antony@onegtmlab.com',
+  sales: 'antony.onegtmlab@outlook.com',
+  product: 'antony.onegtmlab@outlook.com',
+  marketing: 'antony.onegtmlab@outlook.com',
   leadership: 'ajay@onegtmlab.com',
 };
 
 function levelBadge(level: string) {
   const l = level?.toLowerCase();
-  if (l === 'high') return 'bg-blue-50 text-blue-700';
+  if (l === 'high') return 'bg-orange-50 text-[#c74a1b]';
   if (l === 'medium') return 'bg-amber-50 text-amber-700';
   return 'bg-gray-100 text-gray-500';
 }
@@ -260,7 +260,7 @@ function SourceSignal({ text }: { text: string }) {
       {text.length > 200 && (
         <button
           onClick={() => setOpen((v) => !v)}
-          className="mt-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+          className="mt-1 text-xs font-medium text-[#c74a1b] hover:text-[#a83e16]"
         >
           {open ? 'Show less' : 'Show more'}
         </button>
@@ -312,7 +312,7 @@ function OutputCard({
     <div className="card p-4">
       {/* Header */}
       <div className="mb-3 flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-cyan-400 to-blue-600 text-[10px] font-bold text-white">
+        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#c74a1b] text-[10px] font-bold text-white">
           {AUDIENCE_INITIAL[output.audience] ?? output.audience.charAt(0).toUpperCase()}
         </span>
         <span className="text-sm font-semibold capitalize text-gray-900">{output.audience}</span>
@@ -338,7 +338,7 @@ function OutputCard({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={4}
-        className="w-full resize-y rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm leading-relaxed text-gray-800 outline-none transition-colors focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+        className="w-full resize-y rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm leading-relaxed text-gray-800 outline-none transition-colors focus:border-[#c74a1b] focus:bg-white focus:ring-2 focus:ring-[#c74a1b]/20"
       />
 
       {/* Action footer */}

@@ -14,7 +14,7 @@ export interface CrayonCredentials {
 }
 
 const DEFAULT_BASE = 'https://app.crayon.co';
-const DEFAULT_PER_PAGE = 20;
+const DEFAULT_PER_PAGE = 5;
 
 // Inbound. Test Mode reads crayon_sample.json; Live Mode pulls Crayon "Sparks"
 // (competitive-intelligence briefings from the last 30 days) via GET
@@ -78,6 +78,19 @@ export class CrayonConnector implements Connector {
   }
 }
 
+// Strips Crayon's footnote citations from a Spark's markdown so only the signal
+// text remains. Crayon appends numbered footnote markers (`[^1]`) inline and
+// their link definitions (`[^1]: https://app.crayon.co/insight/...`) at the end;
+// we don't surface those source links, so remove both plus any bare insight URLs.
+function stripCrayonCitations(text: string): string {
+  return text
+    .replace(/^\s*\[\^[^\]]+\]:.*$/gm, '') // footnote definition lines
+    .replace(/\[\^[^\]]+\]/g, '') // inline [^n] markers
+    .replace(/https?:\/\/app\.crayon\.co\/\S+/g, '') // stray insight URLs
+    .replace(/\n{3,}/g, '\n\n') // collapse blank lines the removals leave behind
+    .trim();
+}
+
 // Turns one Crayon Spark into a raw signal. The Spark's title + content (a
 // markdown competitive briefing) is the raw signal text; the competitor name is
 // prepended so the pipeline's classification has it. Shared with the webhook
@@ -85,7 +98,8 @@ export class CrayonConnector implements Connector {
 export function mapCrayonSpark(spark: Record<string, unknown>): RawSignalCandidate {
   const title = (spark.title ?? '') as string;
   // Prefer the Spark briefing fields; fall back to webhook/alert field names.
-  const content = (spark.content ?? spark.changes_section ?? spark.summary ?? spark.description ?? '') as string;
+  const rawContent = (spark.content ?? spark.changes_section ?? spark.summary ?? spark.description ?? '') as string;
+  const content = stripCrayonCitations(rawContent);
   const competitors = (spark.competitors ?? []) as { name?: string }[];
   const competitor =
     competitors[0]?.name ?? (spark.competitor as string) ?? (spark.competitorName as string) ?? '';

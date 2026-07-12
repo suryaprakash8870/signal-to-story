@@ -7,17 +7,25 @@ const STEPS = [
   { n: '4', title: 'Package', body: 'Writes tailored content for each team, ready to review and approve.' },
 ];
 
+// Where each role starts — one agent, tailored to what each team acts on.
+const ROLES = [
+  { title: 'Sales', body: 'Win the call. Talk tracks and objection handling for live prospect conversations.' },
+  { title: 'Product', body: 'Protect the roadmap. Clear watch-outs on the rival features that matter.' },
+  { title: 'Marketing', body: 'Sharpen the message. Campaign angles the moment a competitor shifts.' },
+  { title: 'Leadership', body: 'Decide faster. High-level summaries of what changed and why it matters.' },
+];
+
 const FEATURES = [
-  { title: 'Grounded, never invented', body: 'Every claim traces to the source signal or the competitor’s facts. If we don’t know it, we don’t say it.' },
+  { title: 'Grounded, never invented', body: 'Every claim traces to the source signal. If the agent doesn’t know it, it doesn’t say it.' },
   { title: 'Human review gate', body: 'Nothing publishes on its own. A reviewer reads, edits, and approves every output first.' },
-  { title: 'Four audiences', body: 'One signal becomes tailored content for Sales, Product, Marketing, and Leadership.' },
-  { title: 'Sharp battlecards', body: 'Objection/response cards that lead with the competitor’s real weakness, not filler.' },
+  { title: 'Comes to you', body: 'Approved insights arrive in Microsoft Teams or email — no new tool to open, no extra step.' },
+  { title: 'Sharp battlecards', body: 'Objection and response cards that lead with the competitor’s real weakness, not filler.' },
   { title: 'Measured tone', body: 'Treats a launch or demo as an early signal to watch — not a proven market threat.' },
-  { title: 'One-click delivery', body: 'Approved content goes straight to your team — Microsoft Teams or email.' },
+  { title: 'Every team covered', body: 'One signal becomes tailored content for Sales, Product, Marketing, and Leadership.' },
 ];
 
 const STATS = [
-  { value: '4', label: 'Audiences served' },
+  { value: '4', label: 'Teams served' },
   { value: '6', label: 'Output types' },
   { value: '1', label: 'Human gate, always' },
   { value: '0', label: 'Fabricated facts' },
@@ -28,98 +36,141 @@ export default function HomePage() {
     <div className="min-h-screen bg-white text-gray-900">
       {/* Nav */}
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/litera-logo.png" alt="Litera" className="h-8 w-auto object-contain" />
-          <span className="hidden h-7 w-px bg-gray-200 sm:block" />
-          <span className="hidden text-base font-semibold tracking-tight text-gray-800 sm:block">
-            Signal-to-Story
-          </span>
         </div>
         <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
           <a href="#how" className="hidden hover:text-gray-900 sm:block">How it works</a>
-          <a href="#features" className="hidden hover:text-gray-900 sm:block">Features</a>
-          <Link href="/intake" className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
+          <a href="#teams" className="hidden hover:text-gray-900 sm:block">For your teams</a>
+          <a href="#delivery" className="hidden hover:text-gray-900 sm:block">Delivery</a>
+          <Link href="/intake" className="rounded-lg bg-[#c74a1b] px-4 py-2 font-semibold text-white transition-colors hover:bg-[#a83e16]">
             Try now
           </Link>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative isolate overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute left-1/2 top-0 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-blue-100/70 blur-3xl" />
-        </div>
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 lg:grid-cols-2 lg:py-24">
-          <div>
-            <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
-              Competitive intelligence
-            </span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-              Signal AI built to turn <span className="text-blue-600">moves into momentum</span>
-            </h1>
-            <p className="mt-5 max-w-lg text-lg leading-relaxed text-gray-600">
-              Drop in a competitor move, a sales call, or a piece of news. Signal-to-Story turns it into
-              ready-to-use content for every team — grounded in the source, always reviewed by a human.
+      {/* Hero — full-bleed geometric graphic, text overlaid on the light left */}
+      <section className="relative overflow-hidden bg-white">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/2.jpg" alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
+        {/* White gradient keeps the left text legible while the right stays vibrant */}
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-white via-white/75 to-transparent" />
+        <div className="relative mx-auto max-w-6xl px-5">
+          <div className="max-w-xl py-16 lg:py-24">
+            <p className="text-sm font-semibold uppercase tracking-wider text-[#c74a1b]">
+              Just Ask… Agent Compete
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href="/intake" className="rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-blue-700">
-                Try now
+            <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
+              Compete Agent
+            </h1>
+            <p className="mt-4 text-xl font-semibold leading-snug text-gray-900 sm:text-2xl">
+              A personal competitive agent for your sales and GTM teams.
+            </p>
+            <p className="mt-4 max-w-lg text-lg leading-relaxed text-gray-700">
+              It continuously monitors competitive activity and proactively delivers the actionable
+              insights each team needs — grounded in the source, and reviewed by a human before
+              anything goes out.
+            </p>
+            <div className="mt-8">
+              <Link
+                href="/intake"
+                className="inline-block rounded-lg bg-[#c74a1b] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#a83e16]"
+              >
+                Try Compete Agent
               </Link>
-              <a href="#how" className="rounded-lg border border-gray-300 px-6 py-3 text-base font-semibold text-gray-700 transition-colors hover:bg-gray-50">
-                See how it works
-              </a>
-            </div>
-          </div>
-
-          {/* Hero visual — signal → outputs */}
-          <div className="relative">
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-xl">
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Raw signal · Gong call</div>
-                <p className="mt-1 text-sm text-gray-700">
-                  “A key account is evaluating a competitor’s new AI drafting tool at renewal…”
-                </p>
-              </div>
-              <div className="my-3 flex justify-center text-gray-300">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7" /></svg>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {['Sales', 'Product', 'Marketing', 'Leadership'].map((a) => (
-                  <div key={a} className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700">
-                    {a}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Sources strip — Compete Agent builds on trusted inputs, it doesn't crawl the web */}
+      <section className="border-y border-gray-200 bg-gray-50 py-6">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-3 px-5 text-center sm:flex-row sm:gap-4">
+          <span className="text-sm font-medium text-gray-500">Built on the sources you already trust:</span>
+          <div className="flex items-center gap-3">
+            <span className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-800">Crayon</span>
+            <span className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-800">Gong</span>
+          </div>
+          <span className="text-sm text-gray-500">— not another web crawler, your agent on top of them.</span>
+        </div>
+      </section>
+
       {/* Value band */}
-      <section className="bg-blue-600 py-16 text-center text-white">
-        <p className="mx-auto max-w-3xl px-5 text-2xl font-semibold leading-snug sm:text-3xl">
-          One raw signal, four audience-ready stories — grounded in the source, never invented, always
-          reviewed by a human.
+      <section className="bg-white py-16 text-center">
+        <p className="mx-auto max-w-3xl px-5 text-2xl font-bold leading-snug tracking-tight text-gray-900 sm:text-3xl">
+          Always watching the competition. Always ready with your next move — grounded in the source,
+          and approved by a human before it goes out.
         </p>
       </section>
 
       {/* How it works */}
       <section id="how" className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="text-center text-3xl font-bold tracking-tight">From signal to story in four steps</h2>
+        <h2 className="text-center text-3xl font-bold tracking-tight">How your agent works</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-          The engine does the heavy lifting — you review and approve.
+          The agent does the heavy lifting — you review and approve.
         </p>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s) => (
             <div key={s.title} className="rounded-2xl border border-gray-200 bg-white p-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#c74a1b] text-sm font-bold text-white">
                 {s.n}
               </span>
               <h3 className="mt-4 font-semibold">{s.title}</h3>
               <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{s.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* For your teams — where each role starts, and what they get */}
+      <section id="teams" className="bg-gray-50 py-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <h2 className="text-center text-3xl font-bold tracking-tight">One agent. Every team gets what it needs.</h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
+            The same signal, delivered to each team in the form they can act on.
+          </p>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {ROLES.map((r) => (
+              <div key={r.title} className="rounded-2xl border border-gray-200 bg-white p-6">
+                <h3 className="text-lg font-bold text-[#c74a1b]">{r.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">{r.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Delivery — the money shot: insights arrive where teams already work */}
+      <section id="delivery" className="mx-auto max-w-6xl px-5 py-20">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold tracking-tight">Delivered where you already work</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-gray-600">
+            No new tool to learn. Approved insights arrive right where your teams already spend their
+            day — so acting on them takes seconds, not a login.
+          </p>
+        </div>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2">
+          <div className="rounded-2xl border border-gray-200 bg-white p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-[#c74a1b]">
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+            </div>
+            <h3 className="mt-5 text-xl font-bold">Microsoft Teams</h3>
+            <p className="mt-2 leading-relaxed text-gray-600">
+              Insights land in the Teams channel you already use — one glance, and you’re ready for
+              the call.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-gray-200 bg-white p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-[#c74a1b]">
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+            </div>
+            <h3 className="mt-5 text-xl font-bold">Email</h3>
+            <p className="mt-2 leading-relaxed text-gray-600">
+              A clean summary straight to the inbox — perfect for Leadership, Product, and Marketing to
+              scan and act on in seconds.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -133,7 +184,7 @@ export default function HomePage() {
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-2xl border border-gray-200 bg-white p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#c74a1b]">
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                 </div>
                 <h3 className="mt-4 font-semibold">{f.title}</h3>
@@ -144,12 +195,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Stats band */}
-      <section className="bg-blue-600 py-14 text-white">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-5 text-center sm:grid-cols-4">
+      {/* Stats — four separate cards */}
+      <section className="mx-auto max-w-6xl px-5 py-14">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
           {STATS.map((s) => (
-            <div key={s.label}>
-              <div className="text-4xl font-extrabold">{s.value}</div>
+            <div key={s.label} className="rounded-2xl bg-[#c74a1b] p-6 text-center shadow-sm">
+              <div className="text-4xl font-extrabold text-white">{s.value}</div>
               <div className="mt-1 text-sm text-white/80">{s.label}</div>
             </div>
           ))}
@@ -158,12 +209,15 @@ export default function HomePage() {
 
       {/* Final CTA */}
       <section className="mx-auto max-w-4xl px-5 py-20 text-center">
-        <h2 className="text-3xl font-bold tracking-tight">Turn your next signal into a story</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Just Ask… Agent Compete</h2>
         <p className="mx-auto mt-3 max-w-md text-gray-600">
-          No setup. Paste a signal and watch the pipeline work.
+          Give every team their own competitive agent — always watching, always ready.
         </p>
-        <Link href="/intake" className="mt-8 inline-block rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-blue-700">
-          Try now
+        <Link
+          href="/intake"
+          className="mt-8 inline-block rounded-lg bg-[#c74a1b] px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-[#a83e16]"
+        >
+          Try Compete Agent
         </Link>
       </section>
 
@@ -171,10 +225,9 @@ export default function HomePage() {
       <footer className="border-t border-gray-200 bg-white py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-sm text-gray-500 sm:flex-row">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded bg-blue-600 text-xs font-bold text-white">
-              S
-            </span>
-            <span className="font-medium text-gray-700">Signal-to-Story</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/litera-logo.png" alt="Litera" className="h-6 w-auto object-contain" />
+            <span className="font-medium text-gray-700">Compete Agent</span>
           </div>
           <span>Competitive intelligence, from raw signal to audience-ready content.</span>
         </div>
