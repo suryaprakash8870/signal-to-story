@@ -9,9 +9,11 @@ name: Crayon Daily Poll
 # deployed at APP_URL, and the APP_URL / CRON_SECRET repo secrets set.
 
 on:
-  schedule:
-    - cron: '0 8 * * *' # 08:00 UTC daily
-  workflow_dispatch: {}
+  # Scheduled runs are DISABLED — this app is not deployed, so the cron runs
+  # would only fail. Re-enable by uncommenting when APP_URL/CRON_SECRET are set.
+  # schedule:
+  #   - cron: '0 8 * * *' # 08:00 UTC daily
+  workflow_dispatch: {} # manual runs only, from the Actions tab
 
 jobs:
   poll:

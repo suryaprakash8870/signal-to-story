@@ -10,9 +10,11 @@ name: Inbound Connector Poll
 # connector is actually switched to Live.
 
 on:
-  schedule:
-    - cron: '*/30 * * * *' # every 30 minutes
-  workflow_dispatch: {}
+  # Scheduled runs are DISABLED — this app is not deployed, so the cron runs
+  # would only fail. Re-enable by uncommenting when APP_URL/CRON_SECRET are set.
+  # schedule:
+  #   - cron: '*/30 * * * *' # every 30 minutes
+  workflow_dispatch: {} # manual runs only, from the Actions tab
 
 jobs:
   poll:
