@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Loading from '../components/Loading';
+import NotificationBanner from '../components/NotificationBanner';
 
 type Row = {
   id: string;
@@ -88,6 +89,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <NotificationBanner />
       <h1 className="page-title">Dashboard — published outputs</h1>
       {error && <p className="text-sm text-red-600">{error}</p>}
 

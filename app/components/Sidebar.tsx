@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState, type ReactNode } from 'react';
+import { supabaseBrowser } from '@/lib/supabase/client';
+import { useNotifications } from './useNotifications';
 
 // Collapsible left sidebar navigation. Pure UI — no data or handlers beyond
 // routing and the open/close toggle.
@@ -50,7 +52,22 @@ function isActive(pathname: string, href: string) {
 
 export default function Sidebar() {
   const pathname = usePathname() ?? '';
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const { count } = useNotifications();
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabaseBrowser()
+      .auth.getUser()
+      .then(({ data }) => setEmail(data.user?.email ?? null));
+  }, []);
+
+  async function logout() {
+    await supabaseBrowser().auth.signOut();
+    router.push('/login');
+    router.refresh();
+  }
 
   // The login screen stands on its own — no app chrome.
   if (pathname === '/login') return null;
@@ -84,17 +101,28 @@ export default function Sidebar() {
             <div className="space-y-0.5">
               {group.items.map((item) => {
                 const active = isActive(pathname, item.href);
+                const showBadge = item.href === '/review' && count > 0;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     title={collapsed ? item.label : undefined}
-                    className={`flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
+                    className={`relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
                       active ? 'bg-orange-50 text-[#c74a1b]' : 'text-gray-600 hover:bg-gray-100'
                     } ${collapsed ? 'justify-center' : ''}`}
                   >
-                    {item.icon}
+                    <span className="relative">
+                      {item.icon}
+                      {showBadge && collapsed && (
+                        <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                      )}
+                    </span>
                     {!collapsed && <span className="truncate">{item.label}</span>}
+                    {showBadge && !collapsed && (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white">
+                        {count}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -117,13 +145,9 @@ export default function Sidebar() {
         {!collapsed && <span>Collapse</span>}
       </button>
 
-      {/* Profile */}
+      {/* Profile + logout */}
       <div className="mt-1 border-t border-gray-200 p-2">
-        <div
-          className={`flex items-center gap-2 rounded-lg px-1.5 py-1.5 hover:bg-gray-100 ${
-            collapsed ? 'justify-center' : ''
-          }`}
-        >
+        <div className={`flex items-center gap-2 rounded-lg px-1.5 py-1.5 ${collapsed ? 'justify-center' : ''}`}>
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-600">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
@@ -131,17 +155,26 @@ export default function Sidebar() {
             </svg>
           </span>
           {!collapsed && (
-            <>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-gray-900">My Account</div>
-                <div className="truncate text-xs text-gray-500">Reviewer</div>
-              </div>
-              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m7 15 5 5 5-5M7 9l5-5 5 5" />
-              </svg>
-            </>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-gray-900">{email ?? 'My Account'}</div>
+              <div className="truncate text-xs text-gray-500">Reviewer</div>
+            </div>
           )}
         </div>
+        <button
+          onClick={logout}
+          title={collapsed ? 'Sign out' : undefined}
+          className={`mt-1 flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 ${
+            collapsed ? 'justify-center' : ''
+          }`}
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="m16 17 5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+          {!collapsed && <span>Sign out</span>}
+        </button>
       </div>
     </aside>
   );

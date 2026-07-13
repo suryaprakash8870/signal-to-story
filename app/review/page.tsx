@@ -1,6 +1,7 @@
 import { supabaseForRequest } from '@/lib/supabase/server';
 import NeedsAttention from './NeedsAttention';
 import ReviewList, { type ReviewItem } from './ReviewList';
+import NotificationBanner from '../components/NotificationBanner';
 
 const URGENCY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
@@ -54,6 +55,7 @@ export default async function ReviewPage() {
 
   return (
     <div className="space-y-5">
+      <NotificationBanner />
       <h1 className="page-title">Review queue</h1>
 
       {/* Summary — a clean row of stat tiles at the top */}
