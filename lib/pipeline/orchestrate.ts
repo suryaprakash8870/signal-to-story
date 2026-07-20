@@ -15,6 +15,9 @@ import { packageOutputs } from './package';
 export async function runPipeline(signalId: string): Promise<void> {
   const db = supabaseServiceRole();
   try {
+    // Clear any existing outputs first so a re-run replaces rather than appends
+    // — prevents duplicate stakeholder cards if the pipeline runs more than once.
+    await db.from('signal_outputs').delete().eq('signal_id', signalId);
     const classification = await classifySignal(signalId);
     const interpretation = await interpretSignal(signalId);
     const routing = routeAudiences(classification.audience_relevance);

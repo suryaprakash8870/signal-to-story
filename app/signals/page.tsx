@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Loading from '../components/Loading';
+import { useNotifications, useSeenSignals } from '../components/useNotifications';
 
 type Signal = {
   id: string;
@@ -31,6 +32,11 @@ export default function SignalsPage() {
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
   const router = useRouter();
+
+  // "New" = awaiting review and not yet opened; "Viewed" = opened at least once.
+  const { signals: unread } = useNotifications();
+  const unreadIds = new Set(unread.map((u) => u.signalId));
+  const seen = useSeenSignals();
 
   function load() {
     return fetch('/api/signals')
@@ -90,8 +96,21 @@ export default function SignalsPage() {
         <ul className="space-y-3">
           {signals.map((s) => {
             const pending = s.status === 'draft';
+            const isNew = unreadIds.has(s.id);
+            const isViewed = !isNew && seen.has(s.id);
             const header = (
               <div className="flex items-center gap-2 text-xs">
+                {isNew && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 font-semibold text-white">
+                    <span className="h-1.5 w-1.5 rounded-full bg-white" /> New
+                  </span>
+                )}
+                {isViewed && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-500">
+                    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                    Viewed
+                  </span>
+                )}
                 <span className={`rounded-full px-2 py-0.5 font-medium capitalize ${statusBadge(s.status)}`}>
                   {statusLabel(s.status)}
                 </span>

@@ -59,7 +59,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Run on all page routes except Next internals, static assets, and /api
-  // (API routes enforce their own auth).
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  // Run on all page routes except Next internals, /api (which enforces its own
+  // auth), and static asset files. Public images (e.g. /2.jpg, /litera-logo.png)
+  // must be excluded or the auth redirect bounces them to /login and they fail
+  // to load on unauthenticated pages like the login screen itself.
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)).*)',
+  ],
 };

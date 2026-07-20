@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { audienceLabel } from '@/lib/audience';
 
 export type ReviewItem = {
   id: string;
@@ -57,7 +58,7 @@ function ReviewCard({ it }: { it: ReviewItem }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold capitalize text-gray-900">{it.audience}</span>
+              <span className="text-sm font-semibold text-gray-900">{audienceLabel(it.audience)}</span>
               <span className="text-xs text-gray-300">·</span>
               <span className="text-xs text-gray-500">{it.outputType}</span>
             </div>

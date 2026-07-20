@@ -1,7 +1,27 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Loading from '../../components/Loading';
+import { markSignalSeen } from '../../components/useNotifications';
+import { audienceLabel } from '@/lib/audience';
+
+// Small "Back" control shown at the top of the signal detail page — returns to
+// the previous view (Signals list, Review queue, etc.) without using the nav.
+function BackButton() {
+  const router = useRouter();
+  return (
+    <button
+      onClick={() => router.back()}
+      className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900"
+    >
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+      Back
+    </button>
+  );
+}
 
 type SignalOutput = {
   id: string;
@@ -29,7 +49,7 @@ const AUDIENCE_INITIAL: Record<string, string> = {
   sales: 'S',
   product: 'P',
   marketing: 'M',
-  leadership: 'L',
+  leadership: 'E',
 };
 
 // Default recipient per audience — prefilled in the "Send via Email" box, but
@@ -55,6 +75,10 @@ function urgencyBadge(level: string) {
   return 'bg-gray-100 text-gray-600';
 }
 
+// Signal ids already auto-processed this page session — module-level so it
+// survives StrictMode remounts and prevents duplicate pipeline runs.
+const autoProcessedIds = new Set<string>();
+
 export default function SignalDetailPage({ params }: { params: { id: string } }) {
   const [data, setData] = useState<SignalDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,23 +91,23 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
       return;
     }
     setData(json);
+    // Once processing has actually moved the signal past 'draft', drop the
+    // local busy flag so the real pipeline progress (or error prompt) shows.
+    if (json?.signal?.status && json.signal.status !== 'draft') setBusy(false);
   }, [params.id]);
 
-  useEffect(() => {
+  // Run the pipeline for this one signal (draft → generate, or retry an error).
+  async function handleProcess() {
+    setBusy(true);
+    const res = await fetch(`/api/signals/${params.id}/process`, { method: 'POST' });
+    const json = await res.json();
+    if (!res.ok) {
+      alert(json.error ?? 'process failed');
+      setBusy(false);
+      return;
+    }
     load();
-    // Poll while the pipeline is still running — statuses before
-    // 'packaged'/'error' mean Stages 2-5 are in flight server-side.
-    const interval = setInterval(() => {
-      setData((current) => {
-        if (current && !['classified', 'interpreted', 'draft'].includes(current.signal.status)) {
-          clearInterval(interval);
-        }
-        return current;
-      });
-      load();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [load]);
+  }
 
   async function approve(outputId: string) {
     const res = await fetch(`/api/outputs/${outputId}/approve`, { method: 'PATCH' });
@@ -119,8 +143,6 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
     load();
   }
 
-  // Separate distribution channel from the Teams publish above — sends the
-  // approved output via Brevo email to a recipient the reviewer types in.
   async function sendEmail(outputId: string, to: string) {
     const res = await fetch(`/api/outputs/${outputId}/publish-email`, {
       method: 'POST',
@@ -134,8 +156,75 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
     load();
   }
 
-  if (error) return <p className="text-red-600">{error}</p>;
-  if (!data) return <Loading />;
+  // Auto-process on open: opening a pending ('draft') signal IS the intent to
+  // process it — no separate "Process" button. The module-level autoProcessedIds
+  // set survives React StrictMode's double-mount, so a draft is never processed
+  // twice (which is what created duplicate outputs). Errors are not auto-retried.
+  useEffect(() => {
+    if (!data) return;
+    if (data.signal.status === 'draft' && !autoProcessedIds.has(params.id)) {
+      autoProcessedIds.add(params.id);
+      handleProcess();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  // Opening this signal marks it "seen" — drops it from the notification
+  // badge/bell/banner immediately (Jira/GitHub-style read behavior).
+  useEffect(() => {
+    markSignalSeen(params.id);
+  }, [params.id]);
+
+  // On open, always play a short live "generating" sequence before revealing the
+  // outputs — so the agent is visibly seen working, even for a signal whose
+  // content is already in the DB. Genuinely in-flight signals show real progress
+  // until packaged (see realProcessing below); this only adds the reveal step.
+  const [revealed, setRevealed] = useState(false);
+  const [simStatus, setSimStatus] = useState('draft');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    setRevealed(false);
+    setSimStatus('draft');
+    const t1 = setTimeout(() => setSimStatus('classified'), 1200);
+    const t2 = setTimeout(() => setSimStatus('interpreted'), 2600);
+    const t3 = setTimeout(() => setRevealed(true), 5000);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [params.id]);
+
+  useEffect(() => {
+    load();
+    // Poll while the pipeline is still running — statuses before
+    // 'packaged'/'error' mean Stages 2-5 are in flight server-side.
+    const interval = setInterval(() => {
+      setData((current) => {
+        if (current && !['classified', 'interpreted', 'draft'].includes(current.signal.status)) {
+          clearInterval(interval);
+        }
+        return current;
+      });
+      load();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  if (error)
+    return (
+      <div>
+        <BackButton />
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  if (!data)
+    return (
+      <div>
+        <BackButton />
+        <Loading />
+      </div>
+    );
 
   const { signal, classification, outputs } = data;
   const byAudience = outputs.reduce<Record<string, SignalOutput[]>>((acc, o) => {
@@ -144,8 +233,12 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
   }, {});
   const approvedCount = outputs.filter((o) => o.approved).length;
 
+  // A draft auto-processes on open; classified/interpreted = actively running.
+  const realProcessing = ['classified', 'interpreted'].includes(signal.status);
+
   return (
     <div className="space-y-5">
+      <BackButton />
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-xs">
@@ -163,33 +256,33 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
         <div className="space-y-5">
           <SourceSignal text={signal.raw_text} />
 
-          {['draft', 'classified', 'interpreted'].includes(signal.status) && (
-            <div className="card">
-              <Loading label="Pipeline running…" />
+          {signal.status === 'draft' || busy || realProcessing ? (
+            <PipelineProgress status={realProcessing ? signal.status : 'draft'} />
+          ) : signal.status === 'error' ? (
+            <div className="card card-p flex flex-col items-center gap-3 py-12 text-center">
+              <p className="text-sm text-red-600">Processing failed — the AI provider may be busy.</p>
+              <button onClick={handleProcess} className="btn btn-primary text-sm">Retry</button>
             </div>
+          ) : !revealed ? (
+            <PipelineProgress status={simStatus} />
+          ) : (
+            Object.entries(byAudience).map(([audience, rows]) => (
+              <div key={audience} className="space-y-3">
+                <h2 className="section-title">{audienceLabel(audience)}</h2>
+                {rows.map((o) => (
+                  <OutputCard
+                    key={o.id}
+                    output={o}
+                    onApprove={() => approve(o.id)}
+                    onReject={() => reject(o.id)}
+                    onSaveEdit={(content) => saveEdit(o.id, content)}
+                    onPublish={() => publish(o.id)}
+                    onSendEmail={(to) => sendEmail(o.id, to)}
+                  />
+                ))}
+              </div>
+            ))
           )}
-          {signal.status === 'error' && (
-            <div className="card card-p text-sm text-red-600">
-              Pipeline failed for this signal — retry from the Review queue, or switch model.
-            </div>
-          )}
-
-          {Object.entries(byAudience).map(([audience, rows]) => (
-            <div key={audience} className="space-y-3">
-              <h2 className="section-title capitalize">{audience}</h2>
-              {rows.map((o) => (
-                <OutputCard
-                  key={o.id}
-                  output={o}
-                  onApprove={() => approve(o.id)}
-                  onReject={() => reject(o.id)}
-                  onSaveEdit={(content) => saveEdit(o.id, content)}
-                  onPublish={() => publish(o.id)}
-                  onSendEmail={(to) => sendEmail(o.id, to)}
-                />
-              ))}
-            </div>
-          ))}
         </div>
 
         {/* Right — details */}
@@ -231,8 +324,8 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
                 <div className="space-y-2 border-t border-gray-200 pt-4 text-sm">
                   <div className="field-label">Audience relevance</div>
                   {Object.entries(classification.audience_relevance).map(([k, v]) => (
-                    <div key={k} className="flex items-center justify-between">
-                      <span className="capitalize text-gray-600">{k}</span>
+                    <div key={k} className="flex items-center justify-between gap-3">
+                      <span className="text-gray-600">{audienceLabel(k)}</span>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${levelBadge(v)}`}>
                         {v}
                       </span>
@@ -244,6 +337,25 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+// Live, staged progress shown while the AI pipeline is still running — so a
+// freshly-detected signal visibly moves through Classify → Interpret → Generate
+// (driven by the 2s status poll) instead of the finished content just appearing.
+// Clean centered spinner (the "Pipeline running…" look), with a live-updating
+// label that reflects the current stage while the pipeline runs.
+function PipelineProgress({ status }: { status: string }) {
+  const label =
+    status === 'interpreted'
+      ? 'Generating tailored updates…'
+      : status === 'classified'
+      ? 'Interpreting the signal…'
+      : 'Pipeline running…';
+  return (
+    <div className="card">
+      <Loading label={label} />
     </div>
   );
 }
@@ -315,7 +427,7 @@ function OutputCard({
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#c74a1b] text-[10px] font-bold text-white">
           {AUDIENCE_INITIAL[output.audience] ?? output.audience.charAt(0).toUpperCase()}
         </span>
-        <span className="text-sm font-semibold capitalize text-gray-900">{output.audience}</span>
+        <span className="text-sm font-semibold text-gray-900">{audienceLabel(output.audience)}</span>
         <span className="text-xs text-gray-300">·</span>
         <span className="text-xs text-gray-500">{output.output_type}</span>
         {output.published_at ? (
@@ -402,10 +514,7 @@ function OutputCard({
             >
               {emailSending ? 'Sending…' : 'Send'}
             </button>
-            <button
-              onClick={() => setEmailOpen(false)}
-              className="btn btn-ghost text-xs"
-            >
+            <button onClick={() => setEmailOpen(false)} className="btn btn-ghost text-xs">
               Cancel
             </button>
           </div>

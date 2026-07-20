@@ -64,7 +64,8 @@ export default function NotificationBell() {
                           New competitive signal awaiting review
                         </span>
                         <span className="block truncate text-xs text-gray-500">
-                          {s.competitor ?? 'Competitor'} · via {s.sourceType ?? 'source'} · {s.urgency} urgency
+                          {s.competitor ?? 'Competitor'} · via {s.sourceType ?? 'source'}
+                          {s.processing ? ' · processing…' : ` · ${s.urgency} urgency`}
                         </span>
                       </span>
                     </button>

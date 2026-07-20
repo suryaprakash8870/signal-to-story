@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Loading from '../components/Loading';
 import NotificationBanner from '../components/NotificationBanner';
+import { audienceLabel } from '@/lib/audience';
 
 type Row = {
   id: string;
@@ -26,7 +27,7 @@ function DashboardCard({ row: r }: { row: Row }) {
   return (
     <li className="card card-p">
       <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-        <span className="pill capitalize">{r.audience}</span>
+        <span className="pill">{audienceLabel(r.audience)}</span>
         <span>{r.output_type}</span>
         {r.competitor && <span className="text-gray-700">· {r.competitor}</span>}
         {r.source_type && <span>· via {r.source_type}</span>}
@@ -169,7 +170,7 @@ export default function DashboardPage() {
               >
                 <option value="">All</option>
                 {AUDIENCES.map((a) => (
-                  <option key={a} value={a}>{a}</option>
+                  <option key={a} value={a}>{audienceLabel(a)}</option>
                 ))}
               </select>
             </div>

@@ -11,6 +11,7 @@ import { useState } from 'react';
 type Result = {
   ok?: boolean;
   signalId?: string;
+  competitor?: string;
   emailed?: string[];
   recipients?: string[];
   emailError?: string | null;
@@ -45,10 +46,10 @@ export default function TriggerPage() {
       </div>
 
       <div className="card card-p space-y-4">
-        <div className="text-sm text-gray-600">
-          <div><span className="font-semibold text-gray-900">Competitor:</span> Harvey AI</div>
-          <div><span className="font-semibold text-gray-900">Source:</span> Crayon</div>
-        </div>
+        <p className="text-sm text-gray-600">
+          Each click stages one new competitive signal (rotating across a few competitors) and emails
+          the PMM a Review Signal notification. One trigger = one signal = one email.
+        </p>
         <button onClick={fire} disabled={loading} className="btn btn-primary disabled:opacity-50">
           {loading ? 'Detecting signal…' : 'Trigger new signal'}
         </button>
@@ -60,7 +61,9 @@ export default function TriggerPage() {
             <p className="text-red-600">Error: {result.error}</p>
           ) : (
             <>
-              <p className="font-medium text-emerald-700">✓ Signal detected and staged.</p>
+              <p className="font-medium text-emerald-700">
+                ✓ New signal detected{result.competitor ? ` — ${result.competitor}` : ''} and staged.
+              </p>
               {result.emailError ? (
                 <p className="text-amber-700">
                   Email could not be sent: {result.emailError}

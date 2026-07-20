@@ -35,36 +35,57 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <form onSubmit={handleSubmit} className="card card-p w-full max-w-sm space-y-4">
-        <h1 className="page-title">Sign in</h1>
-        <div className="space-y-1">
-          <label className="field-label">Email</label>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="input w-full"
-            required
-          />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden">
+      {/* Home-page background graphic, dimmed so the card stays readable */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/2.jpg"
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+      />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-white/65 via-white/50 to-white/40" />
+
+      <div className="relative w-full max-w-sm px-4">
+        {/* Litera logo above the card */}
+        <div className="mb-6 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/litera-logo.png" alt="Litera" className="h-10 w-auto object-contain" />
         </div>
-        <div className="space-y-1">
-          <label className="field-label">Password</label>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="input w-full"
-            required
-          />
-        </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button type="submit" className="btn btn-primary w-full">
-          Sign in
-        </button>
-      </form>
+
+        <form onSubmit={handleSubmit} className="card card-p w-full space-y-4 shadow-xl">
+          <div className="text-center">
+            <h1 className="page-title">Sign in</h1>
+            <p className="muted mt-1 text-sm">Compete Agent</p>
+          </div>
+          <div className="space-y-1">
+            <label className="field-label">Email</label>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input w-full"
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="field-label">Password</label>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input w-full"
+              required
+            />
+          </div>
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <button type="submit" className="btn btn-primary w-full">
+            Sign in
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -55,12 +55,14 @@ export default function Sidebar() {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const { count } = useNotifications();
-  const [email, setEmail] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(null);
 
   useEffect(() => {
     supabaseBrowser()
       .auth.getUser()
-      .then(({ data }) => setEmail(data.user?.email ?? null));
+      .then(({ data }) =>
+        setName(data.user?.user_metadata?.full_name ?? data.user?.email ?? null)
+      );
   }, []);
 
   async function logout() {
@@ -101,7 +103,7 @@ export default function Sidebar() {
             <div className="space-y-0.5">
               {group.items.map((item) => {
                 const active = isActive(pathname, item.href);
-                const showBadge = item.href === '/review' && count > 0;
+                const showBadge = item.href === '/signals' && count > 0;
                 return (
                   <Link
                     key={item.href}
@@ -156,8 +158,8 @@ export default function Sidebar() {
           </span>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-gray-900">{email ?? 'My Account'}</div>
-              <div className="truncate text-xs text-gray-500">Reviewer</div>
+              <div className="truncate text-sm font-medium text-gray-900">{name ?? 'My Account'}</div>
+              <div className="truncate text-xs text-gray-500">Product Marketing Manager</div>
             </div>
           )}
         </div>
