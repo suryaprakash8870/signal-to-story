@@ -6,7 +6,7 @@ export async function GET() {
   const supabase = supabaseForRequest();
   const { data, error } = await supabase
     .from('competitors')
-    .select('id, name, known_facts, tier, created_at')
+    .select('id, name, known_facts, tier, owner_id, created_at')
     .order('name', { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ competitors: data });

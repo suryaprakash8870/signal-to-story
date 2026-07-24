@@ -71,6 +71,20 @@ export async function POST() {
   // Make sure the competitor exists so classification can match + ground it.
   await db.from('competitors').upsert({ name: pick.competitor }, { onConflict: 'name' });
 
+  // Route the notification to the competitor's owner if one is assigned;
+  // otherwise fall back to the shared PMM_NOTIFY_EMAIL list (prior behaviour).
+  let ownerRecipients: string[] = [];
+  const { data: comp } = await db
+    .from('competitors')
+    .select('owner_id')
+    .eq('name', pick.competitor)
+    .maybeSingle();
+  if (comp?.owner_id) {
+    const { data: ownerUser } = await db.auth.admin.getUserById(comp.owner_id);
+    const ownerEmail = ownerUser?.user?.email;
+    if (ownerEmail) ownerRecipients = [ownerEmail];
+  }
+
   const { data: signal, error } = await db
     .from('signals')
     .insert({ raw_text: pick.text, source_type: 'crayon', source_ref: 'trigger' })
@@ -85,12 +99,15 @@ export async function POST() {
   let emailed: string[] = [];
   let emailError: string | null = null;
   try {
-    emailed = await sendReviewNotification({
-      signalId: signal.id,
-      competitor: pick.competitor,
-      urgency: 'high',
-      excerpt: pick.text.slice(0, 180),
-    });
+    emailed = await sendReviewNotification(
+      {
+        signalId: signal.id,
+        competitor: pick.competitor,
+        urgency: 'high',
+        excerpt: pick.text.slice(0, 180),
+      },
+      ownerRecipients
+    );
   } catch (e) {
     emailError = e instanceof Error ? e.message : String(e);
   }
@@ -100,7 +117,7 @@ export async function POST() {
     signalId: signal.id,
     competitor: pick.competitor,
     emailed,
-    recipients: getPmmRecipients(),
+    recipients: ownerRecipients.length ? ownerRecipients : getPmmRecipients(),
     emailError,
   });
 }

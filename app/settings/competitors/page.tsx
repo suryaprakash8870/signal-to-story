@@ -9,14 +9,17 @@ type Competitor = {
   name: string;
   known_facts: KnownFact[];
   tier: number | null;
+  owner_id: string | null;
   created_at: string;
 };
+type User = { id: string; label: string; role: string };
 
 // Tier labels (1 = Primary, 2 = Secondary, 3 = Watching). Data only for now.
 const TIER_LABELS: Record<number, string> = { 1: 'Primary', 2: 'Secondary', 3: 'Watching' };
 
 export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [newName, setNewName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -24,13 +27,14 @@ export default function CompetitorsPage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/competitors');
-      const json = await res.json();
-      if (!res.ok) {
+      const [cRes, uRes] = await Promise.all([fetch('/api/competitors'), fetch('/api/users')]);
+      const json = await cRes.json();
+      if (!cRes.ok) {
         setError(json.error ?? 'failed to load');
         return;
       }
       setCompetitors(json.competitors);
+      if (uRes.ok) setUsers((await uRes.json()).users ?? []);
     } finally {
       setLoading(false);
     }
@@ -104,7 +108,13 @@ export default function CompetitorsPage() {
         <>
           {competitors.length === 0 && <p className="muted">No competitors yet.</p>}
           {competitors.map((c) => (
-            <CompetitorCard key={c.id} competitor={c} onChange={load} onDelete={() => deleteCompetitor(c.id)} />
+            <CompetitorCard
+              key={c.id}
+              competitor={c}
+              users={users}
+              onChange={load}
+              onDelete={() => deleteCompetitor(c.id)}
+            />
           ))}
         </>
       )}
@@ -114,10 +124,12 @@ export default function CompetitorsPage() {
 
 function CompetitorCard({
   competitor,
+  users,
   onChange,
   onDelete,
 }: {
   competitor: Competitor;
+  users: User[];
   onChange: () => void;
   onDelete: () => void;
 }) {
@@ -125,14 +137,16 @@ function CompetitorCard({
   const [source, setSource] = useState('internal');
   const [busy, setBusy] = useState(false);
 
-  async function setTier(tier: number | null) {
+  async function patch(body: Record<string, unknown>) {
     await fetch(`/api/competitors/${competitor.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tier }),
+      body: JSON.stringify(body),
     });
     onChange();
   }
+  const setTier = (tier: number | null) => patch({ tier });
+  const setOwner = (owner_id: string | null) => patch({ owner_id });
 
   async function addFact() {
     setBusy(true);
@@ -172,6 +186,19 @@ function CompetitorCard({
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <select
+            aria-label="Owner"
+            value={competitor.owner_id ?? ''}
+            onChange={(e) => setOwner(e.target.value === '' ? null : e.target.value)}
+            className="select w-auto text-xs"
+          >
+            <option value="">No owner</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.label}
+              </option>
+            ))}
+          </select>
           <select
             aria-label="Tier"
             value={competitor.tier ?? ''}

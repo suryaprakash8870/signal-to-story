@@ -33,12 +33,18 @@ function esc(s: string): string {
  * Throws if Brevo is not configured or the send fails, so the caller can
  * surface it (the trigger route reports it; auto-detect callers log it).
  */
-export async function sendReviewNotification(input: ReviewNotificationInput): Promise<string[]> {
+export async function sendReviewNotification(
+  input: ReviewNotificationInput,
+  recipientsOverride?: string[]
+): Promise<string[]> {
   const config = getBrevoConfig();
   if (!config) {
     throw new Error('Brevo is not configured (BREVO_API_KEY / BREVO_SENDER_EMAIL).');
   }
-  const recipients = getPmmRecipients();
+  // Prefer an explicit recipient (e.g. the competitor's owner); otherwise fall
+  // back to the shared PMM_NOTIFY_EMAIL list — the exact prior behaviour.
+  const recipients =
+    recipientsOverride && recipientsOverride.length ? recipientsOverride : getPmmRecipients();
   if (recipients.length === 0) {
     throw new Error('No PMM recipients configured (set PMM_NOTIFY_EMAIL).');
   }
