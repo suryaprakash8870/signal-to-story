@@ -4,7 +4,16 @@ import { useEffect, useState, useCallback } from 'react';
 import Loading from '../../components/Loading';
 
 type KnownFact = { fact: string; source: string; added_by?: string; added_at?: string };
-type Competitor = { id: string; name: string; known_facts: KnownFact[]; created_at: string };
+type Competitor = {
+  id: string;
+  name: string;
+  known_facts: KnownFact[];
+  tier: number | null;
+  created_at: string;
+};
+
+// Tier labels (1 = Primary, 2 = Secondary, 3 = Watching). Data only for now.
+const TIER_LABELS: Record<number, string> = { 1: 'Primary', 2: 'Secondary', 3: 'Watching' };
 
 export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
@@ -116,6 +125,15 @@ function CompetitorCard({
   const [source, setSource] = useState('internal');
   const [busy, setBusy] = useState(false);
 
+  async function setTier(tier: number | null) {
+    await fetch(`/api/competitors/${competitor.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tier }),
+    });
+    onChange();
+  }
+
   async function addFact() {
     setBusy(true);
     try {
@@ -142,14 +160,33 @@ function CompetitorCard({
 
   return (
     <div className="card card-p">
-      <div className="flex items-center justify-between">
-        <h2 className="section-title">{competitor.name}</h2>
-        <button
-          onClick={onDelete}
-          className="btn btn-ghost text-red-600"
-        >
-          Delete
-        </button>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <h2 className="section-title truncate">{competitor.name}</h2>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+              competitor.tier ? 'bg-orange-50 text-[#c74a1b]' : 'bg-gray-100 text-gray-500'
+            }`}
+          >
+            {competitor.tier ? `Tier ${competitor.tier} · ${TIER_LABELS[competitor.tier]}` : 'Unassigned'}
+          </span>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <select
+            aria-label="Tier"
+            value={competitor.tier ?? ''}
+            onChange={(e) => setTier(e.target.value === '' ? null : Number(e.target.value))}
+            className="select w-auto text-xs"
+          >
+            <option value="">Unassigned</option>
+            <option value="1">Tier 1 · Primary</option>
+            <option value="2">Tier 2 · Secondary</option>
+            <option value="3">Tier 3 · Watching</option>
+          </select>
+          <button onClick={onDelete} className="btn btn-ghost text-red-600">
+            Delete
+          </button>
+        </div>
       </div>
 
       <div className="mt-3 space-y-2">
