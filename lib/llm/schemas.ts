@@ -52,6 +52,10 @@ export type Classification = z.infer<typeof classificationSchema>;
 export const interpretationSchema = z.object({
   signal_summary: flexibleString,
   why_it_matters: flexibleString,
+  // A specific, actionable recommendation grounded in the signal + Litera
+  // context — the "what to do next" beyond what-changed/why-it-matters. Tolerant
+  // like the other strings; a reviewer can edit it before approval.
+  what_to_do_next: flexibleString,
   unverified_claims: flexibleStringArray,
   // The specific customer/prospect/account named in the signal, if any (e.g. a
   // firm in a sales call). Empty for general market news. Tolerant: never fails

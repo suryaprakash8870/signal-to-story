@@ -26,6 +26,12 @@ Known facts about ${competitorName}: ${JSON.stringify(knownFacts)}
 Return a JSON object with:
 - signal_summary: a plain-language summary of what happened
 - why_it_matters: why this matters to Litera specifically
+- what_to_do_next: one specific, actionable recommendation for Litera's teams —
+  the concrete next step, not a restatement of why it matters. It must follow
+  from the signal and the known facts above; if you cannot ground a concrete
+  action, say what to monitor or confirm rather than inventing a plan. Keep any
+  claim it rests on that is not supported by the signal/known facts in
+  unverified_claims.
 - unverified_claims: array of strings — any claim in your summary or
   implication that is NOT directly supported by the raw signal or the
   known facts above. If everything is fully supported, return an empty array.
@@ -92,9 +98,20 @@ export async function interpretSignal(signalId: string): Promise<Interpretation>
     })
   );
 
+  // Persist the display-relevant interpretation alongside the status advance so
+  // the reviewer sees what-changed / why-it-matters / what-to-do-next and can
+  // edit the recommendation. Packaging still uses the in-memory object returned
+  // below, so this storage is display-only and does not alter the pipeline.
   const { error: writeErr } = await db
     .from('signals')
-    .update({ status: 'interpreted' })
+    .update({
+      status: 'interpreted',
+      interpretation: {
+        signal_summary: interpretation.signal_summary,
+        why_it_matters: interpretation.why_it_matters,
+        what_to_do_next: interpretation.what_to_do_next,
+      },
+    })
     .eq('id', signalId);
   if (writeErr) throw new Error(`failed to advance signal status: ${writeErr.message}`);
 

@@ -40,6 +40,11 @@ type SignalDetail = {
     source_type: string;
     status: string;
     source_links?: { ref: string; url: string }[] | null;
+    interpretation?: {
+      signal_summary?: string;
+      why_it_matters?: string;
+      what_to_do_next?: string;
+    } | null;
   };
   classification: {
     competitor_id: string | null;
@@ -135,6 +140,15 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content }),
+    });
+    load();
+  }
+
+  async function saveInterpretation(what_to_do_next: string) {
+    await fetch(`/api/signals/${params.id}/interpretation`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ what_to_do_next }),
     });
     load();
   }
@@ -272,22 +286,30 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
           ) : !revealed ? (
             <PipelineProgress status={simStatus} />
           ) : (
-            Object.entries(byAudience).map(([audience, rows]) => (
-              <div key={audience} className="space-y-3">
-                <h2 className="section-title">{audienceLabel(audience)}</h2>
-                {rows.map((o) => (
-                  <OutputCard
-                    key={o.id}
-                    output={o}
-                    onApprove={() => approve(o.id)}
-                    onReject={() => reject(o.id)}
-                    onSaveEdit={(content) => saveEdit(o.id, content)}
-                    onPublish={() => publish(o.id)}
-                    onSendEmail={(to) => sendEmail(o.id, to)}
-                  />
-                ))}
-              </div>
-            ))
+            <>
+              {signal.interpretation && (
+                <InterpretationPanel
+                  interp={signal.interpretation}
+                  onSave={saveInterpretation}
+                />
+              )}
+              {Object.entries(byAudience).map(([audience, rows]) => (
+                <div key={audience} className="space-y-3">
+                  <h2 className="section-title">{audienceLabel(audience)}</h2>
+                  {rows.map((o) => (
+                    <OutputCard
+                      key={o.id}
+                      output={o}
+                      onApprove={() => approve(o.id)}
+                      onReject={() => reject(o.id)}
+                      onSaveEdit={(content) => saveEdit(o.id, content)}
+                      onPublish={() => publish(o.id)}
+                      onSendEmail={(to) => sendEmail(o.id, to)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </>
           )}
         </div>
 
@@ -367,6 +389,82 @@ function PipelineProgress({ status }: { status: string }) {
 }
 
 // Collapsible source-signal panel (the raw text the outputs were generated from).
+// The stored interpretation: what changed / why it matters / what to do next.
+// Only "what to do next" is reviewer-editable; it is not required for approval.
+function InterpretationPanel({
+  interp,
+  onSave,
+}: {
+  interp: { signal_summary?: string; why_it_matters?: string; what_to_do_next?: string };
+  onSave: (v: string) => void | Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(interp.what_to_do_next ?? '');
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    await onSave(draft);
+    setSaving(false);
+    setEditing(false);
+  }
+
+  return (
+    <div className="card space-y-3 p-4">
+      {interp.signal_summary && (
+        <div>
+          <div className="field-label mb-1">What changed</div>
+          <p className="text-sm leading-relaxed text-gray-700">{interp.signal_summary}</p>
+        </div>
+      )}
+      {interp.why_it_matters && (
+        <div>
+          <div className="field-label mb-1">Why it matters</div>
+          <p className="text-sm leading-relaxed text-gray-700">{interp.why_it_matters}</p>
+        </div>
+      )}
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <div className="field-label">What to do next</div>
+          {!editing && (
+            <button
+              onClick={() => {
+                setDraft(interp.what_to_do_next ?? '');
+                setEditing(true);
+              }}
+              className="text-xs font-medium text-[#c74a1b] hover:text-[#a83e16]"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+        {editing ? (
+          <div className="space-y-2">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              rows={3}
+              className="input w-full text-sm"
+            />
+            <div className="flex gap-2">
+              <button onClick={save} disabled={saving} className="btn btn-primary text-xs disabled:opacity-50">
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+              <button onClick={() => setEditing(false)} className="btn btn-outline text-xs">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm leading-relaxed text-gray-700">
+            {interp.what_to_do_next?.trim() || <span className="text-gray-400">No recommendation.</span>}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SourceSignal({
   text,
   links,
