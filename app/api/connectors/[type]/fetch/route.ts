@@ -76,6 +76,7 @@ export async function POST(req: NextRequest, { params }: { params: { type: strin
         raw_text: candidate.raw_text,
         source_type: candidate.source_type,
         source_ref: candidate.source_ref,
+        source_links: candidate.source_links ?? null,
         submitted_by: submittedBy,
       })
       .select('id')

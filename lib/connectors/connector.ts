@@ -23,6 +23,10 @@ export interface RawSignalCandidate {
   raw_text: string;
   source_type: string;
   source_ref?: string;
+  // Underlying source citations parsed out of the signal (e.g. Crayon Spark
+  // footnote links). Stored separately from raw_text for display; never fed to
+  // the pipeline. Omitted for sources that have none (e.g. manual entry).
+  source_links?: { ref: string; url: string }[];
 }
 
 export interface Connector {

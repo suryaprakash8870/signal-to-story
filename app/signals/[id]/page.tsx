@@ -34,7 +34,13 @@ type SignalOutput = {
 };
 
 type SignalDetail = {
-  signal: { id: string; raw_text: string; source_type: string; status: string };
+  signal: {
+    id: string;
+    raw_text: string;
+    source_type: string;
+    status: string;
+    source_links?: { ref: string; url: string }[] | null;
+  };
   classification: {
     competitor_id: string | null;
     signal_type: string;
@@ -254,7 +260,7 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         {/* Main — outputs */}
         <div className="space-y-5">
-          <SourceSignal text={signal.raw_text} />
+          <SourceSignal text={signal.raw_text} links={signal.source_links} />
 
           {signal.status === 'draft' || busy || realProcessing ? (
             <PipelineProgress status={realProcessing ? signal.status : 'draft'} />
@@ -361,7 +367,13 @@ function PipelineProgress({ status }: { status: string }) {
 }
 
 // Collapsible source-signal panel (the raw text the outputs were generated from).
-function SourceSignal({ text }: { text: string }) {
+function SourceSignal({
+  text,
+  links,
+}: {
+  text: string;
+  links?: { ref: string; url: string }[] | null;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <div className="card p-4">
@@ -376,6 +388,26 @@ function SourceSignal({ text }: { text: string }) {
         >
           {open ? 'Show less' : 'Show more'}
         </button>
+      )}
+      {links && links.length > 0 && (
+        <div className="mt-3 border-t border-gray-100 pt-3">
+          <div className="field-label mb-1.5">Sources</div>
+          <ul className="space-y-1">
+            {links.map((l) => (
+              <li key={l.url} className="flex items-start gap-1.5 text-xs">
+                <span className="shrink-0 text-gray-400">[{l.ref}]</span>
+                <a
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="break-all text-[#c74a1b] hover:underline"
+                >
+                  {l.url}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

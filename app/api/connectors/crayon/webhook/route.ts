@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       raw_text: candidate.raw_text,
       source_type: 'crayon',
       source_ref: candidate.source_ref,
+      source_links: candidate.source_links ?? null,
     })
     .select('id')
     .single();

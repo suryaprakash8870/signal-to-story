@@ -82,6 +82,24 @@ export class CrayonConnector implements Connector {
 // text remains. Crayon appends numbered footnote markers (`[^1]`) inline and
 // their link definitions (`[^1]: https://app.crayon.co/insight/...`) at the end;
 // we don't surface those source links, so remove both plus any bare insight URLs.
+// Parses Crayon's footnote citation links out of a Spark's markdown BEFORE they
+// are stripped, so a reviewer can open the underlying source in one click. Shape:
+// [{ ref: "1", url: "https://app.crayon.co/insight/..." }]. Deduped by URL.
+export function extractCrayonSourceLinks(text: string): { ref: string; url: string }[] {
+  const links: { ref: string; url: string }[] = [];
+  const seen = new Set<string>();
+  const re = /^\s*\[\^([^\]]+)\]:\s*(https?:\/\/\S+)/gm;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const url = m[2].replace(/[).,]+$/, ''); // trim trailing punctuation
+    if (!seen.has(url)) {
+      seen.add(url);
+      links.push({ ref: m[1], url });
+    }
+  }
+  return links;
+}
+
 function stripCrayonCitations(text: string): string {
   return text
     .replace(/^\s*\[\^[^\]]+\]:.*$/gm, '') // footnote definition lines
@@ -99,6 +117,7 @@ export function mapCrayonSpark(spark: Record<string, unknown>): RawSignalCandida
   const title = (spark.title ?? '') as string;
   // Prefer the Spark briefing fields; fall back to webhook/alert field names.
   const rawContent = (spark.content ?? spark.changes_section ?? spark.summary ?? spark.description ?? '') as string;
+  const source_links = extractCrayonSourceLinks(rawContent);
   const content = stripCrayonCitations(rawContent);
   const competitors = (spark.competitors ?? []) as { name?: string }[];
   const competitor =
@@ -113,5 +132,6 @@ export function mapCrayonSpark(spark: Record<string, unknown>): RawSignalCandida
     raw_text,
     source_type: 'crayon',
     source_ref: String(spark.url ?? spark.automated_spark_id ?? spark.id ?? spark.alert_id ?? ''),
+    ...(source_links.length ? { source_links } : {}),
   };
 }
