@@ -61,8 +61,21 @@ export function getCloudflareConfig(): { accountId: string; apiToken: string; mo
 }
 
 /**
+ * Litera internal Azure/Entra OpenAI-compatible gateway config from env.
+ * Returns null unless both the endpoint URL and the Bearer token are set.
+ * NOTE: the token is an Entra JWT that expires (~1h) — fine for testing/demo,
+ * but production needs a token-refresh flow, not a static pasted token.
+ */
+export function getLiteraConfig(): { endpoint: string; token: string; model?: string } | null {
+  const endpoint = process.env.LITERA_API_URL;
+  const token = process.env.LITERA_API_TOKEN;
+  if (!endpoint || !token) return null;
+  return { endpoint, token, model: process.env.LITERA_MODEL };
+}
+
+/**
  * The user's pinned backend from the settings dropdown, or null for auto.
- * Values: 'auto' | 'api' | 'cloudflare' | 'ollama|<baseUrl>|<model>'.
+ * Values: 'auto' | 'api' | 'cloudflare' | 'litera' | 'ollama|<baseUrl>|<model>'.
  */
 export async function getSelectedBackend(): Promise<string | null> {
   try {

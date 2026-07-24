@@ -25,7 +25,12 @@ export async function POST(req: NextRequest) {
   if (typeof backend !== 'string' || !backend) {
     return NextResponse.json({ error: 'backend is required' }, { status: 400 });
   }
-  const valid = backend === 'auto' || backend === 'api' || backend.startsWith('ollama|');
+  const valid =
+    backend === 'auto' ||
+    backend === 'api' ||
+    backend === 'cloudflare' ||
+    backend === 'litera' ||
+    backend.startsWith('ollama|');
   if (!valid) return NextResponse.json({ error: 'invalid backend value' }, { status: 400 });
 
   // Store null for 'auto' so absence means auto.

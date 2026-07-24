@@ -3,7 +3,8 @@ import { ClaudeProvider } from './claude-provider';
 import { GeminiProvider } from './gemini-provider';
 import { OllamaProvider } from './ollama-provider';
 import { CloudflareProvider } from './cloudflare-provider';
-import { getApiConfig, getSelectedBackend, getCloudflareConfig } from './config';
+import { LiteraProvider } from './litera-provider';
+import { getApiConfig, getSelectedBackend, getCloudflareConfig, getLiteraConfig } from './config';
 import { selectOllama, ollamaChain } from './ollama-select';
 import { FallbackProvider } from './fallback';
 
@@ -47,6 +48,12 @@ export async function getLLMProvider(): Promise<LLMProvider> {
     if (cf) return new CloudflareProvider(cf.accountId, cf.apiToken, cf.model);
   }
 
+  // STRICT — pinned to the Litera Entra gateway (gpt-5). Only this runs.
+  if (selection === 'litera') {
+    const lc = getLiteraConfig();
+    if (lc) return new LiteraProvider(lc.endpoint, lc.token, lc.model);
+  }
+
   // STRICT — pinned to the hosted API. Only this runs (it self-retries rate
   // limits internally; if it still fails, the signal errors — no Ollama switch).
   if (selection === 'api' && api) {
@@ -71,7 +78,7 @@ export async function getLLMProvider(): Promise<LLMProvider> {
  * returns the key itself.
  */
 export async function getProviderStatus(): Promise<{
-  provider: 'claude' | 'gemini' | 'ollama' | 'cloudflare';
+  provider: 'claude' | 'gemini' | 'ollama' | 'cloudflare' | 'litera';
   location?: 'remote' | 'local';
   model?: string;
   strict?: boolean;
@@ -85,6 +92,10 @@ export async function getProviderStatus(): Promise<{
   if (selection === 'cloudflare') {
     const cf = getCloudflareConfig();
     if (cf) return { provider: 'cloudflare', model: cf.model, strict: true };
+  }
+  if (selection === 'litera') {
+    const lc = getLiteraConfig();
+    if (lc) return { provider: 'litera', model: lc.model ?? 'gpt-5', strict: true };
   }
   if (selection === 'api' && api) return { provider: api.provider, strict: true };
 
