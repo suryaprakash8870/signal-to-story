@@ -37,9 +37,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
   {
     title: 'Settings',
     items: [
-      // Hidden from the nav for the client demo — page/route still exist,
-      // just not linked. Re-add this entry to bring it back.
-      // { href: '/settings/competitors', label: 'Competitors', icon: <Svg><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></Svg> },
+      { href: '/settings/competitors', label: 'Competitors', icon: <Svg><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></Svg> },
       { href: '/settings/connectors', label: 'Connectors', icon: <Svg><path d="M9 2v6M15 2v6" /><path d="M18 8v5a6 6 0 0 1-12 0V8Z" /><path d="M12 19v3" /></Svg> },
     ],
   },
