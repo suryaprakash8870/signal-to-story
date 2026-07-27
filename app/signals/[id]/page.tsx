@@ -333,13 +333,13 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
               <>
                 <div className="space-y-2 border-t border-gray-200 pt-4 text-sm">
                   <div className="field-label">Classification</div>
-                  <div className="flex items-center justify-between">
-                    <span className="muted">Type</span>
-                    <span className="text-gray-800">{classification.signal_type}</span>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="muted shrink-0">Type</span>
+                    <span className="min-w-0 break-words text-right text-gray-800">{classification.signal_type}</span>
                   </div>
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3">
                     <span className="muted shrink-0">Business area</span>
-                    <span className="text-right text-gray-800">{classification.business_area}</span>
+                    <span className="min-w-0 break-words text-right text-gray-800">{classification.business_area}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="muted">Urgency</span>
