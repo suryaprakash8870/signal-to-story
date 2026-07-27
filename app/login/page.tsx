@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase/client';
+
+// Shared demo credentials — shown on the login screen and prefilled from the
+// home page "Try now" links (?demo=1).
+export const DEMO_EMAIL = 'demo@compete-agent.com';
+export const DEMO_PASSWORD = 'demo123';
 
 export default function LoginPage() {
   return (
@@ -18,6 +23,14 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Prefill the demo credentials when arriving from a "Try now" link (?demo=1).
+  useEffect(() => {
+    if (searchParams.get('demo') === '1') {
+      setEmail(DEMO_EMAIL);
+      setPassword(DEMO_PASSWORD);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,6 +71,28 @@ function LoginForm() {
             <h1 className="page-title">Sign in</h1>
             <p className="muted mt-1 text-sm">Compete Agent</p>
           </div>
+
+          {/* Demo credentials — for exploring the app */}
+          <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-xs">
+            <p className="font-semibold text-[#c74a1b]">Log in with these credentials to explore</p>
+            <p className="mt-1 text-gray-700">
+              Email: <span className="font-mono">{DEMO_EMAIL}</span>
+            </p>
+            <p className="text-gray-700">
+              Password: <span className="font-mono">{DEMO_PASSWORD}</span>
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail(DEMO_EMAIL);
+                setPassword(DEMO_PASSWORD);
+              }}
+              className="mt-2 font-medium text-[#c74a1b] hover:underline"
+            >
+              Fill these credentials →
+            </button>
+          </div>
+
           <div className="space-y-1">
             <label className="field-label">Email</label>
             <input

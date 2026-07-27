@@ -593,11 +593,13 @@ function InboundCard({ connector, onChange }: { connector: Connector; onChange: 
         </div>
         {/* Test-mode inbound connectors need no credential — they run against
             fixtures — so show a Test Mode badge rather than connected/disconnected.
-            In live mode, reflect real credential connection. */}
+            In live mode, reflect the connector's real status. Inbound connectors
+            like Crayon authenticate with an env API key (not a Vault credential),
+            so has_credential is not a reliable "connected" signal — use status. */}
         {connector.mode === 'test' ? (
           <span className="pill bg-amber-100 text-amber-700">test mode</span>
         ) : (
-          <StatusBadge status={connector.has_credential ? connector.status : 'disconnected'} />
+          <StatusBadge status={connector.status} />
         )}
       </div>
       {/* Mode toggle — flipping to Live requires no pipeline changes, only a

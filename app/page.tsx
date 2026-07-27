@@ -44,7 +44,7 @@ export default function HomePage() {
           <a href="#how" className="hidden hover:text-gray-900 sm:block">How it works</a>
           <a href="#teams" className="hidden hover:text-gray-900 sm:block">For your teams</a>
           <a href="#delivery" className="hidden hover:text-gray-900 sm:block">Delivery</a>
-          <Link href="/intake" className="rounded-lg bg-[#c74a1b] px-4 py-2 font-semibold text-white transition-colors hover:bg-[#a83e16]">
+          <Link href="/login?demo=1" className="rounded-lg bg-[#c74a1b] px-4 py-2 font-semibold text-white transition-colors hover:bg-[#a83e16]">
             Try now
           </Link>
         </div>
@@ -74,7 +74,7 @@ export default function HomePage() {
             </p>
             <div className="mt-8">
               <Link
-                href="/intake"
+                href="/login?demo=1"
                 className="inline-block rounded-lg bg-[#c74a1b] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#a83e16]"
               >
                 Try Compete Agent
@@ -214,7 +214,7 @@ export default function HomePage() {
           Give every team their own competitive agent — always watching, always ready.
         </p>
         <Link
-          href="/intake"
+          href="/login?demo=1"
           className="mt-8 inline-block rounded-lg bg-[#c74a1b] px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-[#a83e16]"
         >
           Try Compete Agent

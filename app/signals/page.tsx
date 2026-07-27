@@ -31,6 +31,7 @@ export default function SignalsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [fetching, setFetching] = useState(false);
   const router = useRouter();
 
   // "New" = awaiting review and not yet opened; "Viewed" = opened at least once.
@@ -66,6 +67,26 @@ export default function SignalsPage() {
     router.push(`/signals/${id}`);
   }
 
+  // Pull fresh signals from Crayon (same action as Connectors → "Fetch now"),
+  // then reload the list so the new pending signals appear.
+  async function fetchCrayon() {
+    setFetching(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/connectors/crayon/fetch', { method: 'POST' });
+      const j = await res.json();
+      if (!res.ok) {
+        setError(j.error ?? 'fetch failed');
+        return;
+      }
+      await load();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setFetching(false);
+    }
+  }
+
   const pendingCount = signals.filter((s) => s.status === 'draft').length;
 
   return (
@@ -79,9 +100,13 @@ export default function SignalsPage() {
             </p>
           )}
         </div>
-        <Link href="/intake" className="btn btn-primary">
-          New signal
-        </Link>
+        <button
+          onClick={fetchCrayon}
+          disabled={fetching}
+          className="btn btn-primary disabled:opacity-50"
+        >
+          {fetching ? 'Fetching…' : 'Fetch from Crayon'}
+        </button>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -91,7 +116,7 @@ export default function SignalsPage() {
           <Loading label="Loading signals…" />
         </div>
       ) : signals.length === 0 ? (
-        <div className="card card-p muted">No signals yet — submit one from “New signal”.</div>
+        <div className="card card-p muted">No signals yet — click “Fetch from Crayon” to pull the latest.</div>
       ) : (
         <ul className="space-y-3">
           {signals.map((s) => {
