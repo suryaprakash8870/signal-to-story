@@ -87,6 +87,9 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
   const [backends, setBackends] = useState<BackendOption[]>([]);
   const [selected, setSelected] = useState('auto');
   const [loadingBackends, setLoadingBackends] = useState(false);
+  const [literaToken, setLiteraToken] = useState('');
+  const [litBusy, setLitBusy] = useState(false);
+  const [litMsg, setLitMsg] = useState<string | null>(null);
 
   const loadBackends = useCallback(async () => {
     setLoadingBackends(true);
@@ -117,6 +120,28 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
     const json = await res.json();
     if (!res.ok) setMessage(json.error ?? 'selection failed');
     onChange();
+  }
+
+  async function saveLiteraToken() {
+    setLitBusy(true);
+    setLitMsg(null);
+    try {
+      const res = await fetch('/api/settings/llm/litera-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: literaToken }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'save failed');
+      setLiteraToken('');
+      setLitMsg('Litera token validated and saved ✓ — pin "Litera — gpt-5" in the Model list to use it.');
+      loadBackends();
+      onChange();
+    } catch (err) {
+      setLitMsg(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLitBusy(false);
+    }
   }
 
   async function saveKey() {
@@ -199,6 +224,34 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
             Remove key (use Ollama)
           </button>
         )}
+      </div>
+
+      {/* Litera GPT-5 access token — the Entra token expires ~hourly, so paste a
+          fresh one here to refresh it without editing env or restarting. It is
+          validated with a live call before saving. */}
+      <div className="mt-4 border-t border-gray-200 pt-3">
+        <label className="field-label">Litera access token (GPT-5)</label>
+        <p className="mt-1 text-xs text-gray-500">
+          Paste the Litera Entra access token. It expires about every hour — when the pipeline
+          returns a 401, paste a fresh token here. It is checked live before saving.
+        </p>
+        <textarea
+          placeholder="eyJ0eXAiOiJKV1Qi…"
+          value={literaToken}
+          onChange={(e) => setLiteraToken(e.target.value)}
+          rows={3}
+          className="input mt-2 font-mono text-xs"
+        />
+        <div className="mt-2 flex items-center gap-2">
+          <button
+            onClick={saveLiteraToken}
+            disabled={!literaToken.trim() || litBusy}
+            className="btn btn-primary"
+          >
+            {litBusy ? 'Validating…' : 'Save Litera token'}
+          </button>
+        </div>
+        {litMsg && <p className="mt-2 text-xs text-gray-600">{litMsg}</p>}
       </div>
 
       {/* Model selector — pin the pipeline to a specific model, or leave on

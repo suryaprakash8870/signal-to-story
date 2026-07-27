@@ -46,7 +46,7 @@ export async function listBackends(apiProvider: string | null): Promise<Backend[
     backends.push({ id: 'cloudflare', label: `Cloudflare — ${cf.model}`, kind: 'api' });
   }
 
-  const litera = getLiteraConfig();
+  const litera = await getLiteraConfig();
   if (litera) {
     backends.push({ id: 'litera', label: `Litera — ${litera.model ?? 'gpt-5'}`, kind: 'api' });
   }

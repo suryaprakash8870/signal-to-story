@@ -66,10 +66,21 @@ export function getCloudflareConfig(): { accountId: string; apiToken: string; mo
  * NOTE: the token is an Entra JWT that expires (~1h) — fine for testing/demo,
  * but production needs a token-refresh flow, not a static pasted token.
  */
-export function getLiteraConfig(): { endpoint: string; token: string; model?: string } | null {
+export async function getLiteraConfig(): Promise<{ endpoint: string; token: string; model?: string } | null> {
   const endpoint = process.env.LITERA_API_URL;
-  const token = process.env.LITERA_API_TOKEN;
-  if (!endpoint || !token) return null;
+  if (!endpoint) return null;
+  // Token priority: the value saved via the UI (llm_config.litera_token) — so it
+  // can be refreshed hourly without editing env/restarting — then the env fallback.
+  let token: string | undefined;
+  try {
+    const db = supabaseServiceRole();
+    const { data } = await db.from('llm_config').select('litera_token').eq('id', 1).maybeSingle();
+    if (data?.litera_token) token = data.litera_token as string;
+  } catch {
+    // llm_config.litera_token column not present / DB unavailable → env fallback.
+  }
+  if (!token) token = process.env.LITERA_API_TOKEN;
+  if (!token) return null;
   return { endpoint, token, model: process.env.LITERA_MODEL };
 }
 

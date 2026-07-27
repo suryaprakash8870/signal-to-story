@@ -50,7 +50,7 @@ export async function getLLMProvider(): Promise<LLMProvider> {
 
   // STRICT — pinned to the Litera Entra gateway (gpt-5). Only this runs.
   if (selection === 'litera') {
-    const lc = getLiteraConfig();
+    const lc = await getLiteraConfig();
     if (lc) return new LiteraProvider(lc.endpoint, lc.token, lc.model);
   }
 
@@ -94,7 +94,7 @@ export async function getProviderStatus(): Promise<{
     if (cf) return { provider: 'cloudflare', model: cf.model, strict: true };
   }
   if (selection === 'litera') {
-    const lc = getLiteraConfig();
+    const lc = await getLiteraConfig();
     if (lc) return { provider: 'litera', model: lc.model ?? 'gpt-5', strict: true };
   }
   if (selection === 'api' && api) return { provider: api.provider, strict: true };
