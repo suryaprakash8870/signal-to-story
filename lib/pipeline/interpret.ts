@@ -26,12 +26,15 @@ Known facts about ${competitorName}: ${JSON.stringify(knownFacts)}
 Return a JSON object with:
 - signal_summary: a plain-language summary of what happened
 - why_it_matters: why this matters to Litera specifically
-- what_to_do_next: one specific, actionable recommendation for Litera's teams —
-  the concrete next step, not a restatement of why it matters. It must follow
-  from the signal and the known facts above; if you cannot ground a concrete
-  action, say what to monitor or confirm rather than inventing a plan. Keep any
-  claim it rests on that is not supported by the signal/known facts in
-  unverified_claims.
+- what_to_do_next: ONE clear, signal-level recommendation — the single most
+  important thing Litera should do in response — in one or two sentences. Do NOT
+  address it to a specific team or open with a team name (per-team actions
+  already live in the audience outputs), and do NOT write a multi-point list.
+  It is the answer to "if we do one thing about this signal, what is it?", not a
+  restatement of why it matters. It must follow from the signal and the known
+  facts above; if you cannot ground a concrete action, recommend what to monitor
+  or confirm rather than inventing a plan. Keep any claim it rests on that is not
+  supported by the signal/known facts in unverified_claims.
 - unverified_claims: array of strings — any claim in your summary or
   implication that is NOT directly supported by the raw signal or the
   known facts above. If everything is fully supported, return an empty array.

@@ -43,6 +43,13 @@ const GROUNDING_TAIL =
   '- ENTITY: Never attribute the competitor\'s features, products, or claims to ' +
   'Litera. They belong to the competitor, not Litera. Reference ONLY the one ' +
   'competitor named in this signal — never any other vendor or company.\n' +
+  '- COMPETITOR INFERENCE: State as fact ONLY what the source signal directly ' +
+  'says about the competitor. If you draw a conclusion that goes beyond the ' +
+  'source (what a move "indicates", "means", or where it is "heading"), word it ' +
+  'explicitly as inference — "may", "suggests", "appears" — never as an ' +
+  'established fact. A confidently stated guess (e.g. "indicating a newer US ' +
+  'presence") could be repeated to a customer as truth, so mark it as inference ' +
+  'or leave it out.\n' +
   '- PERSPECTIVE: Only the sales talk_track is spoken directly to the customer ' +
   '(address them as "you"). EVERY other output — battlecard, live_talking_points, ' +
   'watchout, marketing_angle, leadership_summary — is INTERNAL enablement for a ' +
