@@ -1,0 +1,59 @@
+# Render Blueprint for Compete Agent (Next.js Web Service).
+# Deploy: Render Dashboard → New + → Blueprint → pick this repo → set the env
+# var values when prompted (sync:false vars are entered in the dashboard, never
+# committed). APP_URL must be the Render URL of THIS service (set it after the
+# first deploy gives you the URL, then redeploy).
+services:
+  - type: web
+    name: compete-agent
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # --- Supabase (required) ---
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # --- AI provider: set the one you use (Cloudflare / Litera / Claude) ---
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: CLOUDFLARE_MODEL
+        sync: false
+      - key: LITERA_API_URL
+        sync: false
+      - key: LITERA_API_TOKEN
+        sync: false
+      - key: LITERA_MODEL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CLAUDE_MODEL
+        sync: false
+      # --- Email (Brevo) + PMM notification ---
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_SENDER_NAME
+        sync: false
+      - key: PMM_NOTIFY_EMAIL
+        sync: false
+      # --- App URL (set to the Render service URL) ---
+      - key: APP_URL
+        sync: false
+      # --- Scheduled-job + connector secrets ---
+      - key: CRON_SECRET
+        sync: false
+      - key: CRAYON_WEBHOOK_SECRET
+        sync: false
+      - key: CRAYON_API_KEY
+        sync: false
