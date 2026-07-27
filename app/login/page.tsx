@@ -6,8 +6,9 @@ import { supabaseBrowser } from '@/lib/supabase/client';
 
 // Shared demo credentials — shown on the login screen and prefilled from the
 // home page "Try now" links (?demo=1).
-export const DEMO_EMAIL = 'demo@compete-agent.com';
-export const DEMO_PASSWORD = 'demo123';
+// Local only — a page.tsx must not export arbitrary consts (breaks `next build`).
+const DEMO_EMAIL = 'demo@compete-agent.com';
+const DEMO_PASSWORD = 'demo123';
 
 export default function LoginPage() {
   return (
