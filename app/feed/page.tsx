@@ -83,6 +83,12 @@ export default function FeedPage() {
   const [seen, setSeen] = useState<Set<string>>(new Set());
   const [notingId, setNotingId] = useState<string | null>(null);
 
+  // Ask box - queries Crayon directly, so it reaches past the 30-day feed window.
+  const [question, setQuestion] = useState('');
+  const [asking, setAsking] = useState(false);
+  const [answer, setAnswer] = useState<{ answer: string; sources: { name?: string; url?: string }[] } | null>(null);
+  const [askError, setAskError] = useState<string | null>(null);
+
   useEffect(() => {
     setSeen(getSeen());
   }, []);
@@ -178,6 +184,31 @@ export default function FeedPage() {
     }
   }
 
+  async function ask(e: React.FormEvent) {
+    e.preventDefault();
+    if (!question.trim()) return;
+    setAsking(true);
+    setAskError(null);
+    setAnswer(null);
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setAskError(json.error ?? 'the question could not be answered');
+        return;
+      }
+      setAnswer({ answer: json.answer, sources: json.sources ?? [] });
+    } catch (err) {
+      setAskError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setAsking(false);
+    }
+  }
+
   function unreadCount(c: FeedCompetitor) {
     return c.ids.filter((id) => !seen.has(id)).length;
   }
@@ -197,6 +228,59 @@ export default function FeedPage() {
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {/* Ask box - queries Crayon directly, so unlike the feed it is not limited
+          to the last 30 days. */}
+      <div className="card card-p space-y-3">
+        <form onSubmit={ask} className="flex gap-2">
+          <input
+            type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Ask about any competitor, e.g. what changed in pricing last quarter?"
+            className="input min-w-0 flex-1"
+          />
+          <button
+            type="submit"
+            disabled={!question.trim() || asking}
+            className="btn btn-primary shrink-0 disabled:opacity-50"
+          >
+            {asking ? 'Asking…' : 'Ask'}
+          </button>
+        </form>
+        <p className="muted text-xs">
+          Searches the full competitive history, not just the last 30 days.
+        </p>
+
+        {askError && <p className="text-sm text-red-600">{askError}</p>}
+
+        {answer && (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
+              {answer.answer}
+            </p>
+            {answer.sources.length > 0 && (
+              <div className="mt-3 border-t border-gray-200 pt-2">
+                <div className="field-label mb-1.5">Sources</div>
+                <ul className="space-y-1">
+                  {answer.sources.map((s, i) => (
+                    <li key={i} className="text-xs">
+                      <a
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#c74a1b] hover:underline"
+                      >
+                        {s.name || s.url}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {loading ? (
         <Loading />
