@@ -41,24 +41,50 @@ interface SectionRow {
   context_documents: { title: string; doc_type: string } | null;
 }
 
+// Section numbers from the list shown to the model. Empty means nothing was
+// relevant, which is a valid and common answer. Smaller models sometimes omit
+// the key entirely (returning `{}`) or send a bare number instead of an array
+// when they mean "nothing" or "just this one", so the field is optional and
+// coerced rather than strict — an unparseable answer degrades to "nothing
+// relevant", which is the safe direction.
 const shortlistSchema = z.object({
-  // Section numbers from the list shown to the model. Empty = nothing relevant.
-  relevant: z.array(z.any()).transform((a) =>
-    a.map((x) => Number(x)).filter((n) => Number.isInteger(n) && n > 0)
-  ),
+  relevant: z
+    .union([z.array(z.any()), z.number(), z.string(), z.null()])
+    .optional()
+    .transform((v): number[] => {
+      if (v === undefined || v === null) return [];
+      const arr = Array.isArray(v) ? v : [v];
+      return arr
+        .map((x) => Number(x))
+        .filter((n) => Number.isInteger(n) && n > 0);
+    }),
 });
 
+// `grounded` is optional and coerced: a missing or odd value degrades to false
+// (an ungrounded, general note) rather than failing the whole request.
 const noteSchema = z.object({
   note: flexibleString,
-  grounded: z.union([z.boolean(), z.string()]).transform((v) =>
-    typeof v === 'boolean' ? v : v.trim().toLowerCase() === 'true'
-  ),
+  grounded: z
+    .union([z.boolean(), z.string(), z.null()])
+    .optional()
+    .transform((v) => {
+      if (typeof v === 'boolean') return v;
+      if (typeof v === 'string') return v.trim().toLowerCase() === 'true';
+      return false;
+    }),
 });
 
+// A missing/odd `supported` value degrades to false, dropping the claimed link
+// rather than letting an unverified one through.
 const verifySchema = z.object({
-  supported: z.union([z.boolean(), z.string()]).transform((v) =>
-    typeof v === 'boolean' ? v : v.trim().toLowerCase() === 'true'
-  ),
+  supported: z
+    .union([z.boolean(), z.string(), z.null()])
+    .optional()
+    .transform((v) => {
+      if (typeof v === 'boolean') return v;
+      if (typeof v === 'string') return v.trim().toLowerCase() === 'true';
+      return false;
+    }),
   reason: flexibleString.optional(),
 });
 
@@ -103,9 +129,16 @@ ${listing}
 
 Return JSON: { "relevant": [numbers] }
 
-List the section numbers that are GENUINELY relevant to this specific update - a section that would actually help explain what this update means for us, for example because it covers the same product area, the same market, or a directly related strategic bet.
+A section counts as relevant ONLY if it names something CONCRETE that this update also touches. Specifically, at least one of:
+- the same product or capability (e.g. the update is about contract drafting and the section covers our contract drafting product)
+- the same named technology or feature area (e.g. both concern an AI agent, or both concern document management)
+- the same specific market segment the update names (e.g. the update targets mid-sized firms and the section is about our mid-market strategy)
 
-Be strict. Most updates will match one or two sections at most. If nothing genuinely relates to this update, return an empty array. Do NOT stretch for a loose thematic connection.
+A shared theme is NOT enough. "Both are about AI", "both are about competition", or "both are about legal technology" do NOT qualify. If your reason for picking a section would be a broad category rather than a specific overlap, do not pick it.
+
+Company news with no product or market substance - leadership and executive changes, funding rounds, office openings, hiring, awards, conference attendance - has NO concrete overlap with strategy documents. Return an empty array for those.
+
+Most updates match zero or one section. Returning an empty array is a correct and expected answer.
 
 Return only the JSON object.`,
     schema: shortlistSchema,
@@ -145,8 +178,9 @@ Return JSON: { "note": "...", "grounded": true|false }
 
 Rules for the note:
 - One or two sentences. Plain, direct language. No preamble.
-- If the excerpts above genuinely bear on this update, explain what it means for us and reference what it touches (for example an area of our roadmap or a stated strategic bet). Set "grounded" to true.
-- If no excerpt genuinely bears on it, write a short general note about what the update signals, and set "grounded" to false. Do NOT invent or stretch a connection to our documents.
+- The excerpts above were already screened as relevant to this update. So if you can name a product, capability, feature area, or market segment that appears in BOTH the update and the excerpts, set "grounded" to true and name that specific thing in the note.
+- Only set "grounded" to false if, on reading the excerpts, you find they do not actually share anything concrete with this update after all, or the only link is a broad theme (AI, competition, legal technology, efficiency). In that case write a short general note about what the update signals instead.
+- Do NOT invent or stretch a connection that is not in the excerpts.
 - State only what the update and the excerpts support. If you are inferring, use measured wording such as "may" or "suggests" rather than stating it as fact.
 - Do not claim any capability of ours that is not stated in the excerpts.
 
@@ -180,7 +214,15 @@ ${note}
 
 Return JSON: { "supported": true|false, "reason": "short explanation" }
 
-Set "supported" to true only if the note's connection to our document section is genuinely justified by the text above. Set it to false if the note overstates the link, references something not present in the section, or asserts an inference as established fact.
+Set "supported" to true if you can name a thing - a product, capability, feature area, or market segment - that appears in BOTH the competitor update AND the document section above. Name it in your reason. Related capabilities count as shared: for example contract drafting and contract review are the same area, and an AI assistant and an AI agent are the same area.
+
+Set "supported" to false only if one of these clearly applies:
+- The ONLY link is a broad theme (AI, competition, legal technology, efficiency) with no shared product, capability, or market segment behind it.
+- The note references a product or claim that does not appear in the section text at all.
+- The update is company news (leadership change, funding, hiring, an event) with no product or market substance, so no genuine link is possible.
+- The note states an inference as established fact rather than using measured wording.
+
+Judge the connection, not the wording. If a real shared subject exists, the note is supported even if it is phrased broadly.
 
 Return only the JSON object.`,
     schema: verifySchema,
