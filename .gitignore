@@ -4,3 +4,7 @@ node_modules
 .env.local
 reference/
 tsconfig.tsbuildinfo
+
+# Client-confidential strategy documents (roadmap, GTM, positioning, narrative).
+# These are uploaded into the context library at runtime, never committed.
+Context documents/

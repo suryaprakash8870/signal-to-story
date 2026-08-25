@@ -38,6 +38,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
     title: 'Settings',
     items: [
       { href: '/settings/competitors', label: 'Competitors', icon: <Svg><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></Svg> },
+      { href: '/settings/context', label: 'Context library', icon: <Svg><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></Svg> },
       { href: '/settings/connectors', label: 'Connectors', icon: <Svg><path d="M9 2v6M15 2v6" /><path d="M18 8v5a6 6 0 0 1-12 0V8Z" /><path d="M12 19v3" /></Svg> },
     ],
   },

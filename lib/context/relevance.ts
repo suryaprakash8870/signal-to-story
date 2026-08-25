@@ -1,0 +1,237 @@
+import { z } from 'zod';
+import { getLLMProvider } from '../llm';
+import { flexibleString } from '../llm/schemas';
+import { supabaseServiceRole } from '../supabase/server';
+
+// Generates the "why it matters for us" note for a competitor update, grounded
+// in Litera's own context library.
+//
+// Four steps, each giving the model the smallest input it needs:
+//   1. Shortlist  - show only section HEADINGS, ask which are relevant.
+//   2. Retrieve   - fetch the full text of just those sections.
+//   3. Generate   - write the note from that text alone.
+//   4. Verify     - check the claimed link actually holds; if not, fall back
+//                   to the general note rather than asserting a bad link.
+//
+// If nothing in the library is relevant, the note stays general instead of
+// inventing a connection. That behaviour is the point, not a failure mode.
+
+const DOC_TYPE_LABELS: Record<string, string> = {
+  roadmap: 'Product Roadmap',
+  gtm_strategy: 'GTM Strategy',
+  positioning: 'Positioning',
+  growth_story: 'Growth Story',
+  company_profile: 'Company Profile',
+  other: 'Context Document',
+};
+
+export interface RelevanceNote {
+  note: string;
+  /** Section the note was grounded in, or null when it stayed general. */
+  groundedIn: { documentTitle: string; docType: string; heading: string } | null;
+  /** True when the library had nothing genuinely relevant to this update. */
+  general: boolean;
+}
+
+interface SectionRow {
+  id: string;
+  heading: string;
+  content: string;
+  document_id: string;
+  context_documents: { title: string; doc_type: string } | null;
+}
+
+const shortlistSchema = z.object({
+  // Section numbers from the list shown to the model. Empty = nothing relevant.
+  relevant: z.array(z.any()).transform((a) =>
+    a.map((x) => Number(x)).filter((n) => Number.isInteger(n) && n > 0)
+  ),
+});
+
+const noteSchema = z.object({
+  note: flexibleString,
+  grounded: z.union([z.boolean(), z.string()]).transform((v) =>
+    typeof v === 'boolean' ? v : v.trim().toLowerCase() === 'true'
+  ),
+});
+
+const verifySchema = z.object({
+  supported: z.union([z.boolean(), z.string()]).transform((v) =>
+    typeof v === 'boolean' ? v : v.trim().toLowerCase() === 'true'
+  ),
+  reason: flexibleString.optional(),
+});
+
+/** Loads every context section with its parent document metadata. */
+async function loadSections(): Promise<SectionRow[]> {
+  const db = supabaseServiceRole();
+  const { data, error } = await db
+    .from('context_sections')
+    .select('id, heading, content, document_id, context_documents(title, doc_type)')
+    .order('position', { ascending: true });
+  if (error) throw new Error(`failed to load context sections: ${error.message}`);
+  return (data ?? []) as unknown as SectionRow[];
+}
+
+function docLabel(s: SectionRow): string {
+  const type = s.context_documents?.doc_type ?? 'other';
+  return DOC_TYPE_LABELS[type] ?? DOC_TYPE_LABELS.other;
+}
+
+/**
+ * Step 1 - shortlist. The model sees only numbered section titles (cheap, and
+ * easier to judge than a wall of text) and returns the ones worth reading.
+ */
+async function shortlistSections(update: string, sections: SectionRow[]): Promise<SectionRow[]> {
+  if (sections.length === 0) return [];
+
+  const listing = sections
+    .map((s, i) => `${i + 1}. [${docLabel(s)}] ${s.heading}`)
+    .join('\n');
+
+  const llm = await getLLMProvider();
+  const result = await llm.generateStructured({
+    systemPrompt:
+      'You match competitor updates to a company\'s own internal strategy documents. Respond with JSON only, no markdown fences.',
+    userPrompt: `A competitor update has come in. Below are the section titles of our own internal documents (roadmap, GTM strategy, positioning, growth story, company profile).
+
+Competitor update:
+${update}
+
+Our document sections:
+${listing}
+
+Return JSON: { "relevant": [numbers] }
+
+List the section numbers that are GENUINELY relevant to this specific update - a section that would actually help explain what this update means for us, for example because it covers the same product area, the same market, or a directly related strategic bet.
+
+Be strict. Most updates will match one or two sections at most. If nothing genuinely relates to this update, return an empty array. Do NOT stretch for a loose thematic connection.
+
+Return only the JSON object.`,
+    schema: shortlistSchema,
+  });
+
+  return result.relevant
+    .map((n) => sections[n - 1])
+    .filter((s): s is SectionRow => Boolean(s))
+    .slice(0, 3);
+}
+
+/** Step 3 - write the note from the shortlisted sections only. */
+async function writeNote(update: string, chosen: SectionRow[]): Promise<{ note: string; grounded: boolean }> {
+  const llm = await getLLMProvider();
+
+  const contextBlock = chosen.length
+    ? chosen
+        .map(
+          (s) =>
+            `--- From "${s.context_documents?.title ?? 'Context'}" (${docLabel(s)}), section "${s.heading}" ---\n${s.content}`
+        )
+        .join('\n\n')
+    : '(No section of our internal documents was found to be relevant to this update.)';
+
+  const result = await llm.generateStructured({
+    systemPrompt:
+      'You write short, grounded competitive relevance notes for product managers. Respond with JSON only, no markdown fences.',
+    userPrompt: `Write a "why it matters for us" note for a product manager about this competitor update.
+
+Competitor update:
+${update}
+
+Relevant excerpts from our own internal documents:
+${contextBlock}
+
+Return JSON: { "note": "...", "grounded": true|false }
+
+Rules for the note:
+- One or two sentences. Plain, direct language. No preamble.
+- If the excerpts above genuinely bear on this update, explain what it means for us and reference what it touches (for example an area of our roadmap or a stated strategic bet). Set "grounded" to true.
+- If no excerpt genuinely bears on it, write a short general note about what the update signals, and set "grounded" to false. Do NOT invent or stretch a connection to our documents.
+- State only what the update and the excerpts support. If you are inferring, use measured wording such as "may" or "suggests" rather than stating it as fact.
+- Do not claim any capability of ours that is not stated in the excerpts.
+
+Return only the JSON object.`,
+    schema: noteSchema,
+  });
+
+  return { note: result.note.trim(), grounded: result.grounded };
+}
+
+/**
+ * Step 4 - verify. Confirms the note's claimed link to our document actually
+ * holds. Mirrors the grounding check already used elsewhere in the pipeline:
+ * an unsupported claim is dropped rather than shown.
+ */
+async function verifyNote(update: string, note: string, section: SectionRow): Promise<boolean> {
+  const llm = await getLLMProvider();
+  const result = await llm.generateStructured({
+    systemPrompt:
+      'You fact-check whether a written note is actually supported by a source excerpt. Respond with JSON only, no markdown fences.',
+    userPrompt: `A note was written about a competitor update, claiming it relates to one of our internal documents. Check whether that claim actually holds.
+
+Competitor update:
+${update}
+
+Our document section ("${section.heading}"):
+${section.content}
+
+The note that was written:
+${note}
+
+Return JSON: { "supported": true|false, "reason": "short explanation" }
+
+Set "supported" to true only if the note's connection to our document section is genuinely justified by the text above. Set it to false if the note overstates the link, references something not present in the section, or asserts an inference as established fact.
+
+Return only the JSON object.`,
+    schema: verifySchema,
+  });
+  return result.supported;
+}
+
+/**
+ * Generates the relevance note for one competitor update.
+ * Safe by construction: any failure to ground cleanly falls back to a general
+ * note rather than surfacing an unverified link.
+ */
+export async function generateRelevanceNote(update: string): Promise<RelevanceNote> {
+  const sections = await loadSections();
+
+  // Nothing uploaded yet - stay general rather than failing.
+  if (sections.length === 0) {
+    const { note } = await writeNote(update, []);
+    return { note, groundedIn: null, general: true };
+  }
+
+  const chosen = await shortlistSections(update, sections);
+
+  if (chosen.length === 0) {
+    const { note } = await writeNote(update, []);
+    return { note, groundedIn: null, general: true };
+  }
+
+  const { note, grounded } = await writeNote(update, chosen);
+
+  // The model itself judged the context not genuinely relevant.
+  if (!grounded) {
+    return { note, groundedIn: null, general: true };
+  }
+
+  const primary = chosen[0];
+  const supported = await verifyNote(update, note, primary);
+
+  if (!supported) {
+    // Claimed link did not hold - fall back to an ungrounded note.
+    const fallback = await writeNote(update, []);
+    return { note: fallback.note, groundedIn: null, general: true };
+  }
+
+  return {
+    note,
+    groundedIn: {
+      documentTitle: primary.context_documents?.title ?? 'Context document',
+      docType: primary.context_documents?.doc_type ?? 'other',
+      heading: primary.heading,
+    },
+    general: false,
+  };
+}
