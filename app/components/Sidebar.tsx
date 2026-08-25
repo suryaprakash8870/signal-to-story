@@ -24,6 +24,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
     items: [
       { href: '/intake', label: 'New signal', icon: <Svg><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" /></Svg> },
       { href: '/signals', label: 'Signals', icon: <Svg><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></Svg> },
+      { href: '/feed', label: 'Competitor feed', icon: <Svg><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></Svg> },
       { href: '/review', label: 'Review', icon: <Svg><rect width="8" height="4" x="8" y="2" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" /></Svg> },
     ],
   },
