@@ -55,6 +55,32 @@ function collectFootnotes(content: string): Map<string, string> {
   return map;
 }
 
+/**
+ * True when a line is Crayon's own competitive analysis about us rather than
+ * news about the competitor.
+ *
+ * Some Sparks include battlecard-style material: "Where Litera wins", objection
+ * tables, and positioning notes naming our own products. Those belong on a
+ * battlecard, not in a "what did this competitor ship" feed, and feeding them
+ * to the relevance step produces confused notes that attribute our products to
+ * the competitor. They are filtered out at parse time.
+ */
+function isInternalAnalysis(text: string): boolean {
+  // Analysis-table headers that survive conversion.
+  if (/^(trend|theme|objection|product theme|question)\b.*(evidence|matters|challenging|what.s new)/i.test(text)) {
+    return true;
+  }
+  if (/where litera (wins|loses)|why it matters for litera sales|representative prospect quote/i.test(text)) {
+    return true;
+  }
+  // Lines that lead with our own products are positioning notes, not competitor
+  // news. A passing mention later in a sentence is fine and stays.
+  if (/^(litera|lito|kira|transact|foundation|filetrail|office & dragons)\b/i.test(text)) {
+    return true;
+  }
+  return false;
+}
+
 /** Strips markdown emphasis and the trailing footnote marker from a bullet. */
 function cleanText(s: string): string {
   return s
@@ -129,6 +155,8 @@ export function parseSparkUpdates(content: string): ParsedUpdate[] {
     if (text.split(/\s+/).length < 8) continue;
     // Skip anything that never forms a sentence (stray headers, label rows).
     if (!/[.!?]/.test(text)) continue;
+    // Skip our own competitive analysis: this feed is competitor news only.
+    if (isInternalAnalysis(text)) continue;
 
     // First footnote referenced by this bullet is its source.
     const refMatch = line.match(/\[\^([^\]]+)\]/);

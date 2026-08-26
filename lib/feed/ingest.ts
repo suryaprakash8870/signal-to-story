@@ -12,7 +12,11 @@ export interface IngestResult {
   updatesFound: number;
   inserted: number;
   skipped: number;
+  notesGenerated: number;
 }
+
+/** How many of the newest updates per competitor get a note generated up front. */
+const PREGENERATE_PER_COMPETITOR = 5;
 
 /**
  * Last-resort update for a Spark with no parseable bullets. Converts markdown
@@ -45,6 +49,15 @@ function buildFallback(content: string): { index: number; type: 'other'; text: s
 
   const text = cleaned.join(' ').replace(/\s+/g, ' ').trim();
   if (text.split(/\s+/).length < 8) return [];
+
+  // Table-only Sparks are frequently Crayon's own competitive analysis about us
+  // (objection tables, "where Litera wins") rather than competitor news. Those
+  // belong on a battlecard, not in this feed, and grounding a relevance note
+  // against them produces notes that confuse whose product is whose.
+  if (/where litera (wins|loses)|why it matters for litera sales|representative prospect quote|objection or question/i.test(text)) {
+    return [];
+  }
+
   return [{ index: 0, type: 'other', text: text.slice(0, 1500), sourceUrl: null }];
 }
 
@@ -123,5 +136,72 @@ export async function ingestCompetitorUpdates(perPage = 20): Promise<IngestResul
     }
   }
 
-  return { sparksFetched: sparks.length, updatesFound, inserted, skipped };
+  const notesGenerated = await pregenerateNotes();
+
+  return { sparksFetched: sparks.length, updatesFound, inserted, skipped, notesGenerated };
+}
+
+/**
+ * Generates relevance notes for the newest updates per competitor, so a PM
+ * lands on a populated feed rather than a wall of "generate" buttons. Older
+ * updates keep generating on demand, which avoids spending a model call on
+ * every item when most are never opened.
+ *
+ * Failures are swallowed per update: a note that cannot be generated simply
+ * stays empty and falls back to the on-demand button, rather than failing the
+ * whole refresh.
+ */
+export async function pregenerateNotes(
+  perCompetitor = PREGENERATE_PER_COMPETITOR
+): Promise<number> {
+  const db = supabaseServiceRole();
+
+  // Only consider updates still inside the feed's 30-day window.
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
+
+  const { data: rows, error } = await db
+    .from('competitor_updates')
+    .select('id, competitor_name, content, relevance_note, published_at')
+    .gte('published_at', since.toISOString())
+    .order('published_at', { ascending: false });
+  if (error || !rows) return 0;
+
+  // Take the newest N per competitor that do not already have a note.
+  const seenPerCompetitor = new Map<string, number>();
+  const targets: { id: string; competitor_name: string; content: string }[] = [];
+  for (const r of rows as { id: string; competitor_name: string; content: string; relevance_note: string | null }[]) {
+    const n = seenPerCompetitor.get(r.competitor_name) ?? 0;
+    if (n >= perCompetitor) continue;
+    seenPerCompetitor.set(r.competitor_name, n + 1);
+    if (!r.relevance_note) targets.push(r);
+  }
+
+  if (targets.length === 0) return 0;
+
+  // Imported lazily so a feed refresh does not pull the LLM stack when there is
+  // nothing to generate.
+  const { generateRelevanceNote } = await import('../context/relevance');
+
+  let generated = 0;
+  for (const t of targets) {
+    try {
+      const result = await generateRelevanceNote(
+        `Competitor: ${t.competitor_name}\n\n${t.content}`
+      );
+      const { error: writeErr } = await db
+        .from('competitor_updates')
+        .update({
+          relevance_note: result.note,
+          grounded_document: result.groundedIn?.documentTitle ?? null,
+          grounded_section: result.groundedIn?.heading ?? null,
+          note_generated_at: new Date().toISOString(),
+        })
+        .eq('id', t.id);
+      if (!writeErr) generated++;
+    } catch {
+      // Leave this one for the on-demand button rather than failing the refresh.
+    }
+  }
+  return generated;
 }
