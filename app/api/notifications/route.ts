@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 /**
  * Powers the notification badge (sidebar), bell (header), and dashboard banner.
  *

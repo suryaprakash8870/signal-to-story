@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 /**
  * Phase 3 reporting view. All metrics are computed from data already captured
  * in signal_outputs (05-HUMAN-REVIEW-WORKFLOW.md / 09-BUILD-PHASES-AND-TASKS.md):

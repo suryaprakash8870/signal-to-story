@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 // GET: list competitors with their known_facts (grounds Stage 3).
 export async function GET() {
   const supabase = supabaseForRequest();

@@ -3,6 +3,10 @@ import { supabaseForRequest } from '@/lib/supabase/server';
 import { parseDocx, parsePlainText } from '@/lib/context/parse';
 import { saveContextDocument, listContextDocuments } from '@/lib/context/store';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 // The context library: Litera's own strategy documents, used to ground the
 // "why it matters for us" relevance note.
 

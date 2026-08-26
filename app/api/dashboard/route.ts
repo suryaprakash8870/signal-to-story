@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 /**
  * Published outputs for the dashboard, filterable by audience, competitor, and
  * date range. Selects only the columns the dashboard renders — never `select *`

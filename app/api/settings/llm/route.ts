@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
 import { getProviderStatus } from '@/lib/llm';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 /**
  * Reports which provider+location the pipeline will use right now (Claude,
  * Gemini, or remote/local Ollama with the model) and whether an API key is

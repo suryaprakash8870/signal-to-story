@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 // Lists connectors with status/mode only. credentials_ref is intentionally
 // selected (it is just an opaque Vault id, not the secret) but the raw
 // secret is never returned — see 04-CONNECTORS.md.

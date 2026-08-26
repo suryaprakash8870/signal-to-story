@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 // GET: list users who can own a competitor (reviewer/admin), with a display
 // label (email, falling back to name). Reviewer/admin only. Used to populate the
 // owner selector on the Competitors page. user_profiles has no email column, so

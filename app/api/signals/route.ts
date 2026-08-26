@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
 import { runPipeline, rerunSignal, findExistingSignalByText } from '@/lib/pipeline/orchestrate';
 
+// Reads request state and live data, so it must never be statically
+// evaluated at build time.
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const supabase = supabaseForRequest();
   const {
