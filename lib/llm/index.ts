@@ -4,7 +4,14 @@ import { GeminiProvider } from './gemini-provider';
 import { OllamaProvider } from './ollama-provider';
 import { CloudflareProvider } from './cloudflare-provider';
 import { LiteraProvider } from './litera-provider';
-import { getApiConfig, getSelectedBackend, getCloudflareConfig, getLiteraConfig } from './config';
+import { GeminiEntraProvider } from './gemini-entra-provider';
+import {
+  getApiConfig,
+  getSelectedBackend,
+  getCloudflareConfig,
+  getLiteraConfig,
+  getGeminiEntraConfig,
+} from './config';
 import { selectOllama, ollamaChain } from './ollama-select';
 import { FallbackProvider } from './fallback';
 
@@ -54,6 +61,12 @@ export async function getLLMProvider(): Promise<LLMProvider> {
     if (lc) return new LiteraProvider(lc.endpoint, lc.token, lc.model);
   }
 
+  // STRICT — pinned to Gemini via Litera's APIM gateway. Only this runs.
+  if (selection === 'gemini-entra') {
+    const gc = await getGeminiEntraConfig();
+    if (gc) return new GeminiEntraProvider(gc.endpoint, gc.token, gc.model);
+  }
+
   // STRICT — pinned to the hosted API. Only this runs (it self-retries rate
   // limits internally; if it still fails, the signal errors — no Ollama switch).
   if (selection === 'api' && api) {
@@ -78,7 +91,7 @@ export async function getLLMProvider(): Promise<LLMProvider> {
  * returns the key itself.
  */
 export async function getProviderStatus(): Promise<{
-  provider: 'claude' | 'gemini' | 'ollama' | 'cloudflare' | 'litera';
+  provider: 'claude' | 'gemini' | 'ollama' | 'cloudflare' | 'litera' | 'gemini-entra';
   location?: 'remote' | 'local';
   model?: string;
   strict?: boolean;
@@ -96,6 +109,10 @@ export async function getProviderStatus(): Promise<{
   if (selection === 'litera') {
     const lc = await getLiteraConfig();
     if (lc) return { provider: 'litera', model: lc.model ?? 'gpt-5', strict: true };
+  }
+  if (selection === 'gemini-entra') {
+    const gc = await getGeminiEntraConfig();
+    if (gc) return { provider: 'gemini-entra', model: gc.model, strict: true };
   }
   if (selection === 'api' && api) return { provider: api.provider, strict: true };
 

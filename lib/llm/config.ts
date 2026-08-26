@@ -85,8 +85,28 @@ export async function getLiteraConfig(): Promise<{ endpoint: string; token: stri
 }
 
 /**
+ * Google Gemini via Litera's APIM gateway (the gemini-entra path). Uses the
+ * SAME Entra token as the GPT-5 gateway — same audience — so no separate
+ * credentials are needed. Returns null when the endpoint or token is missing.
+ */
+export async function getGeminiEntraConfig(): Promise<{
+  endpoint: string;
+  token: string;
+  model: string;
+} | null> {
+  const endpoint = process.env.GEMINI_ENTRA_URL;
+  if (!endpoint) return null;
+  // Reuse the Litera token resolution (DB value first, env fallback).
+  const litera = await getLiteraConfig();
+  const token = litera?.token;
+  if (!token) return null;
+  return { endpoint, token, model: process.env.GEMINI_ENTRA_MODEL ?? 'gemini-pro' };
+}
+
+/**
  * The user's pinned backend from the settings dropdown, or null for auto.
- * Values: 'auto' | 'api' | 'cloudflare' | 'litera' | 'ollama|<baseUrl>|<model>'.
+ * Values: 'auto' | 'api' | 'cloudflare' | 'litera' | 'gemini-entra'
+ *         | 'ollama|<baseUrl>|<model>'.
  */
 export async function getSelectedBackend(): Promise<string | null> {
   try {

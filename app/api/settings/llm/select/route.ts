@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     backend === 'api' ||
     backend === 'cloudflare' ||
     backend === 'litera' ||
+    backend === 'gemini-entra' ||
     backend.startsWith('ollama|');
   if (!valid) return NextResponse.json({ error: 'invalid backend value' }, { status: 400 });
 
