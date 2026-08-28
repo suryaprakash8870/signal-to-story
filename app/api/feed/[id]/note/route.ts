@@ -7,6 +7,25 @@ import { generateRelevanceNote } from '@/lib/context/relevance';
  * update, grounded in the context library. The note is cached on the row, so
  * the feed does not re-run the model every time a PM opens it.
  */
+/**
+ * Turns a provider failure into something a PM can act on. The raw text from
+ * Cloudflare or Entra mentions neuron allocations and bearer tokens, which is
+ * noise to the person reading the feed, so the detail stays in the server log
+ * and the UI gets a plain sentence.
+ */
+function readableError(e: unknown): string {
+  const raw = e instanceof Error ? e.message : String(e);
+  console.error('[feed note] generation failed:', raw);
+
+  if (/429|neurons|rate limit|quota/i.test(raw)) {
+    return 'The note service has hit its usage limit for now. Existing notes still show, and this one can be generated again shortly.';
+  }
+  if (/401|invalid or expired|unauthor/i.test(raw)) {
+    return 'The note service needs its access renewed. Existing notes still show; please let the team know so it can be reconnected.';
+  }
+  return 'The note could not be generated just now. Please try again in a moment.';
+}
+
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = supabaseForRequest();
   const {
@@ -48,7 +67,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'note generation failed' },
+      { error: readableError(e) },
       { status: 500 }
     );
   }

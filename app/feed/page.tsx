@@ -9,7 +9,14 @@ import Loading from '../components/Loading';
 //
 // No approval gate here - PMs see updates directly, as confirmed with the client.
 
-type FeedCompetitor = { name: string; count: number; latest: string; ids: string[] };
+type FeedCompetitor = {
+  name: string;
+  count: number;
+  latest: string;
+  ids: string[];
+  /** False when Crayon holds no data for this competitor yet. */
+  inCrayon?: boolean;
+};
 
 type FeedUpdate = {
   id: string;
@@ -49,6 +56,36 @@ const TYPE_LABEL: Record<string, string> = {
   risk: 'Risk',
   other: 'Update',
 };
+
+// Crayon writes its Sparks for a sales audience and uses words like "sellers"
+// and "reps". Litera asked that the tool never refer to their people that way,
+// so the wording is neutralised at render time. The stored source text is left
+// untouched, because rewriting a quoted source in the database would misreport
+// what the source actually said.
+const WORDING: [RegExp, string][] = [
+  [/sales reps/gi, 'client-facing teams'],
+  [/sales rep/gi, 'client-facing team'],
+  [/salespeople/gi, 'client-facing teams'],
+  [/salesperson/gi, 'client-facing team'],
+  [/sellers/gi, 'client-facing teams'],
+  [/seller/gi, 'client-facing team'],
+  [/reps/gi, 'client-facing teams'],
+  [/rep/gi, 'client-facing team'],
+];
+
+/** Rewrites seller-oriented wording to neutral team language for display. */
+function neutralise(text: string): string {
+  let out = text;
+  for (const [pattern, replacement] of WORDING) {
+    out = out.replace(pattern, (match) =>
+      // Keep the original capitalisation so sentence starts stay correct.
+      /^[A-Z]/.test(match)
+        ? replacement.charAt(0).toUpperCase() + replacement.slice(1)
+        : replacement
+    );
+  }
+  return out;
+}
 
 // Which updates this browser has already seen, so the left rail can show a
 // "new since you last looked" count. Mirrors the pattern used by the
@@ -257,7 +294,7 @@ export default function FeedPage() {
         {answer && (
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
-              {answer.answer}
+              {neutralise(answer.answer)}
             </p>
             {answer.sources.length > 0 && (
               <div className="mt-3 border-t border-gray-200 pt-2">
@@ -303,13 +340,15 @@ export default function FeedPage() {
                     active ? 'bg-orange-50 font-medium text-[#c74a1b]' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  <span className="min-w-0 truncate">{c.name}</span>
+                  <span className={`min-w-0 truncate ${c.count === 0 ? 'text-gray-400' : ''}`}>
+                    {c.name}
+                  </span>
                   {unread > 0 ? (
                     <span className="shrink-0 rounded-full bg-[#c74a1b] px-1.5 py-0.5 text-[11px] font-semibold text-white">
                       {unread}
                     </span>
                   ) : (
-                    <span className="shrink-0 text-xs text-gray-400">{c.count}</span>
+                    <span className="shrink-0 text-xs text-gray-400">{c.count || ''}</span>
                   )}
                 </button>
               );
@@ -343,9 +382,23 @@ export default function FeedPage() {
                 {loadingUpdates ? (
                   <Loading />
                 ) : updates.length === 0 ? (
-                  <div className="card card-p muted text-sm">
-                    No {typeFilter === 'all' ? '' : TYPE_LABEL[typeFilter]?.toLowerCase()} updates for{' '}
-                    {selected} in the last 30 days.
+                  <div className="card card-p text-sm">
+                    {competitors.find((c) => c.name === selected)?.inCrayon === false ? (
+                      <>
+                        <p className="text-gray-700">
+                          {selected} is on the watchlist, but Crayon is not currently tracking it.
+                        </p>
+                        <p className="muted mt-1 text-xs">
+                          Nothing has been collected for this competitor yet. Once it is added in
+                          Crayon, its updates will appear here automatically.
+                        </p>
+                      </>
+                    ) : (
+                      <p className="muted">
+                        No {typeFilter === 'all' ? '' : TYPE_LABEL[typeFilter]?.toLowerCase()} updates
+                        for {selected} in the last 30 days.
+                      </p>
+                    )}
                   </div>
                 ) : (
                   updates.map((u) => (
@@ -368,14 +421,14 @@ export default function FeedPage() {
                         )}
                       </div>
 
-                      <p className="text-sm leading-relaxed text-gray-800">{u.content}</p>
+                      <p className="text-sm leading-relaxed text-gray-800">{neutralise(u.content)}</p>
 
                       {/* Why it matters for us - the core of the tool */}
                       <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
                         <div className="field-label mb-1">Why it matters for us</div>
                         {u.relevance_note ? (
                           <>
-                            <p className="text-sm leading-relaxed text-gray-700">{u.relevance_note}</p>
+                            <p className="text-sm leading-relaxed text-gray-700">{neutralise(u.relevance_note)}</p>
                             {u.grounded_document && (
                               <p className="mt-1.5 text-xs text-gray-500">
                                 Based on <span className="font-medium">{u.grounded_document}</span>

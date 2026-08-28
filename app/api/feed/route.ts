@@ -40,7 +40,13 @@ export async function GET(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     type Row = { competitor_name: string; id: string; published_at: string };
-    type Entry = { name: string; count: number; latest: string; ids: string[] };
+    type Entry = {
+      name: string;
+      count: number;
+      latest: string;
+      ids: string[];
+      inCrayon?: boolean;
+    };
     const byName = new Map<string, Entry>();
     for (const row of (data ?? []) as Row[]) {
       const entry: Entry = byName.get(row.competitor_name) ?? {
@@ -55,7 +61,36 @@ export async function GET(req: NextRequest) {
       byName.set(row.competitor_name, entry);
     }
 
-    const competitors = [...byName.values()].sort((a, b) => b.latest.localeCompare(a.latest));
+    // Include every competitor on Litera's watchlist, even those with no
+    // updates. A PM needs to see that a competitor is being watched but has no
+    // recent activity, rather than wondering why it is missing entirely.
+    const { data: tracked } = await db
+      .from('competitors')
+      .select('name, in_crayon')
+      .eq('tracked', true);
+    for (const c of (tracked ?? []) as { name: string; in_crayon: boolean | null }[]) {
+      const existing = byName.get(c.name);
+      if (existing) {
+        existing.inCrayon = c.in_crayon ?? true;
+      } else {
+        byName.set(c.name, {
+          name: c.name,
+          count: 0,
+          latest: '',
+          ids: [],
+          inCrayon: c.in_crayon ?? false,
+        });
+      }
+    }
+
+    // Competitors with recent activity first (newest first), then the quiet
+    // ones alphabetically.
+    const competitors = [...byName.values()].sort((a, b) => {
+      if (a.latest && b.latest) return b.latest.localeCompare(a.latest);
+      if (a.latest) return -1;
+      if (b.latest) return 1;
+      return a.name.localeCompare(b.name);
+    });
     return NextResponse.json({ competitors, windowDays: WINDOW_DAYS });
   }
 

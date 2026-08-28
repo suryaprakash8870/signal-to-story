@@ -64,8 +64,13 @@ function buildFallback(content: string): { index: number; type: 'other'; text: s
 /**
  * Fetches Sparks and stores the updates inside them.
  * `perPage` caps how many Sparks are pulled in one run.
+ *
+ * 50 rather than 20, because watchlist filtering now discards every Spark for a
+ * competitor Litera does not track. A small page would spend most of its budget
+ * on Sparks that are then thrown away, leaving watchlist competitors looking
+ * quiet when they are not.
  */
-export async function ingestCompetitorUpdates(perPage = 20): Promise<IngestResult> {
+export async function ingestCompetitorUpdates(perPage = 50): Promise<IngestResult> {
   const apiKey = process.env.CRAYON_API_KEY;
   if (!apiKey) throw new Error('CRAYON_API_KEY is not configured.');
 
@@ -83,12 +88,21 @@ export async function ingestCompetitorUpdates(perPage = 20): Promise<IngestResul
 
   const db = supabaseServiceRole();
 
-  // Match competitor names to existing competitor rows where possible, so the
-  // feed can link through to tier/owner later. Unmatched names still work.
-  const { data: competitors } = await db.from('competitors').select('id, name');
-  const idByName = new Map(
-    (competitors ?? []).map((c: { id: string; name: string }) => [c.name.toLowerCase(), c.id])
+  // Litera's watchlist is authoritative, not Crayon's. Crayon tracks some
+  // competitors Litera has not listed, and those updates are discarded here so
+  // the feed only ever shows competitors Litera actually cares about.
+  //
+  // If no competitor has been marked tracked yet (i.e. the list has not been
+  // seeded), everything is accepted so the feed still works out of the box.
+  const { data: competitors } = await db
+    .from('competitors')
+    .select('id, name, tracked');
+  const rows = (competitors ?? []) as { id: string; name: string; tracked?: boolean }[];
+  const idByName = new Map(rows.map((c) => [c.name.toLowerCase(), c.id]));
+  const trackedNames = new Set(
+    rows.filter((c) => c.tracked).map((c) => c.name.toLowerCase())
   );
+  const filterToWatchlist = trackedNames.size > 0;
 
   let updatesFound = 0;
   let inserted = 0;
@@ -102,6 +116,8 @@ export async function ingestCompetitorUpdates(perPage = 20): Promise<IngestResul
     const competitorName = competitors[0]?.name?.trim();
     // A feed is per competitor, so an unattributed Spark has nowhere to sit.
     if (!competitorName) continue;
+    // Skip competitors that are not on Litera's watchlist.
+    if (filterToWatchlist && !trackedNames.has(competitorName.toLowerCase())) continue;
 
     const publishedAt = (spark.created_at as string) ?? new Date().toISOString();
     const content = (spark.content ?? spark.changes_section ?? '') as string;
