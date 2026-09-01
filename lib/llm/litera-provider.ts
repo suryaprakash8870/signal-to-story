@@ -26,6 +26,12 @@ export class LiteraProvider implements LLMProvider {
         { role: 'user', content: userPrompt },
       ],
     };
+    // No `temperature` here on purpose: gpt-5 accepts only its default and
+    // returns 400 for any explicit value, so the pipeline-wide
+    // PIPELINE_TEMPERATURE cannot be applied to this gateway. Output from
+    // this backend is therefore less repeatable than the others, which is
+    // why generated notes are cached by input hash rather than regenerated.
+    //
     // The gateway pins the deployment, so `model` is optional; include it when
     // configured so a specific deployment can be targeted.
     if (this.model) payload.model = this.model;

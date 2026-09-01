@@ -1,5 +1,5 @@
 import type { GenerateStructuredParams, LLMProvider } from './provider';
-import { stripCodeFences } from './provider';
+import { stripCodeFences, PIPELINE_TEMPERATURE } from './provider';
 
 export class OllamaProvider implements LLMProvider {
   private baseUrl: string;
@@ -27,6 +27,7 @@ export class OllamaProvider implements LLMProvider {
           prompt: `${systemPrompt}\n\n${userPrompt}`,
           format: 'json',
           stream: false,
+          options: { temperature: PIPELINE_TEMPERATURE },
         }),
         // Cap the wait so a hung/very slow box surfaces a clear error rather
         // than blocking the pipeline forever. Generous for a slow 14B run.

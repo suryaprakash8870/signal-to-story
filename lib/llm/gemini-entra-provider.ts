@@ -1,5 +1,5 @@
 import type { GenerateStructuredParams, LLMProvider } from './provider';
-import { stripCodeFences } from './provider';
+import { stripCodeFences, PIPELINE_TEMPERATURE } from './provider';
 
 // Google Gemini via Litera's Azure APIM gateway (the gemini-entra path).
 //
@@ -33,7 +33,7 @@ export class GeminiEntraProvider implements LLMProvider {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.2,
+      temperature: PIPELINE_TEMPERATURE,
     });
 
     const maxAttempts = 4;

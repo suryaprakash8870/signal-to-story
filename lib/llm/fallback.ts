@@ -1,27 +1,58 @@
 import type { GenerateStructuredParams, LLMProvider } from './provider';
+import { isAvailabilityError } from './provider';
+
+export interface FallbackLink {
+  label: string;
+  provider: LLMProvider;
+}
 
 /**
- * Tries each provider in order; on failure, falls through to the next. This is
- * what makes "hosted API when available, otherwise local model" hold at call
- * time — if the API provider genuinely fails (after its own internal retries),
- * the signal continues on Ollama instead of dying. The API provider is
- * responsible for waiting out its own rate limits (see gemini-provider.ts), so
- * a 429 typically never reaches here.
+ * Tries each provider in order; on failure, falls through to the next.
+ *
+ * `onlyOnUnavailable` controls WHY it falls through, and the distinction is the
+ * whole point of this class:
+ *
+ *   false (Auto mode) — fall through on any error. The user asked for "whatever
+ *   works", so a bad answer is as good a reason to move on as a dead backend.
+ *
+ *   true (pinned mode) — fall through ONLY when the backend is unavailable: an
+ *   expired token, an exhausted quota, a timeout. A malformed answer is a
+ *   prompt or model-quality problem that another backend would likely hit too,
+ *   and switching silently would hide it. Pinning still means "this model
+ *   answers my requests"; it just no longer means "the feature dies when the
+ *   backend is down".
  */
 export class FallbackProvider implements LLMProvider {
-  constructor(private chain: { label: string; provider: LLMProvider }[]) {}
+  constructor(
+    private chain: FallbackLink[],
+    private onlyOnUnavailable = false
+  ) {}
 
   async generateStructured<T>(params: GenerateStructuredParams<T>): Promise<T> {
     let lastErr: unknown;
-    for (const link of this.chain) {
+
+    for (let i = 0; i < this.chain.length; i++) {
+      const link = this.chain[i];
       try {
         return await link.provider.generateStructured(params);
       } catch (err) {
         lastErr = err;
         const msg = err instanceof Error ? err.message : String(err);
-        console.warn(`[llm] ${link.label} failed (${msg.slice(0, 120)}) — falling back`);
+
+        // In pinned mode a non-availability failure is the real answer: report
+        // it rather than masking it behind a different model's output.
+        if (this.onlyOnUnavailable && !isAvailabilityError(err)) {
+          throw err;
+        }
+
+        const isLast = i === this.chain.length - 1;
+        console.warn(
+          `[llm] ${link.label} failed (${msg.slice(0, 120)})` +
+            (isLast ? ' — no backends left' : ` — falling back to ${this.chain[i + 1].label}`)
+        );
       }
     }
+
     throw lastErr ?? new Error('all providers failed');
   }
 }

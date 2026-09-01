@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { GenerateStructuredParams, LLMProvider } from './provider';
-import { stripCodeFences } from './provider';
+import { stripCodeFences, PIPELINE_TEMPERATURE } from './provider';
 
 export class ClaudeProvider implements LLMProvider {
   private client: Anthropic;
@@ -18,6 +18,7 @@ export class ClaudeProvider implements LLMProvider {
     const response = await this.client.messages.create({
       model: process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-6',
       max_tokens: 1500,
+      temperature: PIPELINE_TEMPERATURE,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     });

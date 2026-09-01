@@ -1,5 +1,5 @@
 import type { GenerateStructuredParams, LLMProvider } from './provider';
-import { stripCodeFences } from './provider';
+import { stripCodeFences, PIPELINE_TEMPERATURE } from './provider';
 
 // Google Gemini via the Generative Language REST API — no SDK needed.
 // responseMimeType: application/json forces raw JSON output, same contract
@@ -20,6 +20,7 @@ export class GeminiProvider implements LLMProvider {
       contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
       generationConfig: {
         responseMimeType: 'application/json',
+        temperature: PIPELINE_TEMPERATURE,
         maxOutputTokens: 1500,
         thinkingConfig: { thinkingBudget: 0 },
       },

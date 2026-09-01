@@ -1,5 +1,5 @@
 import type { GenerateStructuredParams, LLMProvider } from './provider';
-import { stripCodeFences } from './provider';
+import { stripCodeFences, PIPELINE_TEMPERATURE } from './provider';
 
 // Cloudflare Workers AI (hosted, OpenAI-style chat completion). Used as a
 // free/low-cost testing backend. A 32B coder-tuned model follows strict JSON
@@ -27,6 +27,7 @@ export class CloudflareProvider implements LLMProvider {
         { role: 'user', content: userPrompt },
       ],
       max_tokens: 1500,
+      temperature: PIPELINE_TEMPERATURE,
     });
 
     const maxAttempts = 4;
