@@ -19,11 +19,11 @@ export default function TopNav() {
   const pathname = usePathname() ?? '';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-40 border-b border-gray-200 bg-surface">
       <div className="flex h-14 items-center gap-4 px-4 sm:px-6">
         {/* Product switcher */}
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-bold text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-neon-teal to-neon-orange text-sm font-bold text-white">
             S
           </span>
           <span className="hidden items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-800 sm:flex">
@@ -66,7 +66,7 @@ export default function TopNav() {
               type="text"
               placeholder="Search…"
               aria-label="Search"
-              className="w-52 rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-8 pr-3 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+              className="w-52 rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-8 pr-3 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:bg-surface focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
           <Link
@@ -78,7 +78,7 @@ export default function TopNav() {
               <path d="M12 5v14M5 12h14" />
             </svg>
           </Link>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-semibold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-subtle text-xs font-semibold text-white">
             SL
           </span>
         </div>

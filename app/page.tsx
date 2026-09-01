@@ -33,7 +33,7 @@ const STATS = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-surface text-gray-900">
       {/* Nav */}
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <div className="flex items-center">
@@ -44,21 +44,21 @@ export default function HomePage() {
           <a href="#how" className="hidden hover:text-gray-900 sm:block">How it works</a>
           <a href="#teams" className="hidden hover:text-gray-900 sm:block">For your teams</a>
           <a href="#delivery" className="hidden hover:text-gray-900 sm:block">Delivery</a>
-          <Link href="/login?demo=1" className="rounded-lg bg-[#c74a1b] px-4 py-2 font-semibold text-white transition-colors hover:bg-[#a83e16]">
+          <Link href="/login?demo=1" className="rounded-lg bg-accent px-4 py-2 font-semibold text-ink-on transition-colors hover:bg-accent-hover">
             Try now
           </Link>
         </div>
       </nav>
 
       {/* Hero — full-bleed geometric graphic, text overlaid on the light left */}
-      <section className="relative overflow-hidden bg-white">
+      <section className="relative overflow-hidden bg-surface">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/2.jpg" alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
         {/* White gradient keeps the left text legible while the right stays vibrant */}
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-white via-white/75 to-transparent" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-page via-page/80 to-transparent" />
         <div className="relative mx-auto max-w-6xl px-5">
           <div className="max-w-xl py-16 lg:py-24">
-            <p className="text-sm font-semibold uppercase tracking-wider text-[#c74a1b]">
+            <p className="text-sm font-semibold uppercase tracking-wider text-accent">
               Just Ask… Agent Compete
             </p>
             <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
@@ -75,7 +75,7 @@ export default function HomePage() {
             <div className="mt-8">
               <Link
                 href="/login?demo=1"
-                className="inline-block rounded-lg bg-[#c74a1b] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#a83e16]"
+                className="inline-block rounded-lg bg-accent px-6 py-3 text-base font-semibold text-ink-on transition-colors hover:bg-accent-hover"
               >
                 Try Compete Agent
               </Link>
@@ -89,15 +89,15 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-3 px-5 text-center sm:flex-row sm:gap-4">
           <span className="text-sm font-medium text-gray-500">Built on the sources you already trust:</span>
           <div className="flex items-center gap-3">
-            <span className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-800">Crayon</span>
-            <span className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-800">Gong</span>
+            <span className="rounded-lg border border-gray-200 bg-surface px-3 py-1 text-sm font-semibold text-gray-800">Crayon</span>
+            <span className="rounded-lg border border-gray-200 bg-surface px-3 py-1 text-sm font-semibold text-gray-800">Gong</span>
           </div>
           <span className="text-sm text-gray-500">— not another web crawler, your agent on top of them.</span>
         </div>
       </section>
 
       {/* Value band */}
-      <section className="bg-white py-16 text-center">
+      <section className="bg-surface py-16 text-center">
         <p className="mx-auto max-w-3xl px-5 text-2xl font-bold leading-snug tracking-tight text-gray-900 sm:text-3xl">
           Always watching the competition. Always ready with your next move — grounded in the source,
           and approved by a human before it goes out.
@@ -112,8 +112,8 @@ export default function HomePage() {
         </p>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s) => (
-            <div key={s.title} className="rounded-2xl border border-gray-200 bg-white p-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#c74a1b] text-sm font-bold text-white">
+            <div key={s.title} className="rounded-2xl border border-gray-200 bg-surface p-5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-sm font-bold text-ink-on">
                 {s.n}
               </span>
               <h3 className="mt-4 font-semibold">{s.title}</h3>
@@ -132,8 +132,8 @@ export default function HomePage() {
           </p>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {ROLES.map((r) => (
-              <div key={r.title} className="rounded-2xl border border-gray-200 bg-white p-6">
-                <h3 className="text-lg font-bold text-[#c74a1b]">{r.title}</h3>
+              <div key={r.title} className="rounded-2xl border border-gray-200 bg-surface p-6">
+                <h3 className="text-lg font-bold text-accent">{r.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600">{r.body}</p>
               </div>
             ))}
@@ -151,8 +151,8 @@ export default function HomePage() {
           </p>
         </div>
         <div className="mt-12 grid gap-5 sm:grid-cols-2">
-          <div className="rounded-2xl border border-gray-200 bg-white p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-[#c74a1b]">
+          <div className="rounded-2xl border border-gray-200 bg-surface p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
             </div>
             <h3 className="mt-5 text-xl font-bold">Microsoft Teams</h3>
@@ -161,8 +161,8 @@ export default function HomePage() {
               the call.
             </p>
           </div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-[#c74a1b]">
+          <div className="rounded-2xl border border-gray-200 bg-surface p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
             </div>
             <h3 className="mt-5 text-xl font-bold">Email</h3>
@@ -183,8 +183,8 @@ export default function HomePage() {
           </p>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-gray-200 bg-white p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#c74a1b]">
+              <div key={f.title} className="rounded-2xl border border-gray-200 bg-surface p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                 </div>
                 <h3 className="mt-4 font-semibold">{f.title}</h3>
@@ -199,7 +199,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-5 py-14">
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
           {STATS.map((s) => (
-            <div key={s.label} className="rounded-2xl bg-[#c74a1b] p-6 text-center shadow-sm">
+            <div key={s.label} className="rounded-2xl bg-accent p-6 text-center shadow-sm">
               <div className="text-4xl font-extrabold text-white">{s.value}</div>
               <div className="mt-1 text-sm text-white/80">{s.label}</div>
             </div>
@@ -215,14 +215,14 @@ export default function HomePage() {
         </p>
         <Link
           href="/login?demo=1"
-          className="mt-8 inline-block rounded-lg bg-[#c74a1b] px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-[#a83e16]"
+          className="mt-8 inline-block rounded-lg bg-accent px-8 py-3 text-base font-semibold text-ink-on transition-colors hover:bg-accent-hover"
         >
           Try Compete Agent
         </Link>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white py-8">
+      <footer className="border-t border-gray-200 bg-surface py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-sm text-gray-500 sm:flex-row">
           <div className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}

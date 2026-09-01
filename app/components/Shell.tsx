@@ -20,7 +20,7 @@ export default function Shell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-gray-200 bg-white px-4">
+        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-gray-200 bg-surface px-4">
           <span className="flex-1 text-center text-2xl font-bold tracking-tight text-gray-900">
             Compete Agent
           </span>

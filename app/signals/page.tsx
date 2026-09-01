@@ -22,7 +22,7 @@ function statusBadge(status: string) {
   if (status === 'packaged' || status === 'published') return 'bg-emerald-50 text-emerald-700';
   if (status === 'error') return 'bg-red-50 text-red-700';
   if (status === 'rejected') return 'bg-gray-100 text-gray-500';
-  if (status === 'draft') return 'bg-orange-50 text-[#c74a1b]'; // pending
+  if (status === 'draft') return 'bg-accent-soft text-accent'; // pending
   return 'bg-amber-50 text-amber-700'; // classified / interpreted (processing)
 }
 
@@ -127,7 +127,7 @@ export default function SignalsPage() {
               <div className="flex items-center gap-2 text-xs">
                 {isNew && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 font-semibold text-white">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white" /> New
+                    <span className="h-1.5 w-1.5 rounded-full bg-surface" /> New
                   </span>
                 )}
                 {isViewed && (

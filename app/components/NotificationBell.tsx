@@ -32,7 +32,7 @@ export default function NotificationBell() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+          <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border border-gray-200 bg-surface shadow-lg">
             <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">
               <span className="text-sm font-semibold text-gray-900">Notifications</span>
               {count > 0 && (
@@ -78,7 +78,7 @@ export default function NotificationBell() {
                 setOpen(false);
                 router.push('/review');
               }}
-              className="block w-full border-t border-gray-100 px-4 py-2.5 text-center text-sm font-medium text-[#c74a1b] hover:bg-orange-50"
+              className="block w-full border-t border-gray-100 px-4 py-2.5 text-center text-sm font-medium text-accent hover:bg-accent-soft"
             >
               Open Review queue
             </button>

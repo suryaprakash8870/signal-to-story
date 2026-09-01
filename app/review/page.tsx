@@ -89,7 +89,7 @@ function StatTile({
       : tone === 'amber'
       ? 'text-amber-600'
       : tone === 'orange'
-      ? 'text-orange-600'
+      ? 'text-neon-orange'
       : tone === 'gray'
       ? 'text-gray-500'
       : 'text-gray-900';

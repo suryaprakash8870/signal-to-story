@@ -187,7 +187,7 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
     <div className="card card-p">
       <div className="flex items-center justify-between">
         <h2 className="section-title">AI Provider</h2>
-        <span className="pill bg-orange-50 text-[#c74a1b]">
+        <span className="pill bg-accent-soft text-accent">
           active: {llm.active_provider}
           {llm.active_provider === 'ollama' && llm.ollama_location
             ? ` · ${llm.ollama_location}`

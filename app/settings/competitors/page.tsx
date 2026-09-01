@@ -179,7 +179,7 @@ function CompetitorCard({
           <h2 className="section-title truncate">{competitor.name}</h2>
           <span
             className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-              competitor.tier ? 'bg-orange-50 text-[#c74a1b]' : 'bg-gray-100 text-gray-500'
+              competitor.tier ? 'bg-accent-soft text-accent' : 'bg-gray-100 text-gray-500'
             }`}
           >
             {competitor.tier ? `Tier ${competitor.tier} · ${TIER_LABELS[competitor.tier]}` : 'Unassigned'}

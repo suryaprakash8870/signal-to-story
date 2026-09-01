@@ -77,7 +77,7 @@ export default function Sidebar() {
   return (
     <aside
       style={{ width: collapsed ? 64 : 240, minWidth: collapsed ? 64 : 240 }}
-      className="sticky top-0 flex h-screen shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-white"
+      className="sticky top-0 flex h-screen shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-surface"
     >
       {/* Brand — Litera logo links home */}
       <div className={`flex h-14 items-center px-3 ${collapsed ? 'justify-center' : ''}`}>
@@ -110,7 +110,7 @@ export default function Sidebar() {
                     href={item.href}
                     title={collapsed ? item.label : undefined}
                     className={`relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
-                      active ? 'bg-orange-50 text-[#c74a1b]' : 'text-gray-600 hover:bg-gray-100'
+                      active ? 'bg-accent-soft text-accent' : 'text-gray-600 hover:bg-gray-100'
                     } ${collapsed ? 'justify-center' : ''}`}
                   >
                     <span className="relative">

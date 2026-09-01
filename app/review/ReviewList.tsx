@@ -66,7 +66,7 @@ function ReviewCard({ it }: { it: ReviewItem }) {
             <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs">
               {it.sourceType && <span className="pill">{it.sourceType}</span>}
               {it.hasUnverified && (
-                <span className="rounded-full bg-orange-100 px-2 py-0.5 font-medium text-orange-700">
+                <span className="rounded-full bg-accent-soft px-2 py-0.5 font-medium text-accent">
                   unverified claims
                 </span>
               )}
@@ -142,8 +142,8 @@ export default function ReviewList({ items }: { items: ReviewItem[] }) {
                   onClick={() => setPage(n)}
                   className={`h-8 w-8 rounded-lg text-sm font-medium ${
                     n === current
-                      ? 'bg-[#c74a1b] text-white'
-                      : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      ? 'bg-accent text-ink-on'
+                      : 'border border-gray-300 bg-surface text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   {n}

@@ -56,7 +56,7 @@ export default function NeedsAttention() {
           return (
             <li
               key={s.id}
-              className="flex items-start justify-between gap-3 rounded-xl border border-gray-200 bg-white p-3"
+              className="flex items-start justify-between gap-3 rounded-xl border border-gray-200 bg-surface p-3"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-xs">

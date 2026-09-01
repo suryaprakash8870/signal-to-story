@@ -41,7 +41,7 @@ const TYPE_FILTERS: { value: string; label: string }[] = [
 ];
 
 const TYPE_STYLE: Record<string, string> = {
-  release: 'bg-orange-50 text-[#c74a1b]',
+  release: 'bg-accent-soft text-accent',
   pricing: 'bg-amber-50 text-amber-700',
   win: 'bg-emerald-50 text-emerald-700',
   expansion: 'bg-blue-50 text-blue-700',
@@ -351,7 +351,7 @@ export default function FeedPage() {
                         href={s.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#c74a1b] hover:underline"
+                        className="text-accent hover:underline"
                       >
                         {s.name || s.url}
                       </a>
@@ -382,14 +382,14 @@ export default function FeedPage() {
                   key={c.name}
                   onClick={() => selectCompetitor(c.name)}
                   className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    active ? 'bg-orange-50 font-medium text-[#c74a1b]' : 'text-gray-700 hover:bg-gray-100'
+                    active ? 'bg-accent-soft font-medium text-accent' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   <span className={`min-w-0 truncate ${c.count === 0 ? 'text-gray-400' : ''}`}>
                     {c.name}
                   </span>
                   {unread > 0 ? (
-                    <span className="shrink-0 rounded-full bg-[#c74a1b] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                    <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[11px] font-semibold text-ink-on">
                       {unread}
                     </span>
                   ) : (
@@ -415,7 +415,7 @@ export default function FeedPage() {
                       onClick={() => changeFilter(f.value)}
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                         typeFilter === f.value
-                          ? 'border-[#c74a1b] bg-orange-50 text-[#c74a1b]'
+                          ? 'border-accent bg-accent-soft text-accent'
                           : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                       }`}
                     >
@@ -460,7 +460,7 @@ export default function FeedPage() {
                           {new Date(u.published_at).toLocaleDateString()}
                         </span>
                         {!seen.has(u.id) && (
-                          <span className="rounded-full bg-[#c74a1b] px-2 py-0.5 text-[11px] font-semibold text-white">
+                          <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-ink-on">
                             New
                           </span>
                         )}
@@ -514,7 +514,7 @@ export default function FeedPage() {
                           <button
                             onClick={() => generateNote(u.id)}
                             disabled={notingId === u.id}
-                            className="text-xs font-medium text-[#c74a1b] hover:text-[#a83e16] disabled:opacity-50"
+                            className="text-xs font-medium text-accent hover:text-accent-hover disabled:opacity-50"
                           >
                             {notingId === u.id ? 'Generating…' : 'Generate note'}
                           </button>
@@ -526,7 +526,7 @@ export default function FeedPage() {
                           href={u.source_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-block text-xs font-medium text-[#c74a1b] hover:underline"
+                          className="inline-block text-xs font-medium text-accent hover:underline"
                         >
                           View source →
                         </a>

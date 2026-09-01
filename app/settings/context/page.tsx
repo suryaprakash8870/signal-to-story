@@ -149,7 +149,7 @@ export default function ContextLibraryPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-[#c74a1b]">
+                    <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent">
                       {labelFor(d.doc_type)}
                     </span>
                   </div>

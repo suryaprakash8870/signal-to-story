@@ -74,7 +74,7 @@ const AUDIENCE_EMAIL: Record<string, string> = {
 
 function levelBadge(level: string) {
   const l = level?.toLowerCase();
-  if (l === 'high') return 'bg-orange-50 text-[#c74a1b]';
+  if (l === 'high') return 'bg-accent-soft text-accent';
   if (l === 'medium') return 'bg-amber-50 text-amber-700';
   return 'bg-gray-100 text-gray-500';
 }
@@ -432,7 +432,7 @@ function InterpretationPanel({
                 setDraft(interp.what_to_do_next ?? '');
                 setEditing(true);
               }}
-              className="text-xs font-medium text-[#c74a1b] hover:text-[#a83e16]"
+              className="text-xs font-medium text-accent hover:text-accent-hover"
             >
               Edit
             </button>
@@ -482,7 +482,7 @@ function SourceSignal({
       {text.length > 200 && (
         <button
           onClick={() => setOpen((v) => !v)}
-          className="mt-1 text-xs font-medium text-[#c74a1b] hover:text-[#a83e16]"
+          className="mt-1 text-xs font-medium text-accent hover:text-accent-hover"
         >
           {open ? 'Show less' : 'Show more'}
         </button>
@@ -498,7 +498,7 @@ function SourceSignal({
                   href={l.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="break-all text-[#c74a1b] hover:underline"
+                  className="break-all text-accent hover:underline"
                 >
                   {l.url}
                 </a>
@@ -554,7 +554,7 @@ function OutputCard({
     <div className="card p-4">
       {/* Header */}
       <div className="mb-3 flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#c74a1b] text-[10px] font-bold text-white">
+        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-[10px] font-bold text-ink-on">
           {AUDIENCE_INITIAL[output.audience] ?? output.audience.charAt(0).toUpperCase()}
         </span>
         <span className="text-sm font-semibold text-gray-900">{audienceLabel(output.audience)}</span>
@@ -580,7 +580,7 @@ function OutputCard({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={4}
-        className="w-full resize-y rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm leading-relaxed text-gray-800 outline-none transition-colors focus:border-[#c74a1b] focus:bg-white focus:ring-2 focus:ring-[#c74a1b]/20"
+        className="w-full resize-y rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm leading-relaxed text-gray-800 outline-none transition-colors focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20"
       />
 
       {/* Action footer */}

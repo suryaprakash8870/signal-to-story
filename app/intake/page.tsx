@@ -56,7 +56,7 @@ export default function IntakePage() {
     <div className="relative isolate">
       {/* Ambient background — a single centered blue glow that gently breathes */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="animate-breathe absolute left-1/2 top-1/2 h-[420px] w-[600px] rounded-full bg-[#c74a1b]/20 blur-3xl" />
+        <div className="animate-breathe absolute left-1/2 top-1/2 h-[420px] w-[600px] rounded-full bg-accent/20 blur-3xl" />
       </div>
 
       <div className="mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center">
@@ -65,7 +65,7 @@ export default function IntakePage() {
         </h1>
       <form onSubmit={handleSubmit} className="w-full">
         {/* Chat-style composer: borderless textarea with a toolbar + send button */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition-colors focus-within:border-[#c74a1b] focus-within:ring-2 focus-within:ring-[#c74a1b]/20">
+        <div className="rounded-2xl border border-gray-200 bg-surface p-3 shadow-sm transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
           <textarea
             ref={taRef}
             placeholder="Paste a competitive signal — a call snippet, a competitor move, some news…"
@@ -83,7 +83,7 @@ export default function IntakePage() {
               value={sourceType}
               onChange={(e) => setSourceType(e.target.value)}
               aria-label="Source"
-              className="rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 outline-none focus:border-[#c74a1b]"
+              className="rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 outline-none focus:border-accent"
             >
               {SOURCE_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -94,13 +94,13 @@ export default function IntakePage() {
               placeholder="Source link (optional)"
               value={sourceRef}
               onChange={(e) => setSourceRef(e.target.value)}
-              className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:border-[#c74a1b]"
+              className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:border-accent"
             />
             <button
               type="submit"
               disabled={submitting}
               aria-label="Submit signal"
-              className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#c74a1b] text-white transition-colors hover:bg-[#a83e16] disabled:opacity-50"
+              className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-ink-on transition-colors hover:bg-accent-hover disabled:opacity-50"
             >
               {submitting ? (
                 <svg viewBox="0 0 24 24" className="h-4 w-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2">

@@ -50,7 +50,10 @@ function LoginForm() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden">
-      {/* Home-page background graphic, dimmed so the card stays readable */}
+      {/* Home-page background graphic, darkened so the card stays readable on
+          the dark theme. The scrim was white in the light theme; on dark it has
+          to darken rather than lighten or the page reads as a light page with a
+          dark card dropped onto it. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/2.jpg"
@@ -58,7 +61,7 @@ function LoginForm() {
         aria-hidden
         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
       />
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-white/65 via-white/50 to-white/40" />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-page/90 via-page/85 to-page/80" />
 
       <div className="relative w-full max-w-sm px-4">
         {/* Litera logo above the card */}
@@ -74,8 +77,8 @@ function LoginForm() {
           </div>
 
           {/* Demo credentials — for exploring the app */}
-          <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-xs">
-            <p className="font-semibold text-[#c74a1b]">Log in with these credentials to explore</p>
+          <div className="rounded-lg border border-accent-border bg-accent-soft p-3 text-xs">
+            <p className="font-semibold text-accent">Log in with these credentials to explore</p>
             <p className="mt-1 text-gray-700">
               Email: <span className="font-mono">{DEMO_EMAIL}</span>
             </p>
@@ -88,7 +91,7 @@ function LoginForm() {
                 setEmail(DEMO_EMAIL);
                 setPassword(DEMO_PASSWORD);
               }}
-              className="mt-2 font-medium text-[#c74a1b] hover:underline"
+              className="mt-2 font-medium text-accent hover:underline"
             >
               Fill these credentials →
             </button>
