@@ -1,7 +1,25 @@
+import { createHash } from 'crypto';
 import { z } from 'zod';
 import { getLLMProvider } from '../llm';
 import { flexibleString } from '../llm/schemas';
 import { supabaseServiceRole } from '../supabase/server';
+import { rankSectionsByEmbedding, SHORTLIST_SIZE } from './embeddings';
+import { rankLexically } from './lexical';
+
+/**
+ * Records that a model's answer had to be coerced into shape.
+ *
+ * The schemas below deliberately accept malformed output and degrade to a safe
+ * default rather than failing the request. That is the right behaviour, but it
+ * makes a model returning junk indistinguishable from a model correctly finding
+ * no match. Logging every coercion is what makes the difference visible, so the
+ * rate can be watched instead of guessed at.
+ */
+function noteCoercion(step: string, field: string, received: unknown): void {
+  console.warn(
+    `[relevance] ${step}: coerced malformed "${field}" (received ${JSON.stringify(received)?.slice(0, 80)})`
+  );
+}
 
 // Generates the "why it matters for us" note for a competitor update, grounded
 // in Litera's own context library.
@@ -31,6 +49,32 @@ export interface RelevanceNote {
   groundedIn: { documentTitle: string; docType: string; heading: string } | null;
   /** True when the library had nothing genuinely relevant to this update. */
   general: boolean;
+  /**
+   * Which model wrote this note. Notes produced on different backends are not a
+   * consistent quality baseline, so the feed can say which is which and a
+   * re-run can target only those from a weaker model.
+   */
+  model?: string;
+  /**
+   * Fingerprint of everything the note was generated from. Identical input
+   * gives an identical hash, which is what lets a regenerate return the stored
+   * note instead of producing fresh wording for unchanged material.
+   */
+  inputHash?: string;
+}
+
+/**
+ * Fingerprints the inputs to a note: the update text, and the sections it was
+ * written from. Changing either should produce a different note; changing
+ * neither should not.
+ */
+export function noteInputHash(update: string, sectionIds: string[]): string {
+  return createHash('sha256')
+    .update(update.trim())
+    .update('|')
+    .update([...sectionIds].sort().join(','))
+    .digest('hex')
+    .slice(0, 32);
 }
 
 interface SectionRow {
@@ -52,7 +96,13 @@ const shortlistSchema = z.object({
     .union([z.array(z.any()), z.number(), z.string(), z.null()])
     .optional()
     .transform((v): number[] => {
-      if (v === undefined || v === null) return [];
+      if (v === undefined || v === null) {
+        // Absent key: the model did not answer the question asked. Treated as
+        // "nothing relevant", but recorded because it is not the same thing.
+        if (v === undefined) noteCoercion('shortlist', 'relevant', v);
+        return [];
+      }
+      if (!Array.isArray(v)) noteCoercion('shortlist', 'relevant', v);
       const arr = Array.isArray(v) ? v : [v];
       return arr
         .map((x) => Number(x))
@@ -69,8 +119,29 @@ const noteSchema = z.object({
     .optional()
     .transform((v) => {
       if (typeof v === 'boolean') return v;
-      if (typeof v === 'string') return v.trim().toLowerCase() === 'true';
+      if (typeof v === 'string') {
+        noteCoercion('write-note', 'grounded', v);
+        return v.trim().toLowerCase() === 'true';
+      }
+      if (v !== undefined) noteCoercion('write-note', 'grounded', v);
       return false;
+    }),
+  // Which shortlisted section the note was actually written from, 1-based
+  // against the list shown to the model. Without this the pipeline had to
+  // assume the first section, which produced correct notes attributed to the
+  // wrong source. Optional and coerced like the rest: a missing value falls
+  // back to checking every shortlisted section rather than failing.
+  section: z
+    .union([z.number(), z.string(), z.null()])
+    .optional()
+    .transform((v): number | null => {
+      if (v === undefined || v === null) return null;
+      const n = Number(v);
+      if (!Number.isInteger(n) || n < 1) {
+        noteCoercion('write-note', 'section', v);
+        return null;
+      }
+      return n;
     }),
 });
 
@@ -82,7 +153,11 @@ const verifySchema = z.object({
     .optional()
     .transform((v) => {
       if (typeof v === 'boolean') return v;
-      if (typeof v === 'string') return v.trim().toLowerCase() === 'true';
+      if (typeof v === 'string') {
+        noteCoercion('verify', 'supported', v);
+        return v.trim().toLowerCase() === 'true';
+      }
+      if (v !== undefined) noteCoercion('verify', 'supported', v);
       return false;
     }),
   reason: flexibleString.optional(),
@@ -111,8 +186,15 @@ function docLabel(s: SectionRow): string {
 async function shortlistSections(update: string, sections: SectionRow[]): Promise<SectionRow[]> {
   if (sections.length === 0) return [];
 
+  // Headings alone are not enough to judge relevance: Litera's are product
+  // names such as "Kira" or "Office & Dragons", which say nothing about what
+  // the section covers. A short preview makes the choice possible, at a cost
+  // of about one line per section.
   const listing = sections
-    .map((s, i) => `${i + 1}. [${docLabel(s)}] ${s.heading}`)
+    .map((s, i) => {
+      const preview = s.content.replace(/\s+/g, ' ').slice(0, 140);
+      return `${i + 1}. [${docLabel(s)}] ${s.heading} - ${preview}`;
+    })
     .join('\n');
 
   const llm = await getLLMProvider();
@@ -150,15 +232,24 @@ Return only the JSON object.`,
     .slice(0, 3);
 }
 
-/** Step 3 - write the note from the shortlisted sections only. */
-async function writeNote(update: string, chosen: SectionRow[]): Promise<{ note: string; grounded: boolean }> {
+/**
+ * Step 3 - write the note from the shortlisted sections only.
+ *
+ * Returns which section the note was written from, so step 4 can fact-check
+ * against the right text and the feed can cite the right source. Sections are
+ * numbered in the prompt for exactly that reason.
+ */
+async function writeNote(
+  update: string,
+  chosen: SectionRow[]
+): Promise<{ note: string; grounded: boolean; section: number | null }> {
   const llm = await getLLMProvider();
 
   const contextBlock = chosen.length
     ? chosen
         .map(
-          (s) =>
-            `--- From "${s.context_documents?.title ?? 'Context'}" (${docLabel(s)}), section "${s.heading}" ---\n${s.content}`
+          (s, i) =>
+            `--- SECTION ${i + 1}: from "${s.context_documents?.title ?? 'Context'}" (${docLabel(s)}), section "${s.heading}" ---\n${s.content}`
         )
         .join('\n\n')
     : '(No section of our internal documents was found to be relevant to this update.)';
@@ -174,12 +265,15 @@ ${update}
 Relevant excerpts from our own internal documents:
 ${contextBlock}
 
-Return JSON: { "note": "...", "grounded": true|false }
+Return JSON: { "note": "...", "grounded": true|false, "section": <number> }
+
+"section" is the number of the SECTION above that you actually drew on. Set it only when "grounded" is true, and make sure it is the section your note genuinely came from rather than simply the first one.
 
 Rules for the note:
 - One or two sentences. Plain, direct language. No preamble.
 - The excerpts above were already screened as relevant to this update. So if you can name a product, capability, feature area, or market segment that appears in BOTH the update and the excerpts, set "grounded" to true and name that specific thing in the note.
-- Only set "grounded" to false if, on reading the excerpts, you find they do not actually share anything concrete with this update after all, or the only link is a broad theme (AI, competition, legal technology, efficiency). In that case write a short general note about what the update signals instead.
+- Set "grounded" to false if, on reading the excerpts, they do not actually share anything concrete with this update, or the only link is a broad theme (AI, competition, legal technology, efficiency). In that case write a short general note about what the update signals instead.
+- Set "grounded" to false whenever the update is company news with no product or market substance: a leadership or executive change, a funding round, an acquisition rumour, hiring, an office opening, an award, or conference attendance. Those have no concrete product overlap even when an excerpt happens to mention the same company, so they must stay general.
 - Do NOT invent or stretch a connection that is not in the excerpts.
 - State only what the update and the excerpts support. If you are inferring, use measured wording such as "may" or "suggests" rather than stating it as fact.
 - Do not claim any capability of ours that is not stated in the excerpts.
@@ -188,7 +282,16 @@ Return only the JSON object.`,
     schema: noteSchema,
   });
 
-  return { note: result.note.trim(), grounded: result.grounded };
+  // A section number outside the shortlist means the model referred to
+  // something it was not shown; drop it and let the caller verify against each
+  // candidate instead of trusting a bad index.
+  const section =
+    result.section !== null && result.section <= chosen.length ? result.section : null;
+  if (result.section !== null && section === null) {
+    noteCoercion('write-note', 'section (out of range)', result.section);
+  }
+
+  return { note: result.note.trim(), grounded: result.grounded, section };
 }
 
 /**
@@ -231,49 +334,160 @@ Return only the JSON object.`,
 }
 
 /**
+ * Step 1 - pick the sections worth reading.
+ *
+ * Embeddings first: they rank on section CONTENT, so a competitor update about
+ * contract redlining matches a section headed only "Kira". They also cost no
+ * model call, taking a note from four calls down to three.
+ *
+ * The model shortlist remains as a fallback for when embeddings have not been
+ * backfilled yet or the embedding provider is unavailable, so the feature
+ * degrades rather than breaking.
+ */
+async function selectSections(update: string, sections: SectionRow[]): Promise<SectionRow[]> {
+  const byId = new Map(sections.map((s) => [s.id, s]));
+
+  // Embeddings first when they have been backfilled: they handle synonyms that
+  // share no words, which is the one thing lexical matching cannot do.
+  const embedded = await rankSectionsByEmbedding(update, SHORTLIST_SIZE);
+  if (embedded && embedded.length > 0) {
+    return embedded.map((r) => byId.get(r.id)).filter((s): s is SectionRow => Boolean(s));
+  }
+
+  // BM25 over heading AND content. This is the dependable path: no API call, no
+  // quota, deterministic, and it solves the original defect, which was that the
+  // shortlist could only see headings. Product names like "Kira" tell a reader
+  // nothing; the text underneath them does.
+  const lexical = rankLexically(
+    update,
+    sections.map((s) => ({ id: s.id, text: `${s.heading}
+${s.content}` })),
+    SHORTLIST_SIZE
+  );
+  if (lexical.length > 0) {
+    return lexical.map((r) => byId.get(r.id)).filter((s): s is SectionRow => Boolean(s));
+  }
+
+  // Nothing shared a meaningful term with the update. For company news - a
+  // leadership change, a funding round - that is the correct answer, and paying
+  // for a model call to reach it would be waste.
+  return [];
+}
+
+/**
  * Generates the relevance note for one competitor update.
  * Safe by construction: any failure to ground cleanly falls back to a general
  * note rather than surfacing an unverified link.
  */
 export async function generateRelevanceNote(update: string): Promise<RelevanceNote> {
   const sections = await loadSections();
+  const model = await describeActiveModel();
 
   // Nothing uploaded yet - stay general rather than failing.
   if (sections.length === 0) {
     const { note } = await writeNote(update, []);
-    return { note, groundedIn: null, general: true };
+    return { note, groundedIn: null, general: true, model, inputHash: noteInputHash(update, []) };
   }
 
-  const chosen = await shortlistSections(update, sections);
+  const chosen = await selectSections(update, sections);
+  const inputHash = noteInputHash(update, chosen.map((c) => c.id));
 
   if (chosen.length === 0) {
     const { note } = await writeNote(update, []);
-    return { note, groundedIn: null, general: true };
+    return { note, groundedIn: null, general: true, model, inputHash };
   }
 
-  const { note, grounded } = await writeNote(update, chosen);
+  const { note, grounded, section } = await writeNote(update, chosen);
 
   // The model itself judged the context not genuinely relevant.
   if (!grounded) {
-    return { note, groundedIn: null, general: true };
+    return { note, groundedIn: null, general: true, model, inputHash };
   }
 
-  const primary = chosen[0];
-  const supported = await verifyNote(update, note, primary);
+  // Verify against the section the note was actually written from, not simply
+  // the first shortlisted one. Checking the wrong section both mis-attributed
+  // correct notes and failed them, so a genuine match was discarded and
+  // rewritten as a general note.
+  //
+  // When the model did not name a section, every candidate is checked and the
+  // first that holds is used. That is strictly better than assuming the first.
+  const candidates = section !== null ? [chosen[section - 1]] : chosen;
 
-  if (!supported) {
-    // Claimed link did not hold - fall back to an ungrounded note.
+  let verified: SectionRow | null = null;
+  for (const candidate of candidates) {
+    if (await verifyNote(update, note, candidate)) {
+      verified = candidate;
+      break;
+    }
+  }
+
+  if (!verified) {
+    // Claimed link did not hold against any candidate - fall back to an
+    // ungrounded note rather than showing an unsupported connection.
     const fallback = await writeNote(update, []);
-    return { note: fallback.note, groundedIn: null, general: true };
+    return { note: fallback.note, groundedIn: null, general: true, model, inputHash };
   }
 
   return {
     note,
     groundedIn: {
-      documentTitle: primary.context_documents?.title ?? 'Context document',
-      docType: primary.context_documents?.doc_type ?? 'other',
-      heading: primary.heading,
+      documentTitle: verified.context_documents?.title ?? 'Context document',
+      docType: verified.context_documents?.doc_type ?? 'other',
+      heading: verified.heading,
     },
     general: false,
+    model,
+    inputHash,
   };
+}
+
+/** Names the model currently answering, for recording against each note. */
+async function describeActiveModel(): Promise<string> {
+  try {
+    const { getProviderStatus } = await import('../llm');
+    const status = await getProviderStatus();
+    return status.model ? `${status.provider}:${status.model}` : status.provider;
+  } catch {
+    return 'unknown';
+  }
+}
+
+/**
+ * Adds a "what this means for us" paragraph to an answer that came from
+ * somewhere else, grounded in Litera's own context library.
+ *
+ * The ask box queries Crayon directly, so its answer is Crayon's reading of
+ * Crayon's data: accurate about the competitor, but with no knowledge of our
+ * roadmap, positioning or GTM strategy. It also carries Crayon's sourcing,
+ * which can include unverified material. This wraps that answer in our own
+ * context so a reader gets the competitor fact AND its relevance to us, and
+ * reuses the same shortlist-then-verify path as feed notes so an ungroundable
+ * answer says nothing rather than inventing a connection.
+ *
+ * Returns null when the library has nothing genuinely relevant. Callers should
+ * show the original answer unchanged in that case.
+ */
+export async function groundExternalAnswer(
+  question: string,
+  answer: string
+): Promise<RelevanceNote | null> {
+  if (!answer.trim()) return null;
+
+  // Framed as an update so the shortlist prompt, which is tuned to judge
+  // concrete product/capability/segment overlap, applies unchanged.
+  const framed = `Question asked: ${question}\n\nAnswer from our competitive intelligence provider:\n${answer}`;
+
+  try {
+    const result = await generateRelevanceNote(framed);
+    // A general note here would just restate the answer without adding
+    // anything, so it is not worth showing.
+    return result.general ? null : result;
+  } catch (err) {
+    // The answer itself is still useful; losing the commentary is not a reason
+    // to fail the question.
+    console.warn(
+      `[ask] could not ground answer: ${err instanceof Error ? err.message.slice(0, 120) : String(err)}`
+    );
+    return null;
+  }
 }
