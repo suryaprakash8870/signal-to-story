@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
   let query = db
     .from('competitor_updates')
     .select(
-      'id, competitor_name, update_type, content, source_url, published_at, relevance_note, grounded_document, grounded_section'
+      'id, competitor_name, update_type, content, source_url, published_at, relevance_note, grounded_document, grounded_section, note_feedback'
     )
     .eq('competitor_name', competitor)
     .gte('published_at', since)

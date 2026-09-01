@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { groundExternalAnswer } from '@/lib/context/relevance';
 
 // The ask box: a natural-language question answered across Crayon's full
 // competitive knowledge base.
@@ -50,9 +51,23 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
+    const answer = (data.answer as string) ?? '';
+
+    // Crayon's answer knows the competitor but not us. Add what it means for
+    // Litera, grounded in our own documents. Null when nothing in the library
+    // genuinely applies, in which case the answer stands on its own.
+    const grounded = await groundExternalAnswer(question.trim(), answer);
+
     return NextResponse.json({
-      answer: (data.answer as string) ?? '',
+      answer,
       sources: (data.sources as { name?: string; url?: string }[]) ?? [],
+      relevance: grounded
+        ? {
+            note: grounded.note,
+            documentTitle: grounded.groundedIn?.documentTitle ?? null,
+            heading: grounded.groundedIn?.heading ?? null,
+          }
+        : null,
     });
   } catch (e) {
     return NextResponse.json(

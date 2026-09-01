@@ -24,7 +24,16 @@ export async function POST() {
 
   try {
     const result = await ingestCompetitorUpdates();
-    return NextResponse.json({ ok: true, ...result });
+
+    // A refresh where every note failed used to report plain success. Say so
+    // instead, in words a PM can act on, while still returning the updates that
+    // were ingested successfully.
+    const warning =
+      result.notesFailed > 0
+        ? `${result.notesGenerated} notes generated, ${result.notesFailed} could not be: ${result.noteErrors[0] ?? 'unknown reason'}`
+        : null;
+
+    return NextResponse.json({ ok: true, warning, ...result });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'refresh failed' },

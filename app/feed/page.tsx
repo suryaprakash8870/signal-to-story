@@ -28,6 +28,7 @@ type FeedUpdate = {
   relevance_note: string | null;
   grounded_document: string | null;
   grounded_section: string | null;
+  note_feedback: number | null;
 };
 
 const TYPE_FILTERS: { value: string; label: string }[] = [
@@ -123,7 +124,11 @@ export default function FeedPage() {
   // Ask box - queries Crayon directly, so it reaches past the 30-day feed window.
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
-  const [answer, setAnswer] = useState<{ answer: string; sources: { name?: string; url?: string }[] } | null>(null);
+  const [answer, setAnswer] = useState<{
+    answer: string;
+    sources: { name?: string; url?: string }[];
+    relevance: { note: string; documentTitle: string | null; heading: string | null } | null;
+  } | null>(null);
   const [askError, setAskError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -188,10 +193,36 @@ export default function FeedPage() {
         setError(json.error ?? 'refresh failed');
         return;
       }
+      // A refresh can succeed at pulling updates but fail to write their notes.
+      // Say so rather than letting a half-finished run look complete.
+      if (json.warning) setError(json.warning);
       await loadCompetitors();
       if (selected) await loadUpdates(selected, typeFilter);
     } finally {
       setRefreshing(false);
+    }
+  }
+
+  // Records whether a note was useful. Sending the same value again clears it,
+  // so a misclick can be undone. The card updates immediately rather than
+  // waiting on the round trip, since the judgement is the reader's own.
+  async function rateNote(id: string, value: 1 | -1) {
+    const current = updates.find((u) => u.id === id)?.note_feedback ?? null;
+    const next = current === value ? null : value;
+    setUpdates((prev) => prev.map((u) => (u.id === id ? { ...u, note_feedback: next } : u)));
+    try {
+      const res = await fetch(`/api/feed/${id}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value }),
+      });
+      if (!res.ok) {
+        // Put the card back the way it was rather than showing a rating that
+        // was never saved.
+        setUpdates((prev) => prev.map((u) => (u.id === id ? { ...u, note_feedback: current } : u)));
+      }
+    } catch {
+      setUpdates((prev) => prev.map((u) => (u.id === id ? { ...u, note_feedback: current } : u)));
     }
   }
 
@@ -238,7 +269,7 @@ export default function FeedPage() {
         setAskError(json.error ?? 'the question could not be answered');
         return;
       }
-      setAnswer({ answer: json.answer, sources: json.sources ?? [] });
+      setAnswer({ answer: json.answer, sources: json.sources ?? [], relevance: json.relevance ?? null });
     } catch (err) {
       setAskError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -296,6 +327,20 @@ export default function FeedPage() {
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
               {neutralise(answer.answer)}
             </p>
+            {answer.relevance && (
+              <div className="mt-3 border-t border-gray-200 pt-2">
+                <div className="field-label mb-1.5">Why it matters for us</div>
+                <p className="text-sm leading-relaxed text-gray-700">
+                  {neutralise(answer.relevance.note)}
+                </p>
+                {answer.relevance.documentTitle && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Based on <span className="font-medium">{answer.relevance.documentTitle}</span>
+                    {answer.relevance.heading ? ` → ${answer.relevance.heading}` : ''}
+                  </p>
+                )}
+              </div>
+            )}
             {answer.sources.length > 0 && (
               <div className="mt-3 border-t border-gray-200 pt-2">
                 <div className="field-label mb-1.5">Sources</div>
@@ -429,6 +474,35 @@ export default function FeedPage() {
                         {u.relevance_note ? (
                           <>
                             <p className="text-sm leading-relaxed text-gray-700">{neutralise(u.relevance_note)}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="text-xs text-gray-400">Was this useful?</span>
+                              <button
+                                type="button"
+                                onClick={() => rateNote(u.id, 1)}
+                                aria-pressed={u.note_feedback === 1}
+                                aria-label="Mark this note as useful"
+                                className={`rounded border px-2 py-0.5 text-xs transition ${
+                                  u.note_feedback === 1
+                                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                }`}
+                              >
+                                Yes
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => rateNote(u.id, -1)}
+                                aria-pressed={u.note_feedback === -1}
+                                aria-label="Mark this note as not useful"
+                                className={`rounded border px-2 py-0.5 text-xs transition ${
+                                  u.note_feedback === -1
+                                    ? 'border-red-300 bg-red-50 text-red-700'
+                                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                }`}
+                              >
+                                No
+                              </button>
+                            </div>
                             {u.grounded_document && (
                               <p className="mt-1.5 text-xs text-gray-500">
                                 Based on <span className="font-medium">{u.grounded_document}</span>

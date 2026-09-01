@@ -36,7 +36,9 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   const db = supabaseServiceRole();
   const { data: update, error: readErr } = await db
     .from('competitor_updates')
-    .select('id, competitor_name, content, relevance_note')
+    .select(
+      'id, competitor_name, content, relevance_note, grounded_document, grounded_section, note_input_hash'
+    )
     .eq('id', params.id)
     .maybeSingle();
   if (readErr || !update) {
@@ -48,6 +50,25 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       `Competitor: ${update.competitor_name}\n\n${update.content}`
     );
 
+    // Nothing about the input changed, so keep the wording already on screen.
+    // Regenerating identical material into different words reads as the tool
+    // changing its mind, and there is no answer to "why did it say something
+    // different?" when nothing was different.
+    if (
+      update.relevance_note &&
+      update.note_input_hash &&
+      result.inputHash === update.note_input_hash
+    ) {
+      return NextResponse.json({
+        ok: true,
+        note: update.relevance_note,
+        groundedIn: update.grounded_document
+          ? { documentTitle: update.grounded_document, heading: update.grounded_section }
+          : null,
+        cached: true,
+      });
+    }
+
     const { error: writeErr } = await db
       .from('competitor_updates')
       .update({
@@ -55,6 +76,8 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
         grounded_document: result.groundedIn?.documentTitle ?? null,
         grounded_section: result.groundedIn?.heading ?? null,
         note_generated_at: new Date().toISOString(),
+        note_model: result.model ?? null,
+        note_input_hash: result.inputHash ?? null,
       })
       .eq('id', params.id);
     if (writeErr) throw new Error(writeErr.message);

@@ -13,6 +13,10 @@ export interface IngestResult {
   inserted: number;
   skipped: number;
   notesGenerated: number;
+  /** Notes that could not be generated. Non-zero means something is wrong. */
+  notesFailed: number;
+  /** Why they failed, most common first, for surfacing in the UI. */
+  noteErrors: string[];
 }
 
 /** How many of the newest updates per competitor get a note generated up front. */
@@ -23,7 +27,9 @@ const PREGENERATE_PER_COMPETITOR = 5;
  * table rows into readable sentences and drops separator rows and headers, so
  * the feed never shows raw pipe-delimited markup.
  */
-function buildFallback(content: string): { index: number; type: 'other'; text: string; sourceUrl: null }[] {
+function buildFallback(
+  content: string
+): { index: number; type: 'other'; typeSource: 'keyword'; text: string; sourceUrl: null }[] {
   const lines = content
     .split('\n')
     .map((l) => l.trim())
@@ -58,7 +64,7 @@ function buildFallback(content: string): { index: number; type: 'other'; text: s
     return [];
   }
 
-  return [{ index: 0, type: 'other', text: text.slice(0, 1500), sourceUrl: null }];
+  return [{ index: 0, type: 'other', typeSource: 'keyword', text: text.slice(0, 1500), sourceUrl: null }];
 }
 
 /**
@@ -136,6 +142,7 @@ export async function ingestCompetitorUpdates(perPage = 50): Promise<IngestResul
         competitor_name: competitorName,
         competitor_id: idByName.get(competitorName.toLowerCase()) ?? null,
         update_type: u.type,
+        type_source: u.typeSource,
         content: u.text,
         source_url: u.sourceUrl,
         published_at: publishedAt,
@@ -152,9 +159,17 @@ export async function ingestCompetitorUpdates(perPage = 50): Promise<IngestResul
     }
   }
 
-  const notesGenerated = await pregenerateNotes();
+  const notes = await pregenerateNotes();
 
-  return { sparksFetched: sparks.length, updatesFound, inserted, skipped, notesGenerated };
+  return {
+    sparksFetched: sparks.length,
+    updatesFound,
+    inserted,
+    skipped,
+    notesGenerated: notes.generated,
+    notesFailed: notes.failed,
+    noteErrors: notes.errors,
+  };
 }
 
 /**
@@ -163,13 +178,22 @@ export async function ingestCompetitorUpdates(perPage = 50): Promise<IngestResul
  * updates keep generating on demand, which avoids spending a model call on
  * every item when most are never opened.
  *
- * Failures are swallowed per update: a note that cannot be generated simply
- * stays empty and falls back to the on-demand button, rather than failing the
- * whole refresh.
+ * A note that cannot be generated leaves the update without one and falls back
+ * to the on-demand button, rather than failing the whole refresh. Failures are
+ * COUNTED and REPORTED though: silently swallowing them meant a run where every
+ * single note failed still reported success, which is how an expired token went
+ * unnoticed across 721 updates.
  */
+export interface PregenerateResult {
+  generated: number;
+  failed: number;
+  /** Distinct failure reasons, most frequent first. */
+  errors: string[];
+}
+
 export async function pregenerateNotes(
   perCompetitor = PREGENERATE_PER_COMPETITOR
-): Promise<number> {
+): Promise<PregenerateResult> {
   const db = supabaseServiceRole();
 
   // Only consider updates still inside the feed's 30-day window.
@@ -181,7 +205,13 @@ export async function pregenerateNotes(
     .select('id, competitor_name, content, relevance_note, published_at')
     .gte('published_at', since.toISOString())
     .order('published_at', { ascending: false });
-  if (error || !rows) return 0;
+  if (error || !rows) {
+    return {
+      generated: 0,
+      failed: 0,
+      errors: error ? [`could not read updates: ${error.message}`] : [],
+    };
+  }
 
   // Take the newest N per competitor that do not already have a note.
   const seenPerCompetitor = new Map<string, number>();
@@ -193,13 +223,22 @@ export async function pregenerateNotes(
     if (!r.relevance_note) targets.push(r);
   }
 
-  if (targets.length === 0) return 0;
+  if (targets.length === 0) return { generated: 0, failed: 0, errors: [] };
 
   // Imported lazily so a feed refresh does not pull the LLM stack when there is
   // nothing to generate.
   const { generateRelevanceNote } = await import('../context/relevance');
 
   let generated = 0;
+  const failures = new Map<string, number>();
+
+  const recordFailure = (reason: string) => {
+    // Collapse to the leading sentence so 300 identical token errors group into
+    // one line rather than 300 near-identical ones.
+    const key = reason.replace(/\s+/g, ' ').split(/[.{]/)[0].trim().slice(0, 120);
+    failures.set(key, (failures.get(key) ?? 0) + 1);
+  };
+
   for (const t of targets) {
     try {
       const result = await generateRelevanceNote(
@@ -212,12 +251,28 @@ export async function pregenerateNotes(
           grounded_document: result.groundedIn?.documentTitle ?? null,
           grounded_section: result.groundedIn?.heading ?? null,
           note_generated_at: new Date().toISOString(),
+          note_model: result.model ?? null,
+          note_input_hash: result.inputHash ?? null,
         })
         .eq('id', t.id);
-      if (!writeErr) generated++;
-    } catch {
+      if (writeErr) recordFailure(`could not save note: ${writeErr.message}`);
+      else generated++;
+    } catch (err) {
       // Leave this one for the on-demand button rather than failing the refresh.
+      recordFailure(err instanceof Error ? err.message : String(err));
     }
   }
-  return generated;
+
+  const failed = [...failures.values()].reduce((a, b) => a + b, 0);
+  const errors = [...failures.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([reason, count]) => (count > 1 ? `${reason} (${count}x)` : reason));
+
+  if (failed > 0) {
+    console.warn(
+      `[feed] generated ${generated} notes, ${failed} failed: ${errors.join(' | ').slice(0, 300)}`
+    );
+  }
+
+  return { generated, failed, errors };
 }

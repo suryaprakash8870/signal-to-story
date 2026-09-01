@@ -22,18 +22,25 @@ async function main() {
   const { pregenerateNotes } = await import('../lib/feed/ingest');
   const db = supabaseServiceRole();
 
-  // Cloudflare has no hourly token expiry, so a long run cannot die halfway
-  // through the way an Entra token does.
-  await db.from('llm_config').update({ selected_backend: 'cloudflare' }).eq('id', 1);
+  // Deliberately does NOT change the configured backend. Forcing one here meant
+  // the script kept selecting a backend that was out of quota, so every note
+  // burned its full retry schedule before the fallback chain rescued it. Use
+  // whatever the app is set to, and let the chain handle an outage.
+  const { data: cfg } = await db.from('llm_config').select('selected_backend').eq('id', 1).maybeSingle();
+  console.log(`backend: ${(cfg as { selected_backend?: string } | null)?.selected_backend ?? 'auto'}`);
 
   const started = Date.now();
-  const n = await pregenerateNotes(perCompetitor);
+  const result = await pregenerateNotes(perCompetitor);
   const { data } = await db.from('competitor_updates').select('relevance_note, grounded_document');
   const rows = data ?? [];
   const noted = rows.filter((r) => (r as { relevance_note: string | null }).relevance_note);
   const cited = rows.filter((r) => (r as { grounded_document: string | null }).grounded_document);
 
-  console.log(`generated ${n} notes in ${Math.round((Date.now() - started) / 1000)}s`);
+  console.log(`generated ${result.generated} notes in ${Math.round((Date.now() - started) / 1000)}s`);
+  if (result.failed > 0) {
+    console.log(`FAILED ${result.failed}:`);
+    for (const e of result.errors) console.log(`  - ${e}`);
+  }
   console.log(`with notes: ${noted.length} of ${rows.length}`);
   console.log(`citing a document: ${cited.length}`);
 }
