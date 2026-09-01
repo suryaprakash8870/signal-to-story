@@ -15,6 +15,14 @@
 
 export type UpdateType = 'release' | 'pricing' | 'win' | 'expansion' | 'risk' | 'other';
 
+/**
+ * How an update's type was decided. Recorded so the weakest layer can be
+ * measured and improved, rather than guessed at: 'emoji' is Crayon's own label
+ * and the most trustworthy, 'keyword' is our regex, and 'model' is a later
+ * classification pass over what the first two could not identify.
+ */
+export type TypeSource = 'emoji' | 'keyword' | 'model';
+
 export interface ParsedUpdate {
   /** Stable within a Spark: used to build a deterministic id. */
   index: number;
@@ -22,6 +30,8 @@ export interface ParsedUpdate {
   text: string;
   /** The underlying Crayon insight this bullet cited, when it had a footnote. */
   sourceUrl: string | null;
+  /** Which layer decided `type`. */
+  typeSource: TypeSource;
 }
 
 // Crayon's own Spark prompt asks for these emoji, so they are a reliable signal
@@ -139,13 +149,16 @@ export function parseSparkUpdates(content: string): ParsedUpdate[] {
     // Emoji bullets are the common case. Otherwise accept a markdown bullet and
     // derive the type from the wording, so emoji-less Sparks are not dropped.
     let type: UpdateType;
+    let typeSource: TypeSource;
     let rest: string;
     if (emojiMatch) {
       type = emojiMatch.type;
+      typeSource = 'emoji';
       rest = line.slice(emojiMatch.emoji.length);
     } else if (isBullet) {
       rest = line;
       type = typeFromText(rest);
+      typeSource = 'keyword';
     } else {
       continue;
     }
@@ -162,7 +175,7 @@ export function parseSparkUpdates(content: string): ParsedUpdate[] {
     const refMatch = line.match(/\[\^([^\]]+)\]/);
     const sourceUrl = refMatch ? footnotes.get(refMatch[1]) ?? null : null;
 
-    updates.push({ index: updates.length, type, text, sourceUrl });
+    updates.push({ index: updates.length, type, typeSource, text, sourceUrl });
   }
 
   return updates;
