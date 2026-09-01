@@ -33,10 +33,28 @@ export function supabaseForRequest() {
  * signal_classification / advance signals.status outside of insert.
  * Server-side only — never import this from client components.
  */
-export function supabaseServiceRole() {
+// One service-role client for the whole process, created on first use.
+//
+// This was previously constructed fresh on every call. Each client carries its
+// own connection pool, so a code path making several reads in a row (resolving
+// the LLM backend reads config five or six times) could open enough sockets to
+// exhaust the pool and hang indefinitely rather than erroring. The client holds
+// no per-request state - `persistSession: false` means no auth session is
+// stored - so reusing one is both safe and the documented pattern.
+// Built through a factory so the client keeps its fully inferred type; naming
+// the type as ReturnType<typeof createClient> instead would drop the generic
+// parameters and every query would type as `never`.
+function createServiceRoleClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } }
   );
+}
+
+let serviceRoleClient: ReturnType<typeof createServiceRoleClient> | null = null;
+
+export function supabaseServiceRole() {
+  serviceRoleClient ??= createServiceRoleClient();
+  return serviceRoleClient;
 }

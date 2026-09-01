@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
 import { storeCredential } from '@/lib/connectors/vault';
-import { detectProvider } from '@/lib/llm/config';
+import { detectProvider, invalidateConfigCache } from '@/lib/llm/config';
 
 async function requireReviewerOrAdmin() {
   const supabase = supabaseForRequest();
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     .from('llm_config')
     .update({ api_credentials_ref: ref, api_provider: provider, updated_at: new Date().toISOString() })
     .eq('id', 1);
+    invalidateConfigCache();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, provider });
@@ -66,6 +67,7 @@ export async function DELETE() {
     .from('llm_config')
     .update({ api_credentials_ref: null, api_provider: null, updated_at: new Date().toISOString() })
     .eq('id', 1);
+    invalidateConfigCache();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });

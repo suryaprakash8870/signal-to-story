@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { invalidateConfigCache } from '@/lib/llm/config';
 
 async function requireReviewerOrAdmin() {
   const supabase = supabaseForRequest();
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
     .from('llm_config')
     .update({ litera_token: clean, updated_at: new Date().toISOString() })
     .eq('id', 1);
+    invalidateConfigCache();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, validated: true });
 }
@@ -86,6 +88,7 @@ export async function DELETE() {
     .from('llm_config')
     .update({ litera_token: null, updated_at: new Date().toISOString() })
     .eq('id', 1);
+    invalidateConfigCache();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

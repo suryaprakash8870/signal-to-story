@@ -1,6 +1,75 @@
 import { supabaseServiceRole } from '../supabase/server';
 import { resolveCredential } from '../connectors/vault';
 
+// --- Config caching ---------------------------------------------------------
+//
+// Resolving a backend reads config four to six times, and generating one note
+// resolves a backend three or four times. That is dozens of identical database
+// reads per note for values that change only when someone edits settings.
+//
+// Two problems come with that, and this cache addresses both:
+//
+//   1. Cost. The reads are pure overhead once the first has been made.
+//   2. Stalls. Supabase queries from this app have been measured intermittently
+//      taking 90+ seconds. Without a timeout the whole pipeline blocks on one
+//      unlucky read; a note that should take five seconds took 310.
+//
+// The TTL is deliberately short so a settings change is picked up quickly even
+// without an explicit invalidation, and writes call invalidateConfigCache() so
+// the change is visible immediately.
+
+const CONFIG_TTL_MS = 15_000;
+
+/** How long a config read may take before we stop waiting and use the fallback. */
+const CONFIG_TIMEOUT_MS = 8_000;
+
+const cache = new Map<string, { value: unknown; expires: number }>();
+
+/** Drops every cached config value. Call after any settings write. */
+export function invalidateConfigCache(): void {
+  cache.clear();
+}
+
+/**
+ * Reads a config value through the cache, giving up after CONFIG_TIMEOUT_MS.
+ *
+ * On timeout the last known value is reused when there is one, and `fallback`
+ * is used otherwise. Degrading to a slightly stale backend choice is far better
+ * than blocking every note for a minute and a half.
+ */
+async function cached<T>(key: string, load: () => Promise<T>, fallback: T): Promise<T> {
+  const hit = cache.get(key);
+  if (hit && hit.expires > Date.now()) return hit.value as T;
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<typeof TIMED_OUT>((resolve) => {
+    timer = setTimeout(() => resolve(TIMED_OUT), CONFIG_TIMEOUT_MS);
+  });
+
+  try {
+    const result = await Promise.race([load(), timeout]);
+    if (result === TIMED_OUT) {
+      console.warn(
+        `[llm-config] read of "${key}" exceeded ${CONFIG_TIMEOUT_MS}ms; using ${hit ? 'last known value' : 'fallback'}`
+      );
+      return hit ? (hit.value as T) : fallback;
+    }
+    cache.set(key, { value: result, expires: Date.now() + CONFIG_TTL_MS });
+    return result as T;
+  } catch (err) {
+    console.warn(
+      `[llm-config] read of "${key}" failed (${err instanceof Error ? err.message.slice(0, 90) : String(err)}); using ${hit ? 'last known value' : 'fallback'}`
+    );
+    return hit ? (hit.value as T) : fallback;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+/** Sentinel so a legitimately-null config value is not mistaken for a timeout. */
+const TIMED_OUT = Symbol('config-read-timed-out');
+
+
 export type ApiProvider = 'claude' | 'gemini';
 
 /**
@@ -23,6 +92,17 @@ export function detectProvider(key: string): ApiProvider | null {
  * Returns null when neither is set — the caller then uses Ollama.
  */
 export async function getApiConfig(): Promise<{ provider: ApiProvider; key: string } | null> {
+  return cached('api', loadApiConfig, envApiConfig());
+}
+
+/** Env-only view of the hosted-API config, used when the database is slow. */
+function envApiConfig(): { provider: ApiProvider; key: string } | null {
+  if (process.env.ANTHROPIC_API_KEY) return { provider: 'claude', key: process.env.ANTHROPIC_API_KEY };
+  if (process.env.GEMINI_API_KEY) return { provider: 'gemini', key: process.env.GEMINI_API_KEY };
+  return null;
+}
+
+async function loadApiConfig(): Promise<{ provider: ApiProvider; key: string } | null> {
   try {
     const db = supabaseServiceRole();
     const { data } = await db
@@ -39,9 +119,7 @@ export async function getApiConfig(): Promise<{ provider: ApiProvider; key: stri
     // Vault/DB unavailable — fall through to the env fallback.
   }
 
-  if (process.env.ANTHROPIC_API_KEY) return { provider: 'claude', key: process.env.ANTHROPIC_API_KEY };
-  if (process.env.GEMINI_API_KEY) return { provider: 'gemini', key: process.env.GEMINI_API_KEY };
-  return null;
+  return envApiConfig();
 }
 
 /**
@@ -67,6 +145,18 @@ export function getCloudflareConfig(): { accountId: string; apiToken: string; mo
  * but production needs a token-refresh flow, not a static pasted token.
  */
 export async function getLiteraConfig(): Promise<{ endpoint: string; token: string; model?: string } | null> {
+  return cached('litera', loadLiteraConfig, envLiteraConfig());
+}
+
+/** Env-only view, used when the database read is slow or unavailable. */
+function envLiteraConfig(): { endpoint: string; token: string; model?: string } | null {
+  const endpoint = process.env.LITERA_API_URL;
+  const token = process.env.LITERA_API_TOKEN;
+  if (!endpoint || !token) return null;
+  return { endpoint, token, model: process.env.LITERA_MODEL };
+}
+
+async function loadLiteraConfig(): Promise<{ endpoint: string; token: string; model?: string } | null> {
   const endpoint = process.env.LITERA_API_URL;
   if (!endpoint) return null;
   // Token priority: the value saved via the UI (llm_config.litera_token) — so it
@@ -109,6 +199,10 @@ export async function getGeminiEntraConfig(): Promise<{
  *         | 'ollama|<baseUrl>|<model>'.
  */
 export async function getSelectedBackend(): Promise<string | null> {
+  return cached('selected', loadSelectedBackend, null);
+}
+
+async function loadSelectedBackend(): Promise<string | null> {
   try {
     const db = supabaseServiceRole();
     const { data } = await db

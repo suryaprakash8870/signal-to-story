@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { invalidateConfigCache } from '@/lib/llm/config';
 
 /**
  * Pins the pipeline to a specific backend (from the settings dropdown), or
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
     .from('llm_config')
     .update({ selected_backend: value, updated_at: new Date().toISOString() })
     .eq('id', 1);
+    invalidateConfigCache();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, selected: backend });
