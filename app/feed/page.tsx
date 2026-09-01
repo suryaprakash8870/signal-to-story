@@ -299,7 +299,8 @@ export default function FeedPage() {
 
       {/* Ask box - queries Crayon directly, so unlike the feed it is not limited
           to the last 30 days. */}
-      <div className="card card-p space-y-3">
+      <div className="neon-card">
+        <div className="neon-card__inner card-p space-y-3">
         <form onSubmit={ask} className="flex gap-2">
           <input
             type="text"
@@ -362,6 +363,7 @@ export default function FeedPage() {
             )}
           </div>
         )}
+        </div>
       </div>
 
       {loading ? (

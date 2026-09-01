@@ -104,7 +104,8 @@ export default function ContextLibraryPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
       {message && <p className="text-sm text-emerald-700">{message}</p>}
 
-      <div className="card card-p space-y-3">
+      <div className="neon-card">
+        <div className="neon-card__inner card-p space-y-3">
         <div>
           <label className="field-label">Document type</label>
           <select
@@ -133,6 +134,7 @@ export default function ContextLibraryPage() {
         <button onClick={upload} disabled={!file || busy} className="btn btn-primary disabled:opacity-50">
           {busy ? 'Processing…' : 'Upload document'}
         </button>
+        </div>
       </div>
 
       {loading ? (
