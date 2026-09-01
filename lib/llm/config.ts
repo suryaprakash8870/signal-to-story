@@ -170,6 +170,13 @@ async function loadLiteraConfig(): Promise<{ endpoint: string; token: string; mo
     // llm_config.litera_token column not present / DB unavailable → env fallback.
   }
   if (!token) token = process.env.LITERA_API_TOKEN;
+
+  // Renew before it expires rather than failing an hour in. Returns what it was
+  // given when no refresh mechanism is configured, so this is never worse than
+  // the manual arrangement.
+  const { ensureLiteraToken } = await import('./litera-token');
+  token = await ensureLiteraToken(token);
+
   if (!token) return null;
   return { endpoint, token, model: process.env.LITERA_MODEL };
 }
