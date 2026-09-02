@@ -464,6 +464,12 @@ export default function FeedPage() {
                   ))}
                 </div>
 
+                {/* Updates scroll in their own pane on large screens, so a
+                    competitor with eighty updates does not stretch the page and
+                    push the filters out of reach. On small screens the page
+                    scrolls normally, because a short nested window there is
+                    worse than a long page. */}
+                <div className="space-y-3 lg:max-h-[calc(100vh-17rem)] lg:overflow-y-auto lg:pr-1">
                 {loadingUpdates ? (
                   <Loading />
                 ) : updates.length === 0 ? (
@@ -574,6 +580,7 @@ export default function FeedPage() {
                     </div>
                   ))
                 )}
+                </div>
               </>
             )}
           </div>

@@ -118,7 +118,9 @@ export default function SignalsPage() {
       ) : signals.length === 0 ? (
         <div className="card card-p muted">No signals yet — click “Fetch from Crayon” to pull the latest.</div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-3 lg:max-h-[calc(100vh-14rem)] lg:overflow-y-auto lg:pr-1">
+          {/* The queue only grows, so it scrolls in its own pane on large
+              screens rather than stretching the page indefinitely. */}
           {signals.map((s) => {
             const pending = s.status === 'draft';
             const isNew = unreadIds.has(s.id);

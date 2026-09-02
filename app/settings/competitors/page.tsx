@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Loading from '../../components/Loading';
 
 type KnownFact = { fact: string; source: string; added_by?: string; added_at?: string };
@@ -24,6 +24,9 @@ export default function CompetitorsPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Fifty competitors, each rendered as a card. Searchable for the same reason
+  // the feed rail is: nobody scans a list that long.
+  const [query, setQuery] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -39,6 +42,14 @@ export default function CompetitorsPage() {
       setLoading(false);
     }
   }, []);
+
+  // Same matching rule as the feed rail: punctuation and spacing stripped from
+  // both sides, so a partial name is enough.
+  const visible = useMemo(() => {
+    const q = query.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!q) return competitors;
+    return competitors.filter((c) => c.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q));
+  }, [competitors, query]);
 
   useEffect(() => {
     load();
@@ -107,7 +118,23 @@ export default function CompetitorsPage() {
       ) : (
         <>
           {competitors.length === 0 && <p className="muted">No competitors yet.</p>}
-          {competitors.map((c) => (
+
+          {competitors.length > 8 && (
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Find a competitor"
+              aria-label="Filter competitors by name"
+              className="input py-1.5"
+            />
+          )}
+
+          {competitors.length > 0 && visible.length === 0 && (
+            <p className="muted py-6 text-center text-sm">No competitor matches that name.</p>
+          )}
+
+          {visible.map((c) => (
             <CompetitorCard
               key={c.id}
               competitor={c}
