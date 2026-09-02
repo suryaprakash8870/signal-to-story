@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Loading from '../components/Loading';
 
 // The PM pull interface: pick a competitor, see what they shipped in the last
@@ -114,6 +114,10 @@ export default function FeedPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [updates, setUpdates] = useState<FeedUpdate[]>([]);
   const [typeFilter, setTypeFilter] = useState('all');
+  // Fifty competitors is more than a person can scan, so the rail is
+  // searchable. Matching is case-insensitive and ignores punctuation, so
+  // "legalrm" finds "iCompli by LegalRM".
+  const [railQuery, setRailQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadingUpdates, setLoadingUpdates] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -281,6 +285,15 @@ export default function FeedPage() {
     return c.ids.filter((id) => !seen.has(id)).length;
   }
 
+  // Punctuation and spacing are stripped from both sides so a partial name
+  // finds its competitor: "legalrm" matches "iCompli by LegalRM", "power"
+  // matches "Microsoft Power Platform".
+  const visibleCompetitors = useMemo(() => {
+    const q = railQuery.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!q) return competitors;
+    return competitors.filter((c) => c.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q));
+  }, [competitors, railQuery]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
@@ -373,10 +386,23 @@ export default function FeedPage() {
           No updates yet. Click “Refresh from Crayon” to pull the latest competitor activity.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[240px_1fr]">
-          {/* Left rail - competitors with unread counts */}
-          <aside className="space-y-1">
-            {competitors.map((c) => {
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[248px_1fr]">
+          {/* Left rail - competitors with unread counts.
+              Fifty entries is past the point of scanning, so the rail gets its
+              own search and its own scroll. Sticky on large screens so the list
+              stays reachable while a long feed scrolls beside it. */}
+          <aside className="lg:sticky lg:top-4">
+            <input
+              type="search"
+              value={railQuery}
+              onChange={(e) => setRailQuery(e.target.value)}
+              placeholder="Find a competitor"
+              aria-label="Filter competitors by name"
+              className="input mb-2 py-1.5"
+            />
+
+            <div className="max-h-[22rem] space-y-1 overflow-y-auto pr-1 lg:max-h-[calc(100vh-15rem)]">
+            {visibleCompetitors.map((c) => {
               const unread = unreadCount(c);
               const active = selected === c.name;
               return (
@@ -400,6 +426,18 @@ export default function FeedPage() {
                 </button>
               );
             })}
+            {visibleCompetitors.length === 0 && (
+              <p className="px-3 py-6 text-center text-sm text-gray-500">
+                No competitor matches that name.
+              </p>
+            )}
+            </div>
+
+            {railQuery && visibleCompetitors.length > 0 && (
+              <p className="mt-2 px-1 text-xs text-gray-500">
+                Showing {visibleCompetitors.length} of {competitors.length}
+              </p>
+            )}
           </aside>
 
           {/* Feed */}

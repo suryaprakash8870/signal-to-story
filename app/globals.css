@@ -302,6 +302,37 @@ body {
   }
 }
 
+/* Scrollbars. color-scheme: dark gets most browsers to paint these darker, but
+   the result is still a pale strip against these surfaces, and the feed rail
+   scrolls its own list so the bar is on screen constantly. Styled explicitly:
+   thin, no track, a muted thumb that lifts on hover. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border-radius: 999px;
+  /* Transparent border with background-clip keeps the thumb slimmer than the
+     track, so it reads as a bar rather than filling the gutter. */
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-muted);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 @layer utilities {
   /* Hide scrollbars (used on the nav tab strip so overflow-x doesn't paint a
      scrollbar). */
