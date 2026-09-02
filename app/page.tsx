@@ -44,7 +44,7 @@ export default function HomePage() {
           <a href="#how" className="hidden hover:text-gray-900 sm:block">How it works</a>
           <a href="#teams" className="hidden hover:text-gray-900 sm:block">For your teams</a>
           <a href="#delivery" className="hidden hover:text-gray-900 sm:block">Delivery</a>
-          <Link href="/login?demo=1" className="rounded-lg bg-accent px-4 py-2 font-semibold text-ink-on transition-colors hover:bg-accent-hover">
+          <Link href="/login?demo=1" className="rounded-lg bg-action px-4 py-2 font-semibold text-action-ink transition-colors hover:bg-action-hover">
             Try now
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default function HomePage() {
             <div className="mt-8">
               <Link
                 href="/login?demo=1"
-                className="inline-block rounded-lg bg-accent px-6 py-3 text-base font-semibold text-ink-on transition-colors hover:bg-accent-hover"
+                className="inline-block rounded-lg bg-action px-6 py-3 text-base font-semibold text-action-ink transition-colors hover:bg-action-hover"
               >
                 Try Compete Agent
               </Link>
@@ -215,7 +215,7 @@ export default function HomePage() {
         </p>
         <Link
           href="/login?demo=1"
-          className="mt-8 inline-block rounded-lg bg-accent px-8 py-3 text-base font-semibold text-ink-on transition-colors hover:bg-accent-hover"
+          className="mt-8 inline-block rounded-lg bg-action px-8 py-3 text-base font-semibold text-action-ink transition-colors hover:bg-action-hover"
         >
           Try Compete Agent
         </Link>

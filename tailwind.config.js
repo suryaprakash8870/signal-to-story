@@ -113,6 +113,13 @@ export default {
           DEFAULT: border,
           strong: borderStrong,
         },
+        // Primary action colour, matching Litera's shipped products where the
+        // main button on a screen is the warm brand orange rather than teal.
+        action: {
+          DEFAULT: '#F65100',
+          hover: '#D94800',
+          ink: '#FFFFFF',
+        },
         accent: {
           DEFAULT: accent,
           soft: 'rgba(35, 195, 191, 0.13)',

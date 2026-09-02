@@ -100,7 +100,7 @@ export default function IntakePage() {
               type="submit"
               disabled={submitting}
               aria-label="Submit signal"
-              className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-ink-on transition-colors hover:bg-accent-hover disabled:opacity-50"
+              className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-action text-action-ink transition-colors hover:bg-action-hover disabled:opacity-50"
             >
               {submitting ? (
                 <svg viewBox="0 0 24 24" className="h-4 w-4 animate-spin" fill="none" stroke="currentColor" strokeWidth="2">

@@ -40,6 +40,14 @@
   --accent-border: rgba(35, 195, 191, 0.45);
   --accent-hover: #1ea9a6;
 
+  /* Primary action colour. Litera's shipped products use the warm brand orange
+     for the main button on a screen, not the teal: Find & Replace, Send, Clean
+     and Binder Project are all orange. Teal stays for links, active navigation,
+     toggles, focus rings and status marks. */
+  --action: #f65100;
+  --action-hover: #d94800;
+  --action-ink: #ffffff;
+
   /* Status */
   --danger: #ff6b6b;
   --success: #3dd68c;
@@ -135,12 +143,12 @@ body {
     @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-primary {
-    background-color: var(--accent);
-    color: var(--accent-ink);
+    background-color: var(--action);
+    color: var(--action-ink);
     @apply font-semibold;
   }
   .btn-primary:hover {
-    background-color: var(--accent-hover);
+    background-color: var(--action-hover);
   }
   .btn-outline {
     background-color: transparent;
