@@ -119,6 +119,8 @@ export default {
           DEFAULT: '#F65100',
           hover: '#D94800',
           ink: '#FFFFFF',
+          soft: 'rgba(246, 81, 0, 0.13)',
+          border: 'rgba(246, 81, 0, 0.45)',
         },
         accent: {
           DEFAULT: accent,

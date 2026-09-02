@@ -47,6 +47,8 @@
   --action: #f65100;
   --action-hover: #d94800;
   --action-ink: #ffffff;
+  --action-soft: rgba(246, 81, 0, 0.13);
+  --action-border: rgba(246, 81, 0, 0.45);
 
   /* Status */
   --danger: #ff6b6b;

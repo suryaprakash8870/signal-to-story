@@ -384,7 +384,7 @@ export default function FeedPage() {
                   key={c.name}
                   onClick={() => selectCompetitor(c.name)}
                   className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    active ? 'bg-accent-soft font-medium text-accent' : 'text-gray-700 hover:bg-gray-100'
+                    active ? 'bg-action-soft font-medium text-action' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   <span className={`min-w-0 truncate ${c.count === 0 ? 'text-gray-400' : ''}`}>
@@ -417,7 +417,7 @@ export default function FeedPage() {
                       onClick={() => changeFilter(f.value)}
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                         typeFilter === f.value
-                          ? 'border-accent bg-accent-soft text-accent'
+                          ? 'border-action-border bg-action-soft text-action'
                           : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                       }`}
                     >

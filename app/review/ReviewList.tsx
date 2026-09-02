@@ -142,7 +142,7 @@ export default function ReviewList({ items }: { items: ReviewItem[] }) {
                   onClick={() => setPage(n)}
                   className={`h-8 w-8 rounded-lg text-sm font-medium ${
                     n === current
-                      ? 'bg-accent text-ink-on'
+                      ? 'bg-action text-action-ink'
                       : 'border border-gray-300 bg-surface text-gray-700 hover:bg-gray-50'
                   }`}
                 >

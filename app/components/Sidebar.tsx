@@ -110,7 +110,7 @@ export default function Sidebar() {
                     href={item.href}
                     title={collapsed ? item.label : undefined}
                     className={`relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
-                      active ? 'bg-accent-soft text-accent' : 'text-gray-600 hover:bg-gray-100'
+                      active ? 'bg-action-soft text-action' : 'text-gray-600 hover:bg-gray-100'
                     } ${collapsed ? 'justify-center' : ''}`}
                   >
                     <span className="relative">
