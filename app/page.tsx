@@ -61,7 +61,7 @@ export default function HomePage() {
             <p className="text-sm font-semibold uppercase tracking-wider text-accent">
               Just Ask… Agent Compete
             </p>
-            <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
+            <h1 className="font-brand mt-3 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
               Compete Agent
             </h1>
             <p className="mt-4 text-xl font-semibold leading-snug text-gray-900 sm:text-2xl">

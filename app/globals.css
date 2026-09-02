@@ -89,7 +89,7 @@ body {
   background-color: var(--page);
   color: var(--text);
   @apply antialiased;
-  font-family: var(--font-poppins), 'Inter Custom', Inter, system-ui, -apple-system,
+  font-family: var(--font-inter), 'Inter Custom', Inter, system-ui, -apple-system,
     'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   /* Body polish applied globally, per design-system.md section 2. */
   font-optical-sizing: auto;
@@ -262,6 +262,23 @@ body {
   select option {
     background-color: var(--surface);
     color: var(--text);
+  }
+
+  /* Brand card / hero title voice. Segoe UI leads here by design, not by
+     accident: the design system names it as the brand-card font. */
+  .font-brand {
+    font-family: 'Segoe UI', var(--font-inter), Inter, system-ui, sans-serif;
+  }
+
+  /* Optional serif display face. Deliberately capped at 500: the family has no
+     bold, and asking for 700 makes the browser synthesise one badly. */
+  .font-display {
+    font-family: var(--font-tripsis), Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+  }
+  .font-display-medium {
+    font-family: var(--font-tripsis), Georgia, 'Times New Roman', serif;
+    font-weight: 500;
   }
 
   /* Rendered documents stay white paper on a sunken dark backdrop: the chrome
