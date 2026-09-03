@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Published outputs for the dashboard, filterable by audience, competitor, and
- * date range. Selects only the columns the dashboard renders — never `select *`
+ * date range. Selects only the columns the dashboard renders - never `select *`
  * on signal_outputs, which grows large over time (10-OPTIMIZATION-NOTES.md).
  */
 export async function GET(req: NextRequest) {

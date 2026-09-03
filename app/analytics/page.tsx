@@ -17,8 +17,8 @@ type Metrics = {
 
 type AnalyticsData = { overall: Metrics; by_output_type: Record<string, Metrics> };
 
-const pct = (v: number | null) => (v === null ? '—' : `${Math.round(v * 100)}%`);
-const mins = (v: number | null) => (v === null ? '—' : `${v.toFixed(1)} min`);
+const pct = (v: number | null) => (v === null ? '-' : `${Math.round(v * 100)}%`);
+const mins = (v: number | null) => (v === null ? '-' : `${v.toFixed(1)} min`);
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -40,7 +40,7 @@ export default function AnalyticsPage() {
   }, []);
 
   if (error) return <p className="text-red-600">{error}</p>;
-  if (loading || !data) return <Loading />;
+  if (loading || !data) return <Loading fullPage />;
 
   const o = data.overall;
 
@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
         <h1 className="page-title">Analytics</h1>
         <p className="muted mt-1 text-sm">
           Approval and edit rates are the clearest signal of whether pipeline quality is good enough.
-          Watch review throughput for an upward trend — if it climbs, the queue is backing up.
+          Watch review throughput for an upward trend - if it climbs, the queue is backing up.
         </p>
       </div>
 
@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
 
       <p className="muted text-xs">
         Note: Teams adoption/engagement (reactions) is the intended primary adoption metric, but
-        Teams Incoming Webhooks are one-way and can't report reactions — that requires the Microsoft
+        Teams Incoming Webhooks are one-way and can't report reactions - that requires the Microsoft
         Graph API and a registered bot (out of scope). Gmail SMTP has no open tracking either.
       </p>
     </div>

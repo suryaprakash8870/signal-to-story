@@ -16,7 +16,7 @@ export async function GET() {
   return NextResponse.json({ competitors: data });
 }
 
-// POST: create a competitor. Write is RLS-gated to reviewer/admin — a
+// POST: create a competitor. Write is RLS-gated to reviewer/admin - a
 // non-privileged caller's insert simply fails at the database.
 export async function POST(req: NextRequest) {
   const supabase = supabaseForRequest();

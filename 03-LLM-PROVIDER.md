@@ -1,7 +1,7 @@
-# 03 — LLM Provider (Claude API + Local Ollama)
+# 03 - LLM Provider (Claude API + Local Ollama)
 
 Two providers, one interface, selected by a config flag. Never call
-Ollama's or Anthropic's SDK directly from pipeline code — always go
+Ollama's or Anthropic's SDK directly from pipeline code - always go
 through this interface, so switching providers is a one-line environment
 change, never a code change.
 
@@ -37,7 +37,7 @@ export class ClaudeProvider implements LLMProvider {
     });
     const text = response.content.find(b => b.type === "text")?.text ?? "";
     const parsed = JSON.parse(stripCodeFences(text));
-    return schema.parse(parsed); // throws on schema mismatch — caller retries
+    return schema.parse(parsed); // throws on schema mismatch - caller retries
   }
 }
 ```
@@ -68,7 +68,7 @@ export class OllamaProvider implements LLMProvider {
 ```
 
 `OLLAMA_BASE_URL` is deliberately configurable, not hardcoded to
-`localhost` — the current setup runs Ollama on a separate machine from the
+`localhost` - the current setup runs Ollama on a separate machine from the
 developer's laptop, which this supports directly. That machine must be
 reachable only from trusted machines on a private network: Ollama's API
 has no built-in authentication, so if that machine is ever exposed to a
@@ -85,7 +85,7 @@ export const llmProvider: LLMProvider =
     : new OllamaProvider();
 ```
 
-## Hard rule — enforce in code, not just documentation
+## Hard rule - enforce in code, not just documentation
 
 Add a guard so this can't be silently misconfigured:
 

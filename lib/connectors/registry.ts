@@ -28,7 +28,7 @@ async function liveCreds<T>(row: ConnectorRow): Promise<T | undefined> {
  * Builds a live Connector instance from a connectors table row, resolving any
  * credential from Vault server-side. Inbound connectors run in Test Mode
  * against fixtures (no credential) or Live Mode against the vendor API
- * (credentials from Vault) — switching is just the mode flag plus a credential,
+ * (credentials from Vault) - switching is just the mode flag plus a credential,
  * with no pipeline changes (04-CONNECTORS.md).
  */
 export async function buildConnector(row: ConnectorRow): Promise<Connector> {

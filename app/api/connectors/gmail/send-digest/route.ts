@@ -7,7 +7,7 @@ import { GmailConnector, formatDigest, type DigestItem } from '@/lib/connectors/
  * Cadence-driven Gmail digest (04-CONNECTORS.md). Batches every approved
  * output not yet sent in a digest, sends one email, and stamps digest_sent_at
  * so they aren't resent. Intended to be triggered by a scheduled GitHub
- * Actions job reading connectors.cadence — also callable manually here for
+ * Actions job reading connectors.cadence - also callable manually here for
  * testing. Does NOT send per-signal.
  */
 export async function POST(req: NextRequest) {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Gmail connector not found' }, { status: 404 });
   }
 
-  // Approved, not yet published to nowhere in particular — specifically not
+  // Approved, not yet published to nowhere in particular - specifically not
   // yet included in a digest. Grouped with signal + competitor context.
   const { data: outputs, error: outErr } = await db
     .from('signal_outputs')
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
   }));
 
   const cadence = (connectorRow as ConnectorRow).cadence ?? 'weekly';
-  const subject = `Signal-to-Story ${cadence} digest — ${items.length} item${items.length === 1 ? '' : 's'}`;
+  const subject = `Signal-to-Story ${cadence} digest - ${items.length} item${items.length === 1 ? '' : 's'}`;
 
   try {
     const connector = (await buildConnector(connectorRow as ConnectorRow)) as GmailConnector;

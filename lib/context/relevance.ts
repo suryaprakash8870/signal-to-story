@@ -89,7 +89,7 @@ interface SectionRow {
 // relevant, which is a valid and common answer. Smaller models sometimes omit
 // the key entirely (returning `{}`) or send a bare number instead of an array
 // when they mean "nothing" or "just this one", so the field is optional and
-// coerced rather than strict — an unparseable answer degrades to "nothing
+// coerced rather than strict - an unparseable answer degrades to "nothing
 // relevant", which is the safe direction.
 const shortlistSchema = z.object({
   relevant: z

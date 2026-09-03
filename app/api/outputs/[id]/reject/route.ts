@@ -23,7 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     .eq('id', params.id);
   if (approveErr) return NextResponse.json({ error: approveErr.message }, { status: 500 });
 
-  // signals.status update is a pipeline-level transition, not user input —
+  // signals.status update is a pipeline-level transition, not user input -
   // per 01-DATA-MODEL.md this goes through the service role, same as the
   // pipeline stages themselves.
   const db = supabaseServiceRole();

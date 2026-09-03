@@ -1,4 +1,4 @@
-// "New competitive signal awaiting review" notification — emailed to the PMM
+// "New competitive signal awaiting review" notification - emailed to the PMM
 // so they know there is work waiting, with a Review Signal button that deep
 // links back into the app (login gate → dashboard). Reuses the Brevo REST API
 // (same provider as the per-output Send-via-Email publish action).
@@ -42,7 +42,7 @@ export async function sendReviewNotification(
     throw new Error('Brevo is not configured (BREVO_API_KEY / BREVO_SENDER_EMAIL).');
   }
   // Prefer an explicit recipient (e.g. the competitor's owner); otherwise fall
-  // back to the shared PMM_NOTIFY_EMAIL list — the exact prior behaviour.
+  // back to the shared PMM_NOTIFY_EMAIL list - the exact prior behaviour.
   const recipients =
     recipientsOverride && recipientsOverride.length ? recipientsOverride : getPmmRecipients();
   if (recipients.length === 0) {
@@ -83,7 +83,7 @@ export async function sendReviewNotification(
     body: JSON.stringify({
       sender: { name: 'Compete Agent', email: config.senderEmail },
       to: recipients.map((email) => ({ email })),
-      subject: `🔔 New competitive signal awaiting review — ${competitor}`,
+      subject: `🔔 New competitive signal awaiting review - ${competitor}`,
       htmlContent: html,
       textContent: text,
     }),

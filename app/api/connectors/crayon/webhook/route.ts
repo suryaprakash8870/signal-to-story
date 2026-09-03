@@ -4,7 +4,7 @@ import { mapCrayonSpark } from '@/lib/connectors/crayon-connector';
 import { runPipeline, rerunSignal, findExistingSignalByText } from '@/lib/pipeline/orchestrate';
 
 /**
- * Crayon outbound webhook receiver — the preferred alternative to polling
+ * Crayon outbound webhook receiver - the preferred alternative to polling
  * (10-OPTIMIZATION-NOTES.md). Crayon POSTs an alert here; we turn it into a
  * signal and run the pipeline. Authenticated by a shared secret in the query
  * string or header (CRAYON_WEBHOOK_SECRET) since it has no user session.

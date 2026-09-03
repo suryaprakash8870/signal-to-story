@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 // Lists connectors with status/mode only. credentials_ref is intentionally
 // selected (it is just an opaque Vault id, not the secret) but the raw
-// secret is never returned — see 04-CONNECTORS.md.
+// secret is never returned - see 04-CONNECTORS.md.
 export async function GET() {
   const supabase = supabaseForRequest();
   const { data, error } = await supabase

@@ -5,7 +5,7 @@ import { buildConnector, type ConnectorRow } from '@/lib/connectors/registry';
 /**
  * Runs the connector's testConnection() and records the result in
  * connectors.status. For Teams this posts a real "connection test" message
- * to the channel — the only way to verify an Incoming Webhook actually works.
+ * to the channel - the only way to verify an Incoming Webhook actually works.
  */
 export async function POST(_req: NextRequest, { params }: { params: { type: string } }) {
   const supabase = supabaseForRequest();

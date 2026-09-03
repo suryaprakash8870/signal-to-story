@@ -9,8 +9,8 @@ import { fetchWithBackoff } from './backoff';
 export interface CrayonCredentials {
   base_url?: string; // default https://app.crayon.co
   api_key?: string; // the X-API-KEY value
-  live_tiles_only?: boolean; // default true — only Sparks published as Battlecard Live Tiles
-  per_page?: number; // cap Sparks per poll (endpoint returns ALL — up to 200+ — without this)
+  live_tiles_only?: boolean; // default true - only Sparks published as Battlecard Live Tiles
+  per_page?: number; // cap Sparks per poll (endpoint returns ALL - up to 200+ - without this)
 }
 
 const DEFAULT_BASE = 'https://app.crayon.co';
@@ -34,7 +34,7 @@ export class CrayonConnector implements Connector {
   private sparksUrl(): string {
     const base = this.creds?.base_url ?? DEFAULT_BASE;
     const liveTiles = this.creds?.live_tiles_only ?? true;
-    // page + per_page MUST be sent together to cap the result — otherwise the
+    // page + per_page MUST be sent together to cap the result - otherwise the
     // endpoint returns the entire rolling 30-day window (200+ Sparks).
     const perPage = this.creds?.per_page ?? DEFAULT_PER_PAGE;
     return `${base}/papi/sparks/?live_tiles_only=${liveTiles}&page=1&per_page=${perPage}`;

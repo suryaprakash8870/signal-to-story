@@ -27,7 +27,7 @@ begin
 end;
 $$;
 
--- Read a secret back by id. Restricted to service_role — a raw decrypted
+-- Read a secret back by id. Restricted to service_role - a raw decrypted
 -- secret must never be reachable by anon/authenticated, even with the id.
 create or replace function public.read_connector_secret(p_id uuid)
 returns text

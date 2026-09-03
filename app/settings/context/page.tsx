@@ -30,6 +30,23 @@ function labelFor(t: string) {
   return DOC_TYPES.find((d) => d.value === t)?.label ?? t;
 }
 
+const PAGE_SIZE = 5;
+
+// Condensed page list: always show first, last, current and its neighbors,
+// with '…' gaps - same pattern used across the app's other paginated lists.
+function pageWindow(current: number, total: number): (number | '…')[] {
+  const keep = new Set([1, total, current, current - 1, current + 1]);
+  const nums = [...keep].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+  const out: (number | '…')[] = [];
+  let prev = 0;
+  for (const p of nums) {
+    if (p - prev > 1) out.push('…');
+    out.push(p);
+    prev = p;
+  }
+  return out;
+}
+
 export default function ContextLibraryPage() {
   const [docs, setDocs] = useState<ContextDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +55,7 @@ export default function ContextLibraryPage() {
   const [docType, setDocType] = useState('roadmap');
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [page, setPage] = useState(1);
 
   const load = useCallback(async () => {
     try {
@@ -90,6 +108,10 @@ export default function ContextLibraryPage() {
     load();
   }
 
+  const pageCount = Math.max(1, Math.ceil(docs.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageDocs = docs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div>
@@ -115,7 +137,7 @@ export default function ContextLibraryPage() {
           >
             {DOC_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
-                {t.label} — {t.hint}
+                {t.label} - {t.hint}
               </option>
             ))}
           </select>
@@ -146,7 +168,13 @@ export default function ContextLibraryPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {docs.map((d) => (
+          <p className="muted text-sm">
+            {docs.length} document{docs.length === 1 ? '' : 's'}
+            {docs.length > PAGE_SIZE &&
+              ` · showing ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, docs.length)}`}
+          </p>
+
+          {pageDocs.map((d) => (
             <div key={d.id} className="card card-p">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -167,6 +195,46 @@ export default function ContextLibraryPage() {
               </div>
             </div>
           ))}
+
+          {pageCount > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="btn btn-outline"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {pageWindow(currentPage, pageCount).map((n, i) =>
+                  n === '…' ? (
+                    <span key={`gap-${i}`} className="px-1 text-sm text-gray-400">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={n}
+                      onClick={() => setPage(n)}
+                      className={`h-8 w-8 rounded-lg text-sm font-medium ${
+                        n === currentPage
+                          ? 'bg-action text-action-ink'
+                          : 'border border-gray-300 bg-surface text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  )
+                )}
+              </div>
+              <button
+                onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                disabled={currentPage === pageCount}
+                className="btn btn-outline"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

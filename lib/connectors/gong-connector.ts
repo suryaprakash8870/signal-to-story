@@ -67,7 +67,7 @@ export class GongConnector implements Connector {
   }
 }
 
-// ISO for ~7 days ago — a reasonable default polling window.
+// ISO for ~7 days ago - a reasonable default polling window.
 function recentIso(): string {
   const weekMs = 7 * 24 * 60 * 60 * 1000;
   // Date.now is available in the Next.js server runtime.

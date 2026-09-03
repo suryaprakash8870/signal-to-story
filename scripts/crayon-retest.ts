@@ -1,5 +1,5 @@
 /**
- * Third validation — a Crayon-style market-news alert (no specific customer).
+ * Third validation - a Crayon-style market-news alert (no specific customer).
  * Tests the guardrails on a different shape: empty subject_account, a competitor
  * move that baits Litera-capability claims, and marketing generalization.
  *
@@ -12,7 +12,7 @@ for (const line of readFileSync(path.join(process.cwd(), '.env.local'), 'utf8').
   if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
 }
 
-const SIGNAL = `[Crayon Alert — Competitor Intelligence — 2026-07-05]
+const SIGNAL = `[Crayon Alert - Competitor Intelligence - 2026-07-05]
 
 Source: LexPoint press release + product page.
 

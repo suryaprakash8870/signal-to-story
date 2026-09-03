@@ -4,7 +4,7 @@ import { supabaseForRequest } from '@/lib/supabase/server';
 type KnownFact = { fact: string; source: string; added_by?: string; added_at?: string };
 
 // POST: append a fact to a competitor's known_facts array. Shape per
-// 01-DATA-MODEL.md — each fact is independently citable by the grounding step.
+// 01-DATA-MODEL.md - each fact is independently citable by the grounding step.
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = supabaseForRequest();
   const {

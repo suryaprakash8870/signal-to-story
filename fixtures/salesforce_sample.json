@@ -1,5 +1,5 @@
 {
-  "_fixture_note": "Explicitly illustrative — low confidence per 08-TEST-FIXTURES-AND-TESTING.md. Field names are NOT confirmed with Litera's Salesforce admin; the adapter reads them from connectors.config, never hardcoded. Notes are richer here to mimic how reps actually log opportunity activity over time.",
+  "_fixture_note": "Explicitly illustrative - low confidence per 08-TEST-FIXTURES-AND-TESTING.md. Field names are NOT confirmed with Litera's Salesforce admin; the adapter reads them from connectors.config, never hardcoded. Notes are richer here to mimic how reps actually log opportunity activity over time.",
   "config_mapping_example": {
     "object": "Opportunity",
     "competitor_field": "Competitor_Mentioned__c",
@@ -17,11 +17,11 @@
     "Notes": [
       {
         "CreatedDate": "2026-06-18",
-        "Body": "Renewal call. GC (Priya Nair) proactively raised LegalEdge. They demoed a new contract review module ~3 weeks ago. Key draw: everything runs natively inside Word — redlining happens in Word, no separate app. Paralegals liked the redline speed on a live MSA."
+        "Body": "Renewal call. GC (Priya Nair) proactively raised LegalEdge. They demoed a new contract review module ~3 weeks ago. Key draw: everything runs natively inside Word - redlining happens in Word, no separate app. Paralegals liked the redline speed on a live MSA."
       },
       {
         "CreatedDate": "2026-06-19",
-        "Body": "Follow-up internal note: Priya emphasized this was a demo, not a pilot. Reliability of our integration for audits still valued. Pricing only mentioned informally by LegalEdge — do not over-index on it. Real stickiness risk is the in-Word paralegal UX."
+        "Body": "Follow-up internal note: Priya emphasized this was a demo, not a pilot. Reliability of our integration for audits still valued. Pricing only mentioned informally by LegalEdge - do not over-index on it. Real stickiness risk is the in-Word paralegal UX."
       },
       {
         "CreatedDate": "2026-06-24",

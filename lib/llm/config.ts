@@ -89,7 +89,7 @@ export function detectProvider(key: string): ApiProvider | null {
  * Resolves the active hosted-API config, if any. Priority:
  *   1. A key added via the website (Vault-stored, provider auto-detected).
  *   2. Env fallback: ANTHROPIC_API_KEY (claude) or GEMINI_API_KEY (gemini).
- * Returns null when neither is set — the caller then uses Ollama.
+ * Returns null when neither is set - the caller then uses Ollama.
  */
 export async function getApiConfig(): Promise<{ provider: ApiProvider; key: string } | null> {
   return cached('api', loadApiConfig, envApiConfig());
@@ -116,7 +116,7 @@ async function loadApiConfig(): Promise<{ provider: ApiProvider; key: string } |
       if (provider) return { provider, key };
     }
   } catch {
-    // Vault/DB unavailable — fall through to the env fallback.
+    // Vault/DB unavailable - fall through to the env fallback.
   }
 
   return envApiConfig();
@@ -125,7 +125,7 @@ async function loadApiConfig(): Promise<{ provider: ApiProvider; key: string } |
 /**
  * Cloudflare Workers AI config from env (a free/cheap TESTING backend). Returns
  * null unless both account id and token are set. Default model is a 32B coder
- * model — reliable JSON shape. For production the token should move to Vault.
+ * model - reliable JSON shape. For production the token should move to Vault.
  */
 export function getCloudflareConfig(): { accountId: string; apiToken: string; model: string } | null {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
@@ -141,7 +141,7 @@ export function getCloudflareConfig(): { accountId: string; apiToken: string; mo
 /**
  * Litera internal Azure/Entra OpenAI-compatible gateway config from env.
  * Returns null unless both the endpoint URL and the Bearer token are set.
- * NOTE: the token is an Entra JWT that expires (~1h) — fine for testing/demo,
+ * NOTE: the token is an Entra JWT that expires (~1h) - fine for testing/demo,
  * but production needs a token-refresh flow, not a static pasted token.
  */
 export async function getLiteraConfig(): Promise<{ endpoint: string; token: string; model?: string } | null> {
@@ -159,8 +159,8 @@ function envLiteraConfig(): { endpoint: string; token: string; model?: string } 
 async function loadLiteraConfig(): Promise<{ endpoint: string; token: string; model?: string } | null> {
   const endpoint = process.env.LITERA_API_URL;
   if (!endpoint) return null;
-  // Token priority: the value saved via the UI (llm_config.litera_token) — so it
-  // can be refreshed hourly without editing env/restarting — then the env fallback.
+  // Token priority: the value saved via the UI (llm_config.litera_token) - so it
+  // can be refreshed hourly without editing env/restarting - then the env fallback.
   let token: string | undefined;
   try {
     const db = supabaseServiceRole();
@@ -183,7 +183,7 @@ async function loadLiteraConfig(): Promise<{ endpoint: string; token: string; mo
 
 /**
  * Google Gemini via Litera's APIM gateway (the gemini-entra path). Uses the
- * SAME Entra token as the GPT-5 gateway — same audience — so no separate
+ * SAME Entra token as the GPT-5 gateway - same audience - so no separate
  * credentials are needed. Returns null when the endpoint or token is missing.
  */
 export async function getGeminiEntraConfig(): Promise<{

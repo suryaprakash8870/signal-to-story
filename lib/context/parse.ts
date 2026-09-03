@@ -62,7 +62,7 @@ export async function extractDocxText(buffer: Buffer): Promise<string> {
  * short standalone line acting as a heading. Content before the first heading
  * is kept under an "Overview" section so nothing is silently dropped.
  *
- * Very short sections are merged into the previous one — a lone heading with
+ * Very short sections are merged into the previous one - a lone heading with
  * one line under it is not useful to ground against on its own.
  */
 export function splitIntoSections(text: string): ParsedSection[] {

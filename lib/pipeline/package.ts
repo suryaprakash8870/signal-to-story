@@ -36,27 +36,27 @@ const GROUNDING_TAIL =
   '"position ourselves as a reliable partner with X"). When your point would need ' +
   'such a fact, do NOT assert it. Instead simply REPORT, as plain information, ' +
   'what the customer ACTUALLY asked for or raised IN THIS SIGNAL (using only the ' +
-  'exact things they mentioned — do NOT add specifics they did not say) so the ' +
+  'exact things they mentioned - do NOT add specifics they did not say) so the ' +
   'rep is informed and can decide. Do NOT add any "confirm Litera\'s position" ' +
-  'instruction or bracketed flag — just state what happened and what the client ' +
+  'instruction or bracketed flag - just state what happened and what the client ' +
   'asked, in their own terms.\n' +
   '- ENTITY: Never attribute the competitor\'s features, products, or claims to ' +
   'Litera. They belong to the competitor, not Litera. Reference ONLY the one ' +
-  'competitor named in this signal — never any other vendor or company.\n' +
+  'competitor named in this signal - never any other vendor or company.\n' +
   '- COMPETITOR INFERENCE: State as fact ONLY what the source signal directly ' +
   'says about the competitor. If you draw a conclusion that goes beyond the ' +
   'source (what a move "indicates", "means", or where it is "heading"), word it ' +
-  'explicitly as inference — "may", "suggests", "appears" — never as an ' +
+  'explicitly as inference - "may", "suggests", "appears" - never as an ' +
   'established fact. A confidently stated guess (e.g. "indicating a newer US ' +
   'presence") could be repeated to a customer as truth, so mark it as inference ' +
   'or leave it out.\n' +
   '- PERSPECTIVE: Only the sales talk_track is spoken directly to the customer ' +
-  '(address them as "you"). EVERY other output — battlecard, live_talking_points, ' +
-  'watchout, marketing_angle, leadership_summary — is INTERNAL enablement for a ' +
+  '(address them as "you"). EVERY other output - battlecard, live_talking_points, ' +
+  'watchout, marketing_angle, leadership_summary - is INTERNAL enablement for a ' +
   'Litera team; refer to the customer in the THIRD PERSON ("the client", "the ' +
   'firm"), never "you".\n' +
   '- BE SPECIFIC, NOT GENERIC: Anchor every sentence in the CONCRETE details of ' +
-  'THIS signal — the competitor\'s actual move, the specific hook, and the ' +
+  'THIS signal - the competitor\'s actual move, the specific hook, and the ' +
   'specific gap or opportunity it creates. Name the real thing. BANNED filler ' +
   '(never use these): "stay attuned", "remain relevant", "stay ahead", "in ' +
   'today\'s evolving landscape", "proactively engage", "tailor our solution", ' +
@@ -66,7 +66,7 @@ const GROUNDING_TAIL =
   '- Do not state the unverified claims as fact; if a claim is unverified, leave ' +
   'it out (do not mention it, and do not write meta-instructions like "verify ' +
   'pricing").\n' +
-  '- Write concise, ORIGINAL text in your own words — do NOT copy sentences, ' +
+  '- Write concise, ORIGINAL text in your own words - do NOT copy sentences, ' +
   'headers, or dialogue from the source signal.\n' +
   '- MATCH YOUR CERTAINTY TO THE EVIDENCE: a launch, webpage, demo, or single call ' +
   'is an EARLY signal to watch, NOT a proven market threat. Avoid alarmist or ' +
@@ -112,7 +112,7 @@ ${sharedContext(ctx)}
 
 Return a JSON object with:
 - talk_track: ONE short line a rep would actually SAY OUT LOUD to this customer,
-  in the moment — spoken and natural, naming the competitor's specific move and
+  in the moment - spoken and natural, naming the competitor's specific move and
   the specific angle to take. Not a description of the situation; the actual words.
 - battlecard_snippet: an objection/response pair formatted as
   "Objection: ... Response: ...". The objection MUST be the specific
@@ -120,14 +120,14 @@ Return a JSON object with:
   actual hook). For the response: if the signal reveals a COMPETITOR WEAKNESS
   (e.g. weak or unproven security, a newer/smaller/unestablished vendor, no
   formal or committed pricing, a missing capability, or a concern the customer
-  raised about them), the response MUST LEAD with that specific weakness —
+  raised about them), the response MUST LEAD with that specific weakness -
   quote the concrete detail from the signal. Do NOT fall back to generic filler
   like "we tailor our solution to your needs" or "we meet your exact
   requirements". Counter using ONLY the source facts and confirmed Litera
-  facts — if the natural counter would need a Litera fact you do not have, do
+  facts - if the natural counter would need a Litera fact you do not have, do
   not invent it; instead just note what the client asked/raised as information.
   Never claim a Litera certification or feature that is not listed
-- live_talking_points: a short spoken briefing for the rep's own team sync —
+- live_talking_points: a short spoken briefing for the rep's own team sync -
   cover, concretely: what the competitor did (the specific move), why it matters
   for THIS account specifically, and the specific next step. Spoken style, no
   filler.
@@ -152,11 +152,11 @@ ${sharedContext(ctx)}
 
 Return a JSON object with:
 - watchout: EXACTLY ONE of these two, never both:
-  (a) If the signal reveals a concrete product implication — a specific
+  (a) If the signal reveals a concrete product implication - a specific
       capability the competitor now has, a specific gap it exposes, or a roadmap
-      question — state THAT specifically. Do NOT also say there is no implication.
+      question - state THAT specifically. Do NOT also say there is no implication.
   (b) ONLY if the signal is purely positioning/marketing with NO product
-      substance at all, say exactly one line: "No direct product implication —
+      substance at all, say exactly one line: "No direct product implication -
       this is a messaging/positioning move, not a capability gap." and nothing
       about a gap.
   A signal that mentions a real competitor feature/capability is case (a).
@@ -177,15 +177,15 @@ ${sharedContext(ctx)}
 
 Return a JSON object with:
 - marketing_angle: the SPECIFIC positioning or messaging opportunity THIS signal
-  opens for us. Name the concrete gap or counter-narrative — e.g. "the competitor
+  opens for us. Name the concrete gap or counter-narrative - e.g. "the competitor
   is winning on narrative but their product doesn't back the claim, so lead with
   proof/outcomes" or "they are defining the category around X; reframe it around
   Y". Describe the actual angle we could take and WHY it works given this signal,
   not a generic call to 'stay relevant'. If a strong angle would need a Litera
-  positioning fact you don't have, do not invent it — just describe the market
+  positioning fact you don't have, do not invent it - just describe the market
   opening and what the competitor is doing.
 
-IMPORTANT for marketing — this is MARKET POSITIONING only:
+IMPORTANT for marketing - this is MARKET POSITIONING only:
 - Do NOT name the specific customer, prospect, or account, and do NOT frame it
   around a specific deal ("a firm is considering X"). Generalize to the market.
 - Do NOT include account or sales tactics (pricing offers, "their budget", "the
@@ -208,7 +208,7 @@ ${GROUNDING_TAIL}${extra ? `\n${extra}` : ''}`,
 ${sharedContext(ctx)}
 
 Return a JSON object with:
-- leadership_summary: the executive "so what" — lead with what is concretely at
+- leadership_summary: the executive "so what" - lead with what is concretely at
   stake for Litera because of THIS signal (a specific account, deal, or market
   position), then the specific implication or decision it raises. Two or three
   tight sentences, no filler, no generic "monitor and stay competitive" padding.
@@ -227,13 +227,13 @@ ${GROUNDING_TAIL}${extra ? `\n${extra}` : ''}`,
 const STAGE5_CONCURRENCY = 2;
 
 /**
- * Stage 5 — Output Packaging + the always-on Quality Gate.
+ * Stage 5 - Output Packaging + the always-on Quality Gate.
  * 1. Packages one call per routed audience (paced), grounded in the signal,
  *    the competitor facts, and the (possibly empty) confirmed Litera facts.
  * 2. Re-packages an audience once if its outputs came back as a raw copy of
  *    the source.
  * 3. QUALITY GATE (runs on EVERY signal): guardOutputs re-checks all outputs
- *    in one batched call — strips unsupported claims, turns unconfirmed Litera
+ *    in one batched call - strips unsupported claims, turns unconfirmed Litera
  *    facts into "[Rep to confirm: ...]" notes, blocks entity mix-ups, and keeps
  *    the customer name out of marketing. If it can't return a clean version of
  *    every output, the whole signal errors (clean-or-error, no silent bad copy).
@@ -270,7 +270,7 @@ export async function packageOutputs(
     }
   }
 
-  // Every OTHER competitor on record — none of these may appear in an output for
+  // Every OTHER competitor on record - none of these may appear in an output for
   // THIS signal (deterministic guard against cross-signal entity bleed).
   const { data: allComps } = await db.from('competitors').select('name');
   const otherCompetitors = (allComps ?? [])
@@ -302,7 +302,7 @@ export async function packageOutputs(
     rows.map((row) => ({ audience, row }))
   );
 
-  // QUALITY GATE — always runs. One batched call enforces every grounding rule.
+  // QUALITY GATE - always runs. One batched call enforces every grounding rule.
   const drafts: DraftOutput[] = flatRows.map(({ audience, row }, index) => ({
     index,
     audience,
@@ -320,7 +320,7 @@ export async function packageOutputs(
   const guardedMap = await guardOutputs(drafts, guardCtx, llm);
 
   // CLEAN-OR-ERROR: if the gate couldn't return a clean version of every output
-  // (model unavailable/bad response), fail the whole signal — no silent fallback.
+  // (model unavailable/bad response), fail the whole signal - no silent fallback.
   const allClean = flatRows.every((_, i) => guardedMap.has(i));
   if (!allClean) {
     throw new Error(
@@ -342,7 +342,7 @@ export async function packageOutputs(
       content = fixProductContradiction(content);
     }
 
-    // Deterministic backstop (Invariant 3 — one competitor): a foreign vendor
+    // Deterministic backstop (Invariant 3 - one competitor): a foreign vendor
     // name that survived the gate must never ship → fail the whole signal.
     const bleed = foreignEntity(content, otherCompetitors);
     if (bleed) {

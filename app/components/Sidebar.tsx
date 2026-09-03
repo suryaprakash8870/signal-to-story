@@ -6,7 +6,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { useNotifications } from './useNotifications';
 
-// Collapsible left sidebar navigation. Pure UI — no data or handlers beyond
+// Collapsible left sidebar navigation. Pure UI - no data or handlers beyond
 // routing and the open/close toggle.
 function Svg({ children }: { children: ReactNode }) {
   return (
@@ -54,6 +54,7 @@ export default function Sidebar() {
   const pathname = usePathname() ?? '';
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [userToggled, setUserToggled] = useState(false);
   const { count } = useNotifications();
   const [name, setName] = useState<string | null>(null);
 
@@ -65,13 +66,24 @@ export default function Sidebar() {
       );
   }, []);
 
+  // Auto-collapse to the icon rail on narrower viewports, unless the user has
+  // explicitly toggled it - matches the width the manual toggle already uses.
+  useEffect(() => {
+    if (userToggled) return;
+    const mq = window.matchMedia('(max-width: 1024px)');
+    setCollapsed(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setCollapsed(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [userToggled]);
+
   async function logout() {
     await supabaseBrowser().auth.signOut();
     router.push('/login');
     router.refresh();
   }
 
-  // The login screen stands on its own — no app chrome.
+  // The login screen stands on its own - no app chrome.
   if (pathname === '/login') return null;
 
   return (
@@ -79,7 +91,7 @@ export default function Sidebar() {
       style={{ width: collapsed ? 64 : 240, minWidth: collapsed ? 64 : 240 }}
       className="sticky top-0 flex h-screen shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-surface"
     >
-      {/* Brand — Litera logo links home */}
+      {/* Brand - Litera logo links home */}
       <div className={`flex h-14 items-center px-3 ${collapsed ? 'justify-center' : ''}`}>
         <Link
           href="/"
@@ -109,10 +121,13 @@ export default function Sidebar() {
                     key={item.href}
                     href={item.href}
                     title={collapsed ? item.label : undefined}
-                    className={`relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
-                      active ? 'bg-action-soft text-action' : 'text-gray-600 hover:bg-gray-100'
+                    className={`relative flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-colors ${
+                      active ? 'bg-action-soft pl-[9px] pr-2.5 text-action' : 'px-2.5 text-gray-600 hover:bg-gray-100'
                     } ${collapsed ? 'justify-center' : ''}`}
                   >
+                    {active && (
+                      <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-action" />
+                    )}
                     <span className="relative">
                       {item.icon}
                       {showBadge && collapsed && (
@@ -135,7 +150,10 @@ export default function Sidebar() {
 
       {/* Collapse / expand toggle */}
       <button
-        onClick={() => setCollapsed((c) => !c)}
+        onClick={() => {
+          setUserToggled(true);
+          setCollapsed((c) => !c);
+        }}
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         className={`mx-2 flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 ${
           collapsed ? 'justify-center' : ''

@@ -1,6 +1,6 @@
 import type { Connector, OutboundPayload } from './connector';
 
-// Microsoft Teams Incoming Webhook — one-way, per-channel. No bot
+// Microsoft Teams Incoming Webhook - one-way, per-channel. No bot
 // registration required. Known limitation (04-CONNECTORS.md): there is no
 // way to approve/reject from inside Teams; all review stays in the web app.
 
@@ -13,7 +13,7 @@ const OUTPUT_TYPE_LABELS: Record<string, string> = {
   leadership_summary: 'Leadership summary',
 };
 
-// Left-bar theme color, by urgency — draws the eye to hot signals.
+// Left-bar theme color, by urgency - draws the eye to hot signals.
 const URGENCY_COLOR: Record<string, string> = {
   high: 'D13438', // red
   medium: 'E8A317', // amber
@@ -44,7 +44,7 @@ export function buildTeamsCard(payload: OutboundPayload) {
     '@type': 'MessageCard',
     '@context': 'http://schema.org/extensions',
     themeColor: URGENCY_COLOR[urgency] ?? URGENCY_COLOR.low,
-    summary: `Competitive signal for ${audience} — ${typeLabel}`,
+    summary: `Competitive signal for ${audience} - ${typeLabel}`,
     sections: [
       {
         activityTitle: `**Competitive signal · ${audience}**`,

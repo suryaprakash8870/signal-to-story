@@ -1,7 +1,7 @@
-# 04 — Connectors
+# 04 - Connectors
 
 Every connector implements the same interface regardless of vendor or
-direction. New connectors are added by writing one adapter — nothing else
+direction. New connectors are added by writing one adapter - nothing else
 in the pipeline changes.
 
 ## Interface
@@ -31,7 +31,7 @@ export interface RawSignalCandidate {
 
 ## Outbound: Microsoft Teams (live now)
 
-Incoming Webhook per channel — no bot registration required for this.
+Incoming Webhook per channel - no bot registration required for this.
 
 ```typescript
 // lib/connectors/teams-connector.ts
@@ -60,9 +60,9 @@ export class TeamsConnector implements Connector {
 
 **Known limitation to design around, not just note:** Incoming Webhooks
 are one-way. There is no way for a reviewer to approve/reject from inside
-Teams — all review happens in the web app (`05`, `06`). If Litera later
+Teams - all review happens in the web app (`05`, `06`). If Litera later
 wants in-Teams approval, that requires the Microsoft Graph API and a
-registered Teams bot with Litera IT's Azure AD consent — materially more
+registered Teams bot with Litera IT's Azure AD consent - materially more
 setup, and out of scope for this build.
 
 ## Outbound: Gmail (live now)
@@ -88,12 +88,12 @@ export class GmailConnector implements Connector {
 }
 ```
 
-Gmail SMTP has no open/click tracking — do not build an "email open rate"
+Gmail SMTP has no open/click tracking - do not build an "email open rate"
 metric on this provider. See `10-OPTIMIZATION-NOTES.md` and
 `09-BUILD-PHASES-AND-TASKS.md` for the adoption-metric alternative (Teams
 reactions).
 
-Digest sending is cadence-driven, not fired per-signal — trigger it via a
+Digest sending is cadence-driven, not fired per-signal - trigger it via a
 scheduled GitHub Actions job (same pattern as the existing digest system)
 that reads `connectors.cadence` and batches all approved-but-not-yet-sent
 outputs since the last run.
@@ -103,9 +103,9 @@ outputs since the last run.
 All three follow the same pattern: build the adapter and the UI now,
 running against the fixtures in `08-TEST-FIXTURES-AND-TESTING.md`, with
 `connectors.mode = 'test'`. Do not build real OAuth/API wiring until
-credentials and any required approval are actually available — building
+credentials and any required approval are actually available - building
 against guessed scopes now risks a rebuild later. Switching a connector
-from `test` to `live` should require no pipeline changes — only flipping
+from `test` to `live` should require no pipeline changes - only flipping
 `connectors.mode` and populating `credentials_ref`.
 
 ```typescript
@@ -131,16 +131,16 @@ export class SalesforceConnector implements Connector {
 ```
 
 `SalesforceConfig` is exactly the `connectors.config` JSON described in
-`01-DATA-MODEL.md` — the adapter must read field names from this config,
+`01-DATA-MODEL.md` - the adapter must read field names from this config,
 never hardcode them. The fixture file's own `config_mapping_example` block
 is the placeholder until Litera's Salesforce admin confirms the real
 object/field names.
 
-Gong and Crayon connectors follow the identical shape — `fetch()` reads
+Gong and Crayon connectors follow the identical shape - `fetch()` reads
 `gong_sample.json` / `crayon_sample.json` in test mode, and the vendor's
 real API in live mode. Gong's live-mode API access depends on Litera's
 plan tier; Crayon supports outbound webhooks as an alternative to polling
-if their plan includes it — prefer the webhook when available.
+if their plan includes it - prefer the webhook when available.
 
 ## Credential handling
 
@@ -149,11 +149,11 @@ if their plan includes it — prefer the webhook when available.
 export async function resolveCredential(ref: string): Promise<string> {
   // Server-side only. Fetches from Supabase Vault by reference.
   // NEVER call this from client-side code, NEVER return the raw value
-  // to any API route response body — resolve and use it in the same
+  // to any API route response body - resolve and use it in the same
   // server-side function.
 }
 ```
 
 The Connectors settings page (`06-FRONTEND-SPEC.md`) shows connection
-status and a masked identifier only — it never renders a resolved
+status and a masked identifier only - it never renders a resolved
 credential value.

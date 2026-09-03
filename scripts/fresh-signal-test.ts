@@ -1,5 +1,5 @@
 /**
- * Fresh end-to-end pipeline test — runs one launch-type signal through ALL
+ * Fresh end-to-end pipeline test - runs one launch-type signal through ALL
  * stages (classify → interpret → route → package) and prints the saved outputs
  * so we can eyeball the new tone-calibration + battlecard prompt changes.
  *

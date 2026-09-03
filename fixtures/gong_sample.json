@@ -1,7 +1,7 @@
 {
   "_fixture_note": "Synthetic, shaped to follow Gong's public Calls + Transcript API pattern. Realistic length: a multi-turn renewal call with filler words and cross-talk, the way real Gong transcripts arrive.",
   "call_id": "gong-call-8841203",
-  "call_title": "Acme Legal — FY26 Renewal & Expansion Review",
+  "call_title": "Acme Legal - FY26 Renewal & Expansion Review",
   "call_date": "2026-06-18",
   "duration_seconds": 2740,
   "participants": [
@@ -10,17 +10,17 @@
     { "name": "Marcus Webb", "affiliation": "Acme Legal", "title": "Head of Knowledge Management" }
   ],
   "transcript": [
-    { "speaker": "Jordan Lee", "text": "Hey Priya, Marcus — thanks for making the time. I know renewals are never anyone's favorite meeting, so I'll keep it tight. How's the team doing with the drafting workflow this quarter?" },
-    { "speaker": "Priya Nair", "text": "Good, mostly. I mean, the platform's solid. The paralegals are comfortable in it now, which took a while, honestly. But I'll be straight with you — we've been taking a look at LegalEdge lately." },
+    { "speaker": "Jordan Lee", "text": "Hey Priya, Marcus - thanks for making the time. I know renewals are never anyone's favorite meeting, so I'll keep it tight. How's the team doing with the drafting workflow this quarter?" },
+    { "speaker": "Priya Nair", "text": "Good, mostly. I mean, the platform's solid. The paralegals are comfortable in it now, which took a while, honestly. But I'll be straight with you - we've been taking a look at LegalEdge lately." },
     { "speaker": "Jordan Lee", "text": "Okay. Appreciate you being upfront. What prompted that?" },
     { "speaker": "Priya Nair", "text": "So they reached out, did a demo maybe three weeks ago. They just launched this new contract review module, and the thing that got everyone's attention is it's fully native inside Word. Like, the redlining happens in Word itself, you don't bounce out to a separate window or a web app." },
-    { "speaker": "Marcus Webb", "text": "Yeah, that was the big one for the paralegals. The redlining speed in the demo was — I mean it was fast. They ran a fairly gnarly master services agreement through it live and the turn-comparison came back almost instantly. A couple of the team members were pretty impressed, I won't lie." },
+    { "speaker": "Marcus Webb", "text": "Yeah, that was the big one for the paralegals. The redlining speed in the demo was - I mean it was fast. They ran a fairly gnarly master services agreement through it live and the turn-comparison came back almost instantly. A couple of the team members were pretty impressed, I won't lie." },
     { "speaker": "Jordan Lee", "text": "Got it. So the native-Word piece and the redline speed are the two things standing out?" },
     { "speaker": "Marcus Webb", "text": "Those two, yeah. The not-leaving-Word thing is bigger than it sounds. Our folks basically live in Word all day, so every context switch is friction. That's the pitch they made and it kind of landed." },
-    { "speaker": "Priya Nair", "text": "I want to be fair here — it was a demo, it's a new module, we haven't run a real pilot. And your integration has been dependable, which counts for a lot when we've got audits. I'm not saying we're switching. I'm saying it's on our radar and the team asked me to raise it." },
-    { "speaker": "Jordan Lee", "text": "That's exactly the right thing to do and I'd rather hear it now than at the eleventh hour. Let me take this back internally. Can I ask — was pricing part of the conversation with them, or purely the product demo?" },
+    { "speaker": "Priya Nair", "text": "I want to be fair here - it was a demo, it's a new module, we haven't run a real pilot. And your integration has been dependable, which counts for a lot when we've got audits. I'm not saying we're switching. I'm saying it's on our radar and the team asked me to raise it." },
+    { "speaker": "Jordan Lee", "text": "That's exactly the right thing to do and I'd rather hear it now than at the eleventh hour. Let me take this back internally. Can I ask - was pricing part of the conversation with them, or purely the product demo?" },
     { "speaker": "Priya Nair", "text": "Mostly product. They floated numbers but nothing formal, so I wouldn't read too much into it. The stickiness for us is genuinely the in-Word experience for the paralegal team." },
-    { "speaker": "Jordan Lee", "text": "Understood. Okay, here's what I'll do — I'll pull together where we stand on the drafting roadmap and get you something concrete before renewal. Marcus, would it help if I set up time with a couple of your paralegals directly so they feel heard on the workflow side?" },
+    { "speaker": "Jordan Lee", "text": "Understood. Okay, here's what I'll do - I'll pull together where we stand on the drafting roadmap and get you something concrete before renewal. Marcus, would it help if I set up time with a couple of your paralegals directly so they feel heard on the workflow side?" },
     { "speaker": "Marcus Webb", "text": "Honestly, yeah. That'd go a long way. They want to feel like the roadmap accounts for how they actually work." }
   ],
   "raw_text": "In a FY26 renewal review call with Acme Legal, the General Counsel (Priya Nair) and Head of Knowledge Management (Marcus Webb) disclosed that competitor LegalEdge demoed a newly launched contract review module about three weeks prior. The two capabilities that stood out to Acme's paralegal team were (1) fully native operation inside Microsoft Word, with redlining performed in Word itself rather than a separate window or web app, and (2) notably fast redlining/turn-comparison, demonstrated live on a complex master services agreement. Acme stressed this was a demo of a new module, not a completed pilot, and that Litera's integration reliability remains valued especially for audits. Pricing was mentioned by LegalEdge only informally. Acme has not decided to switch but raised LegalEdge as an active consideration, with the in-Word paralegal experience being the main draw. Litera's AE committed to sharing the drafting roadmap before renewal and offered direct time with Acme's paralegals.",

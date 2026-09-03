@@ -3,7 +3,7 @@
 Implements Phase 1, steps 1–2 of `00-OVERVIEW.md`'s build order: the full
 data model, and Stages 2–5 of the pipeline running against Ollama, behind a
 minimal intake form and review queue. Connectors, Claude swap-in, and the
-full frontend are not built yet — see `09-BUILD-PHASES-AND-TASKS.md`.
+full frontend are not built yet - see `09-BUILD-PHASES-AND-TASKS.md`.
 
 ## Setup
 
@@ -13,16 +13,16 @@ full frontend are not built yet — see `09-BUILD-PHASES-AND-TASKS.md`.
 3. Copy `.env.example` to `.env.local` and fill in:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
      `SUPABASE_SERVICE_ROLE_KEY` (Supabase project settings → API)
-   - `OLLAMA_BASE_URL` / `OLLAMA_MODEL` — leave `LLM_PROVIDER=ollama` for
+   - `OLLAMA_BASE_URL` / `OLLAMA_MODEL` - leave `LLM_PROVIDER=ollama` for
      dev/test. Do not switch to `claude` until you've completed the
      grounding test below.
 4. After creating a Supabase Auth user, give it a role (defaults to
-   `submitter`) — run in the SQL editor:
+   `submitter`) - run in the SQL editor:
    ```sql
    update public.user_profiles set role = 'reviewer' where id = '<user-uuid>';
    ```
    (A row is only created here automatically if you added an
-   `on auth.users insert` trigger — otherwise insert it manually the first
+   `on auth.users insert` trigger - otherwise insert it manually the first
    time: `insert into public.user_profiles (id, role) values ('<user-uuid>', 'reviewer');`)
 5. `npm run dev`, sign in at `/login`, submit a signal at `/intake`.
 
@@ -33,7 +33,7 @@ full frontend are not built yet — see `09-BUILD-PHASES-AND-TASKS.md`.
    move through classified → interpreted → packaged. Confirm outputs
    appear in `/review`, and that Approve is disabled while any
    `unverified_claims` are present.
-2. **Grounding test (Claude — do not skip).** Set `LLM_PROVIDER=claude` and
+2. **Grounding test (Claude - do not skip).** Set `LLM_PROVIDER=claude` and
    `ANTHROPIC_API_KEY`, restart, resubmit the same fixture. Then submit a
    variant with an appended unsupported claim (see
    `fixtures/expected_pipeline_output_example.json` →

@@ -72,7 +72,7 @@ export class GeminiEntraProvider implements LLMProvider {
       const errBody = await res.text().catch(() => '');
       if (res.status === 401) {
         throw new Error(
-          `Gemini API 401 — the access token is invalid or expired. Entra tokens last ~1 hour; refresh the token. ${errBody.slice(0, 200)}`
+          `Gemini API 401 - the access token is invalid or expired. Entra tokens last ~1 hour; refresh the token. ${errBody.slice(0, 200)}`
         );
       }
       throw new Error(`Gemini API request failed: ${res.status} ${errBody.slice(0, 300)}`);

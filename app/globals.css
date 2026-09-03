@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------------------------------
-   Litera "Raise the Bar" — dark neon theme.
+   Litera "Raise the Bar" - dark neon theme.
 
    Single source of truth for every colour, radius, shadow and gradient. Values
    are verbatim from reference/design/design/design-system.md; nothing here is
    invented, and no colour outside that document should be added.
 
    Components inherit these through the remapped Tailwind palette in
-   tailwind.config.js — `white` and the gray scale point at these tokens — so
+   tailwind.config.js - `white` and the gray scale point at these tokens - so
    the theme lives in one place instead of being hardcoded across pages.
    ------------------------------------------------------------------------- */
 :root {
@@ -33,7 +33,7 @@
   --text-secondary: #93a5af;
   --text-muted: #61737d;
 
-  /* Interactive — teal replaces the previous burnt orange */
+  /* Interactive - teal replaces the previous burnt orange */
   --accent: #23c3bf;
   --accent-ink: #052322;     /* text ON a teal fill */
   --accent-soft: rgba(35, 195, 191, 0.13);
@@ -110,7 +110,7 @@ body {
 }
 
 /* Shared surfaces and controls. Pages use these so the whole app reads as one
-   product. Styling only — no layout or behaviour changes from the light theme. */
+   product. Styling only - no layout or behaviour changes from the light theme. */
 @layer components {
   /* Surfaces */
   .card {
@@ -124,7 +124,7 @@ body {
 
   /* The signature neon-rimmed panel. Reserved for primary windows and feature
      panels: applied everywhere it reads as noise (components.md section 1).
-     Built with the padding trick — gradient background, thin padding, solid
+     Built with the padding trick - gradient background, thin padding, solid
      inner surface. */
   .neon-card {
     background: var(--rim);
@@ -371,5 +371,19 @@ body {
   }
 }
 .animate-breathe {
-  animation: breathe 7s ease-in-out infinite;
+  animation: breathe 9s ease-in-out infinite;
+}
+
+@keyframes breathe-alt {
+  0%, 100% {
+    transform: translate(-58%, -46%) scale(1.05);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-42%, -54%) scale(0.9);
+    opacity: 0.55;
+  }
+}
+.animate-breathe-alt {
+  animation: breathe-alt 12s ease-in-out infinite;
 }

@@ -3,7 +3,7 @@
  * the packaging + verification calls: firing all ~10 at once overwhelms a
  * rate-limited hosted API (429s) and a single local Ollama (queue timeouts).
  * A small limit keeps both providers within capacity at the cost of some
- * wall-clock time — a worthwhile trade for reliability on free/local tiers.
+ * wall-clock time - a worthwhile trade for reliability on free/local tiers.
  */
 export async function mapLimit<T, R>(
   items: T[],

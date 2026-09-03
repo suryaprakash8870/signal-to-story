@@ -1,5 +1,5 @@
 {
-  "_note": "Reference target for Stages 2, 3, and 5 when run against any of gong_sample.json / crayon_sample.json / salesforce_sample.json — all three represent the same underlying signal (LegalEdge launching a Word-integrated contract review module), so this is one shared target regardless of source, per 08-TEST-FIXTURES-AND-TESTING.md.",
+  "_note": "Reference target for Stages 2, 3, and 5 when run against any of gong_sample.json / crayon_sample.json / salesforce_sample.json - all three represent the same underlying signal (LegalEdge launching a Word-integrated contract review module), so this is one shared target regardless of source, per 08-TEST-FIXTURES-AND-TESTING.md.",
   "classification": {
     "competitor": "LegalEdge",
     "signal_type": "product_launch",

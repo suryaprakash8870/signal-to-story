@@ -10,7 +10,7 @@ name: Gmail Digest
 # weekly is harmless (an empty run is a no-op). Adjust the cron as needed.
 
 on:
-  # Scheduled runs are DISABLED — this app is not deployed, so the cron runs
+  # Scheduled runs are DISABLED - this app is not deployed, so the cron runs
   # would only fail. Re-enable by uncommenting when APP_URL/CRON_SECRET are set.
   # schedule:
   #   - cron: '0 9 * * 1' # every Monday at 09:00 UTC

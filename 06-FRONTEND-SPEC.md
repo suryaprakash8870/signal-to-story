@@ -1,4 +1,4 @@
-# 06 — Frontend Spec (Next.js)
+# 06 - Frontend Spec (Next.js)
 
 ## Routes
 
@@ -21,7 +21,7 @@ insert into `signals`, trigger Stage 2 (`02-PIPELINE-STAGES.md`)
 server-side, redirect to `/signals/[id]` so the submitter can watch it
 move through classification → interpretation → packaging.
 
-Build this first, minimal, no polish — per the build order in `00-OVERVIEW.md`.
+Build this first, minimal, no polish - per the build order in `00-OVERVIEW.md`.
 
 ## `/review`
 
@@ -53,7 +53,7 @@ gone out to Sales this month" without digging through Teams history.
 
 Six cards: Microsoft Teams, Gmail, Salesforce, Gong, Crayon, and an
 "AI Provider" card showing the current `LLM_PROVIDER` setting (read-only
-display — this is an environment variable, not something toggled from the
+display - this is an environment variable, not something toggled from the
 UI, per `03-LLM-PROVIDER.md`).
 
 Each connector card shows: type, direction, mode (Test/Live badge),
@@ -62,18 +62,18 @@ cadence selector (Weekly / Bi-weekly) writing to `connectors.cadence`.
 
 For Salesforce/Gong/Crayon while in Test Mode: show a clear "Running in
 Test Mode against sample data" state rather than a greyed-out disabled
-card — this is real, working functionality (against fixtures), not a
+card - this is real, working functionality (against fixtures), not a
 placeholder.
 
 ## `/settings/competitors`
 
-Simple CRUD on `competitors.known_facts` — this is what grounds Stage 3's
+Simple CRUD on `competitors.known_facts` - this is what grounds Stage 3's
 interpretation. Reviewer/admin only, per the RLS policy in `01`.
 
 ## Auth
 
 Supabase Auth. Role (`submitter` / `reviewer` / `admin`) lives in
 `user_profiles.role` and drives both RLS (`01`) and which routes/actions
-are visible in the UI — but remember the RLS policy is the actual
+are visible in the UI - but remember the RLS policy is the actual
 enforcement; hiding a button in the UI is a convenience, not a security
 boundary.

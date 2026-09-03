@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Loading from '../components/Loading';
 import { useNotifications, useSeenSignals } from '../components/useNotifications';
+import { stripEmoji } from '@/lib/text';
 
 type Signal = {
   id: string;
@@ -25,7 +26,6 @@ function statusBadge(status: string) {
   if (status === 'draft') return 'bg-accent-soft text-accent'; // pending
   return 'bg-amber-50 text-amber-700'; // classified / interpreted (processing)
 }
-
 export default function SignalsPage() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,7 +96,7 @@ export default function SignalsPage() {
           <h1 className="page-title">Signals</h1>
           {pendingCount > 0 && (
             <p className="muted mt-1 text-sm">
-              {pendingCount} pending — click <span className="font-medium text-gray-700">Process</span> to run one through the pipeline.
+              {pendingCount} pending - click <span className="font-medium text-gray-700">Process</span> to run one through the pipeline.
             </p>
           )}
         </div>
@@ -116,9 +116,9 @@ export default function SignalsPage() {
           <Loading label="Loading signals…" />
         </div>
       ) : signals.length === 0 ? (
-        <div className="card card-p muted">No signals yet — click “Fetch from Crayon” to pull the latest.</div>
+        <div className="card card-p muted">No signals yet - click “Fetch from Crayon” to pull the latest.</div>
       ) : (
-        <ul className="space-y-3 lg:max-h-[calc(100vh-14rem)] lg:overflow-y-auto lg:pr-1">
+        <ul className="space-y-3 md:max-h-[calc(100vh-14rem)] md:overflow-y-auto md:pr-1">
           {/* The queue only grows, so it scrolls in its own pane on large
               screens rather than stretching the page indefinitely. */}
           {signals.map((s) => {
@@ -150,7 +150,7 @@ export default function SignalsPage() {
               return (
                 <li key={s.id} className="card p-4">
                   {header}
-                  <p className="clamp-2 mt-2 text-sm leading-relaxed text-gray-700">{s.raw_text}</p>
+                  <p className="clamp-2 mt-2 text-sm leading-relaxed text-gray-700">{stripEmoji(s.raw_text)}</p>
                   <div className="mt-3 flex gap-2 border-t border-gray-100 pt-3">
                     <button
                       onClick={() => process(s.id)}
@@ -169,9 +169,19 @@ export default function SignalsPage() {
 
             return (
               <li key={s.id}>
-                <Link href={`/signals/${s.id}`} className="card block p-4 transition-shadow hover:shadow-md">
-                  {header}
-                  <p className="clamp-2 mt-2 text-sm leading-relaxed text-gray-700">{s.raw_text}</p>
+                <Link
+                  href={`/signals/${s.id}`}
+                  className="card flex items-start gap-3 p-4 transition-shadow hover:shadow-md"
+                >
+                  <div className="min-w-0 flex-1">
+                    {header}
+                    <p className="clamp-2 mt-2 text-sm leading-relaxed text-gray-700">{stripEmoji(s.raw_text)}</p>
+                  </div>
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-subtle text-gray-400">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </span>
                 </Link>
               </li>
             );

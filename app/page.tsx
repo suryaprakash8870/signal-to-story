@@ -2,12 +2,12 @@ import Link from 'next/link';
 
 const STEPS = [
   { n: '1', title: 'Classify', body: 'Identifies the competitor, signal type, urgency, and who should care.' },
-  { n: '2', title: 'Interpret', body: 'Summarizes what happened and why it matters — grounded only in the source.' },
+  { n: '2', title: 'Interpret', body: 'Summarizes what happened and why it matters - grounded only in the source.' },
   { n: '3', title: 'Route', body: 'Decides which teams the signal is relevant to.' },
   { n: '4', title: 'Package', body: 'Writes tailored content for each team, ready to review and approve.' },
 ];
 
-// Where each role starts — one agent, tailored to what each team acts on.
+// Where each role starts - one agent, tailored to what each team acts on.
 const ROLES = [
   { title: 'Sales', body: 'Win the call. Talk tracks and objection handling for live prospect conversations.' },
   { title: 'Product', body: 'Protect the roadmap. Clear watch-outs on the rival features that matter.' },
@@ -18,9 +18,9 @@ const ROLES = [
 const FEATURES = [
   { title: 'Grounded, never invented', body: 'Every claim traces to the source signal. If the agent doesn’t know it, it doesn’t say it.' },
   { title: 'Human review gate', body: 'Nothing publishes on its own. A reviewer reads, edits, and approves every output first.' },
-  { title: 'Comes to you', body: 'Approved insights arrive in Microsoft Teams or email — no new tool to open, no extra step.' },
+  { title: 'Comes to you', body: 'Approved insights arrive in Microsoft Teams or email - no new tool to open, no extra step.' },
   { title: 'Sharp battlecards', body: 'Objection and response cards that lead with the competitor’s real weakness, not filler.' },
-  { title: 'Measured tone', body: 'Treats a launch or demo as an early signal to watch — not a proven market threat.' },
+  { title: 'Measured tone', body: 'Treats a launch or demo as an early signal to watch - not a proven market threat.' },
   { title: 'Every team covered', body: 'One signal becomes tailored content for Sales, Product, Marketing, and Leadership.' },
 ];
 
@@ -50,7 +50,7 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero — full-bleed geometric graphic, text overlaid on the light left */}
+      {/* Hero - full-bleed geometric graphic, text overlaid on the light left */}
       <section className="relative overflow-hidden bg-surface">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/2.jpg" alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
@@ -69,7 +69,7 @@ export default function HomePage() {
             </p>
             <p className="mt-4 max-w-lg text-lg leading-relaxed text-gray-700">
               It continuously monitors competitive activity and proactively delivers the actionable
-              insights each team needs — grounded in the source, and reviewed by a human before
+              insights each team needs - grounded in the source, and reviewed by a human before
               anything goes out.
             </p>
             <div className="mt-8">
@@ -84,7 +84,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Sources strip — Compete Agent builds on trusted inputs, it doesn't crawl the web */}
+      {/* Sources strip - Compete Agent builds on trusted inputs, it doesn't crawl the web */}
       <section className="border-y border-gray-200 bg-gray-50 py-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-3 px-5 text-center sm:flex-row sm:gap-4">
           <span className="text-sm font-medium text-gray-500">Built on the sources you already trust:</span>
@@ -92,14 +92,14 @@ export default function HomePage() {
             <span className="rounded-lg border border-gray-200 bg-surface px-3 py-1 text-sm font-semibold text-gray-800">Crayon</span>
             <span className="rounded-lg border border-gray-200 bg-surface px-3 py-1 text-sm font-semibold text-gray-800">Gong</span>
           </div>
-          <span className="text-sm text-gray-500">— not another web crawler, your agent on top of them.</span>
+          <span className="text-sm text-gray-500">- not another web crawler, your agent on top of them.</span>
         </div>
       </section>
 
       {/* Value band */}
-      <section className="bg-surface py-16 text-center">
+      <section className="bg-gradient-to-br from-accent-soft via-surface to-action-soft py-16 text-center">
         <p className="mx-auto max-w-3xl px-5 text-2xl font-bold leading-snug tracking-tight text-gray-900 sm:text-3xl">
-          Always watching the competition. Always ready with your next move — grounded in the source,
+          Always watching the competition. Always ready with your next move - grounded in the source,
           and approved by a human before it goes out.
         </p>
       </section>
@@ -108,12 +108,12 @@ export default function HomePage() {
       <section id="how" className="mx-auto max-w-6xl px-5 py-20">
         <h2 className="text-center text-3xl font-bold tracking-tight">How your agent works</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-          The agent does the heavy lifting — you review and approve.
+          The agent does the heavy lifting - you review and approve.
         </p>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s) => (
-            <div key={s.title} className="rounded-2xl border border-gray-200 bg-surface p-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-sm font-bold text-ink-on">
+            <div key={s.title} className="card p-5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-action text-sm font-bold text-action-ink">
                 {s.n}
               </span>
               <h3 className="mt-4 font-semibold">{s.title}</h3>
@@ -123,8 +123,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* For your teams — where each role starts, and what they get */}
-      <section id="teams" className="bg-gray-50 py-20">
+      {/* For your teams - where each role starts, and what they get */}
+      <section id="teams" className="bg-gradient-to-b from-surface-subtle to-surface py-20">
         <div className="mx-auto max-w-6xl px-5">
           <h2 className="text-center text-3xl font-bold tracking-tight">One agent. Every team gets what it needs.</h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
@@ -132,7 +132,7 @@ export default function HomePage() {
           </p>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {ROLES.map((r) => (
-              <div key={r.title} className="rounded-2xl border border-gray-200 bg-surface p-6">
+              <div key={r.title} className="card p-6">
                 <h3 className="text-lg font-bold text-accent">{r.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-gray-600">{r.body}</p>
               </div>
@@ -141,33 +141,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Delivery — the money shot: insights arrive where teams already work */}
+      {/* Delivery - the money shot: insights arrive where teams already work */}
       <section id="delivery" className="mx-auto max-w-6xl px-5 py-20">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight">Delivered where you already work</h2>
           <p className="mx-auto mt-3 max-w-2xl text-gray-600">
             No new tool to learn. Approved insights arrive right where your teams already spend their
-            day — so acting on them takes seconds, not a login.
+            day - so acting on them takes seconds, not a login.
           </p>
         </div>
         <div className="mt-12 grid gap-5 sm:grid-cols-2">
-          <div className="rounded-2xl border border-gray-200 bg-surface p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
+          <div className="card p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-action-soft text-action">
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
             </div>
             <h3 className="mt-5 text-xl font-bold">Microsoft Teams</h3>
             <p className="mt-2 leading-relaxed text-gray-600">
-              Insights land in the Teams channel you already use — one glance, and you’re ready for
+              Insights land in the Teams channel you already use - one glance, and you’re ready for
               the call.
             </p>
           </div>
-          <div className="rounded-2xl border border-gray-200 bg-surface p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
+          <div className="card p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-action-soft text-action">
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
             </div>
             <h3 className="mt-5 text-xl font-bold">Email</h3>
             <p className="mt-2 leading-relaxed text-gray-600">
-              A clean summary straight to the inbox — perfect for Leadership, Product, and Marketing to
+              A clean summary straight to the inbox - perfect for Leadership, Product, and Marketing to
               scan and act on in seconds.
             </p>
           </div>
@@ -175,7 +175,7 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="bg-gray-50 py-20">
+      <section id="features" className="bg-gradient-to-t from-surface-subtle to-surface py-20">
         <div className="mx-auto max-w-6xl px-5">
           <h2 className="text-center text-3xl font-bold tracking-tight">Built to be trusted</h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
@@ -183,7 +183,7 @@ export default function HomePage() {
           </p>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-gray-200 bg-surface p-6">
+              <div key={f.title} className="card p-6">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                 </div>
@@ -195,11 +195,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Stats — four separate cards */}
+      {/* Stats - four separate cards */}
       <section className="mx-auto max-w-6xl px-5 py-14">
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
           {STATS.map((s) => (
-            <div key={s.label} className="rounded-2xl bg-accent p-6 text-center shadow-sm">
+            <div key={s.label} className="rounded-2xl bg-action p-6 text-center shadow-sm">
               <div className="text-4xl font-extrabold text-white">{s.value}</div>
               <div className="mt-1 text-sm text-white/80">{s.label}</div>
             </div>
@@ -211,7 +211,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-4xl px-5 py-20 text-center">
         <h2 className="text-3xl font-bold tracking-tight">Just Ask… Agent Compete</h2>
         <p className="mx-auto mt-3 max-w-md text-gray-600">
-          Give every team their own competitive agent — always watching, always ready.
+          Give every team their own competitive agent - always watching, always ready.
         </p>
         <Link
           href="/login?demo=1"

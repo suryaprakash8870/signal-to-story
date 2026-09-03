@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message ?? 'insert failed' }, { status: 500 });
   }
 
-  // Fire the pipeline without blocking the response — the submitter watches
+  // Fire the pipeline without blocking the response - the submitter watches
   // progress on /signals/[id] instead of waiting on this request.
   runPipeline(data.id).catch((err) => console.error('[pipeline] unhandled error:', err));
 

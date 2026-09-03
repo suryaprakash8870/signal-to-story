@@ -13,27 +13,27 @@ for (const line of readFileSync(path.join(process.cwd(), '.env.local'), 'utf8').
   if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
 }
 
-const SIGNAL = `[Gong Call — Discovery: Meridian Partners (Prospect) × Litera — 2026-07-02]
+const SIGNAL = `[Gong Call - Discovery: Meridian Partners (Prospect) × Litera - 2026-07-02]
 
-Priya Nair (Litera, AE): Thanks for the time today. Before I dive in — what's driving you to look at a new document platform now?
+Priya Nair (Litera, AE): Thanks for the time today. Before I dive in - what's driving you to look at a new document platform now?
 
 Tom Becker (Meridian Partners, Director of Practice Tech): Honestly, our current setup is a mess of point tools. But I'll be transparent, you're not the only one we're talking to. We had a pretty detailed session with Novera last week.
 
 Priya Nair: Appreciate the honesty. What stood out from the Novera conversation?
 
-Tom Becker: Two things. First, their pricing came in noticeably lower — they quoted us a flat per-seat number that was roughly 30% under what we'd budgeted. Second, they've been pushing this new "compliance dashboard" that auto-flags risky clauses across a whole matter, not just one document.
+Tom Becker: Two things. First, their pricing came in noticeably lower - they quoted us a flat per-seat number that was roughly 30% under what we'd budgeted. Second, they've been pushing this new "compliance dashboard" that auto-flags risky clauses across a whole matter, not just one document.
 
 Sofia Reyes (Meridian, Risk & Compliance Lead): The cross-matter view is what caught my attention. Right now we review documents one at a time. If something can surface risk across an entire matter automatically, that's a real time saver for my team. Novera demoed it and it looked slick.
 
-Tom Becker: That said — Novera's a smaller vendor. We asked about their security posture and the answers were a bit thin. For a firm our size, SOC 2 and a real audit trail aren't optional. That's an open question for us with them.
+Tom Becker: That said - Novera's a smaller vendor. We asked about their security posture and the answers were a bit thin. For a firm our size, SOC 2 and a real audit trail aren't optional. That's an open question for us with them.
 
-Priya Nair: Got it. So lower price and the cross-matter compliance view are the draws, but security maturity is a concern. On the compliance side — is that a must-have for this cycle, or a nice-to-have?
+Priya Nair: Got it. So lower price and the cross-matter compliance view are the draws, but security maturity is a concern. On the compliance side - is that a must-have for this cycle, or a nice-to-have?
 
 Sofia Reyes: Trending toward must-have. Our clients are asking harder questions about risk, so anything that helps us get ahead of that is moving up the list.
 
 Tom Becker: Price still matters most to procurement, though. If the numbers are far apart, that's a hard conversation internally regardless of features.
 
-Priya Nair: Understood. That's helpful — let me put together something that speaks to both the compliance capability and the total cost picture.`;
+Priya Nair: Understood. That's helpful - let me put together something that speaks to both the compliance capability and the total cost picture.`;
 
 async function main() {
   const { supabaseServiceRole } = await import('../lib/supabase/server');

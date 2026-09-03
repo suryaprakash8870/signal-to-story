@@ -1,4 +1,4 @@
-# Signal-to-Story Engine — Walkthrough
+# Signal-to-Story Engine - Walkthrough
 
 A step-by-step tour to exercise everything built so far. Sample inputs are in
 `SAMPLE-INPUTS.md`.
@@ -15,7 +15,7 @@ A step-by-step tour to exercise everything built so far. Sample inputs are in
 > Tip: the pipeline runs 5 model calls per signal (classify, interpret, then
 > up to 4 packaging calls). On the 7B model that can take a couple of minutes;
 > the 14B box is faster. Don't restart the server while a signal is mid-pipeline
-> — that orphans it at whatever stage it reached.
+> - that orphans it at whatever stage it reached.
 
 ---
 
@@ -38,7 +38,7 @@ A step-by-step tour to exercise everything built so far. Sample inputs are in
   (talk_track, battlecard_snippet, live_talking_points); other audiences get
   their one type. Audiences scored `low` are skipped entirely.
 - Each output shows an **Unverified claims** box if the model flagged any
-  inferences — this is the grounding rule working.
+  inferences - this is the grounding rule working.
 
 ## 3. The approval gate (the main safety control)
 
@@ -50,7 +50,7 @@ On the signal detail page, on any output with unverified claims:
    - *Confirm* moves it into the main content (now human-backed).
 3. Once the claims box is empty, **Approve** enables. Click it.
 
-> The block is enforced in the **database** (RLS), not just the UI — a direct
+> The block is enforced in the **database** (RLS), not just the UI - a direct
 > API call to approve with claims still present returns 403.
 
 ## 4. Publish to Teams
@@ -63,7 +63,7 @@ After approving an output:
 3. The signal status becomes `published`.
 
 > The webhook is set on `/settings/connectors`. It currently points at a
-> **webhook.site test URL**, not a real Teams channel — replace it with your
+> **webhook.site test URL**, not a real Teams channel - replace it with your
 > real Incoming Webhook to post to an actual channel (step 7).
 
 ## 5. The review queue
@@ -75,14 +75,14 @@ After approving an output:
 3. Approved/published outputs drop off the queue automatically.
 4. Click any row → jumps to that signal's detail page.
 
-## 6. AI Provider — switch to Claude by adding a key
+## 6. AI Provider - switch to Claude by adding a key
 
 On **/settings/connectors**, the **AI Provider** card:
 
 1. Shows the active provider (currently `ollama`).
 2. Paste a Claude API key (`sk-ant-…`) → **Save Claude key**. The card now
    shows `active: claude`. Every subsequent pipeline run uses Claude
-   automatically — no restart.
+   automatically - no restart.
 3. **Remove key (use Ollama)** reverts to Ollama.
 
 > The key is stored in Supabase Vault, never exposed to the browser. This is
@@ -90,7 +90,7 @@ On **/settings/connectors**, the **AI Provider** card:
 > sample #4, and confirm the "fundamentally better AI" claim lands in
 > unverified_claims.
 
-## 7. Connectors — Teams & Gmail (outbound)
+## 7. Connectors - Teams & Gmail (outbound)
 
 **Teams card:**
 - Paste a real Teams **Incoming Webhook URL** → **Save webhook**.
@@ -104,7 +104,7 @@ On **/settings/connectors**, the **AI Provider** card:
 - **Send digest now** batches every approved-but-not-yet-sent output into one
   email and sends it. (In production this fires on a schedule, not manually.)
 
-## 8. Connectors — Salesforce / Gong / Crayon (inbound, Test Mode)
+## 8. Connectors - Salesforce / Gong / Crayon (inbound, Test Mode)
 
 Each inbound card runs in **Test Mode** against its fixture:
 
@@ -112,12 +112,12 @@ Each inbound card runs in **Test Mode** against its fixture:
    signal, and runs it through the pipeline. The message reports how many were
    created (or deduped if the same text already exists).
 2. Go to **/signals/[id]** (or `/review` once packaged) to see the result.
-3. **Salesforce** specifically demonstrates config-driven field mapping — the
+3. **Salesforce** specifically demonstrates config-driven field mapping - the
    adapter reads field names from `connectors.config`, never hardcoded.
 
 > Fetch the same fixture twice and the second attempt reports it **deduped**
 > (matched an existing signal by content hash) instead of re-running the
-> pipeline — the cost optimization from `10-OPTIMIZATION-NOTES.md`.
+> pipeline - the cost optimization from `10-OPTIMIZATION-NOTES.md`.
 
 ---
 

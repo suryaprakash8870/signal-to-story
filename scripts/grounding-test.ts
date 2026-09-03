@@ -1,12 +1,12 @@
 /**
- * Grounding test (08-TEST-FIXTURES-AND-TESTING.md — "the check that matters
+ * Grounding test (08-TEST-FIXTURES-AND-TESTING.md - "the check that matters
  * most in the whole test suite").
  *
  * Feeds a signal that contains a claim far stronger than its source supports
  * ("fundamentally better AI") through Stages 2–3 and checks that the extra
  * claim lands in `unverified_claims` rather than being asserted as fact.
  *
- * This is only *trusted* against Claude — local Ollama models are measurably
+ * This is only *trusted* against Claude - local Ollama models are measurably
  * weaker at this. The script prints which provider is active and warns if it
  * is not Claude.
  *
@@ -37,7 +37,7 @@ async function main() {
   console.log(`Active provider: ${JSON.stringify(status)}`);
   if (status.provider !== 'claude') {
     console.warn(
-      '\n⚠  Provider is NOT Claude. This run only checks plumbing — the grounding\n' +
+      '\n⚠  Provider is NOT Claude. This run only checks plumbing - the grounding\n' +
         '   result is not trustworthy on a local model. Add a Claude key and re-run.\n'
     );
   }
@@ -75,11 +75,11 @@ async function main() {
 
     console.log('\n--- RESULT ---');
     if (flaggedAiClaim) {
-      console.log('PASS — the unsupported "better AI / win every deal" claim was flagged.');
+      console.log('PASS - the unsupported "better AI / win every deal" claim was flagged.');
     } else if (anyFlagged) {
-      console.log('PARTIAL — some claims were flagged, but not the target overreach. Inspect above.');
+      console.log('PARTIAL - some claims were flagged, but not the target overreach. Inspect above.');
     } else {
-      console.log('FAIL — nothing was flagged. The unsupported claim was treated as fact.');
+      console.log('FAIL - nothing was flagged. The unsupported claim was treated as fact.');
       console.log('        Tighten the grounding prompt in lib/pipeline/interpret.ts.');
     }
   } finally {

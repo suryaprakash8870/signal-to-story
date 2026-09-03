@@ -46,7 +46,7 @@ function buildFallback(
         .split('|')
         .map((c) => c.replace(/\*\*/g, '').trim())
         .filter(Boolean);
-      if (cells.length >= 2) cleaned.push(`${cells[0]}: ${cells.slice(1).join(' — ')}`);
+      if (cells.length >= 2) cleaned.push(`${cells[0]}: ${cells.slice(1).join(' - ')}`);
       else if (cells.length === 1) cleaned.push(cells[0]);
     } else {
       cleaned.push(line.replace(/\*\*/g, '').replace(/\[\^[^\]]+\]/g, '').trim());

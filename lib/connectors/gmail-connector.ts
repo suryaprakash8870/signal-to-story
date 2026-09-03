@@ -3,7 +3,7 @@ import type { Connector, OutboundPayload } from './connector';
 
 // Gmail SMTP, reusing the same send pattern as the agency's existing
 // news-digest system (04-CONNECTORS.md). No open/click tracking exists on
-// SMTP — do not build an email-open-rate metric on this.
+// SMTP - do not build an email-open-rate metric on this.
 
 export interface GmailCredentials {
   user: string; // Gmail address used to authenticate + send
@@ -35,7 +35,7 @@ export class GmailConnector implements Connector {
     }
   }
 
-  // Single-output push (rarely used directly — Gmail is digest-driven).
+  // Single-output push (rarely used directly - Gmail is digest-driven).
   async push(payload: OutboundPayload) {
     await this.sendDigest('Signal-to-Story update', payload.content);
   }
@@ -73,7 +73,7 @@ export function formatDigest(items: DigestItem[]): string {
     const comp = item.competitor ? ` · ${item.competitor}` : '';
     return `${i + 1}. [${item.audience}] ${label}${comp}\n${item.content}`;
   });
-  return `Signal-to-Story digest — ${items.length} approved item${
+  return `Signal-to-Story digest - ${items.length} approved item${
     items.length === 1 ? '' : 's'
   }\n\n${sections.join('\n\n---\n\n')}`;
 }

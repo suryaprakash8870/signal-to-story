@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 // DELETE a competitor. RLS restricts this to reviewer/admin. A competitor
 // still referenced by a signal_classification cannot be deleted (the FK has
-// no cascade, by design — history is not destroyed); that returns a clear
+// no cascade, by design - history is not destroyed); that returns a clear
 // message rather than a raw constraint error.
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = supabaseForRequest();

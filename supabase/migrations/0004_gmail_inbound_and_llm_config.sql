@@ -7,7 +7,7 @@
 -- by explicit product request, a Claude API key can be added via the website.
 -- When a key is present, the pipeline uses Claude automatically; otherwise it
 -- falls back to Ollama. The key is Vault-stored (never in the browser), same
--- as connector credentials — only the Vault reference lives in this table.
+-- as connector credentials - only the Vault reference lives in this table.
 -- --------------------------------------------------------------------------
 create table if not exists public.llm_config (
   id int primary key default 1 check (id = 1),

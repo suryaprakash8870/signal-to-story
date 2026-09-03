@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 /**
- * Session-scoped client — respects RLS as the calling user. Use this for
+ * Session-scoped client - respects RLS as the calling user. Use this for
  * anything a submitter/reviewer/admin does through the UI.
  */
 export function supabaseForRequest() {
@@ -27,11 +27,11 @@ export function supabaseForRequest() {
 }
 
 /**
- * Service-role client — bypasses RLS. Pipeline stages write classification
+ * Service-role client - bypasses RLS. Pipeline stages write classification
  * and packaged outputs directly (per 01-DATA-MODEL.md, these are pipeline
  * outputs, not user input), so this is the only client that may write to
  * signal_classification / advance signals.status outside of insert.
- * Server-side only — never import this from client components.
+ * Server-side only - never import this from client components.
  */
 // One service-role client for the whole process, created on first use.
 //

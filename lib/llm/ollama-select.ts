@@ -19,7 +19,7 @@ function localModel() {
 
 // Cache the remote reachability check so we don't ping it on every pipeline
 // call. Short window so we notice the box coming up/going down quickly. Note:
-// staleness here is non-fatal — the fallback chain still ends in local Ollama,
+// staleness here is non-fatal - the fallback chain still ends in local Ollama,
 // so a wrongly-"up" remote just fails over one link.
 let remoteCache: { ok: boolean; at: number } | null = null;
 const CACHE_MS = 30_000;
@@ -45,7 +45,7 @@ export interface OllamaChoice {
 }
 
 /**
- * The single best Ollama choice (remote if reachable, else local) — used for
+ * The single best Ollama choice (remote if reachable, else local) - used for
  * status display.
  */
 export async function selectOllama(): Promise<OllamaChoice> {

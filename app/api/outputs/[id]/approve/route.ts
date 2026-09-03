@@ -3,7 +3,7 @@ import { supabaseForRequest } from '@/lib/supabase/server';
 
 /**
  * Blocked by RLS if unverified_claims is non-empty (01-DATA-MODEL.md's
- * `with check` clause) — this route does not duplicate that check, it
+ * `with check` clause) - this route does not duplicate that check, it
  * relies on the database to enforce it and surfaces the resulting error.
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {

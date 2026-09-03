@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
+import { stripEmoji } from '@/lib/text';
 
 type Signal = {
   id: string;
@@ -48,7 +49,7 @@ export default function NeedsAttention() {
   return (
     <div className="card card-p space-y-3">
       <h2 className="section-title">Needs attention</h2>
-      <ul className="space-y-2">
+      <ul className="max-h-64 space-y-2 overflow-y-auto pr-1">
         {signals.map((s) => {
           const isError = s.status === 'error';
           const isStuck = !isError && ageMin(s.submitted_at) > STUCK_AFTER_MIN;
@@ -76,7 +77,7 @@ export default function NeedsAttention() {
                   <span className="text-gray-500">{s.source_type}</span>
                 </div>
                 <Link href={`/signals/${s.id}`} className="mt-1 block truncate text-sm text-gray-700 hover:underline">
-                  {s.raw_text}
+                  {stripEmoji(s.raw_text)}
                 </Link>
               </div>
               {(isError || isStuck) && (

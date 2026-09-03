@@ -6,7 +6,7 @@ import type { Classification } from '../llm/schemas';
 
 const GROUNDING_RULE = `Only state as fact what is directly supported by the raw signal text or
 the competitor's known_facts below. Any claim that goes beyond
-that — inference, speculation, or general knowledge — must be placed in
+that - inference, speculation, or general knowledge - must be placed in
 the unverified_claims array, not stated as settled fact in the main
 content.`;
 
@@ -26,8 +26,8 @@ Known facts about ${competitorName}: ${JSON.stringify(knownFacts)}
 Return a JSON object with:
 - signal_summary: a plain-language summary of what happened
 - why_it_matters: why this matters to Litera specifically
-- what_to_do_next: ONE clear, signal-level recommendation — the single most
-  important thing Litera should do in response — in one or two sentences. Do NOT
+- what_to_do_next: ONE clear, signal-level recommendation - the single most
+  important thing Litera should do in response - in one or two sentences. Do NOT
   address it to a specific team or open with a team name (per-team actions
   already live in the audience outputs), and do NOT write a multi-point list.
   It is the answer to "if we do one thing about this signal, what is it?", not a
@@ -35,7 +35,7 @@ Return a JSON object with:
   facts above; if you cannot ground a concrete action, recommend what to monitor
   or confirm rather than inventing a plan. Keep any claim it rests on that is not
   supported by the signal/known facts in unverified_claims.
-- unverified_claims: array of strings — any claim in your summary or
+- unverified_claims: array of strings - any claim in your summary or
   implication that is NOT directly supported by the raw signal or the
   known facts above. If everything is fully supported, return an empty array.
 - subject_account: the specific customer, prospect, or account named in this
@@ -48,8 +48,8 @@ Return only the JSON object.`;
 }
 
 /**
- * Stage 3 — Interpretation. This is one of the two stages the grounding
- * rule applies to (02-PIPELINE-STAGES.md) — must be verified against Claude
+ * Stage 3 - Interpretation. This is one of the two stages the grounding
+ * rule applies to (02-PIPELINE-STAGES.md) - must be verified against Claude
  * specifically before trusting it in production (08-TEST-FIXTURES-AND-TESTING.md).
  */
 export async function interpretSignal(signalId: string): Promise<Interpretation> {
@@ -68,7 +68,7 @@ export async function interpretSignal(signalId: string): Promise<Interpretation>
     .eq('signal_id', signalId)
     .single();
   if (classErr || !classificationRow)
-    throw new Error(`classification for signal ${signalId} not found — run classifySignal first`);
+    throw new Error(`classification for signal ${signalId} not found - run classifySignal first`);
 
   let competitorName = 'Unknown';
   let knownFacts: unknown[] = [];

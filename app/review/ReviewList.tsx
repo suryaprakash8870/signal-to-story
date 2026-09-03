@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { audienceLabel } from '@/lib/audience';
+import { stripEmoji } from '@/lib/text';
 
 export type ReviewItem = {
   id: string;
@@ -62,7 +63,7 @@ function ReviewCard({ it }: { it: ReviewItem }) {
               <span className="text-xs text-gray-300">·</span>
               <span className="text-xs text-gray-500">{it.outputType}</span>
             </div>
-            <p className="clamp-2 mt-1.5 text-sm leading-relaxed text-gray-600">{it.preview}</p>
+            <p className="clamp-2 mt-1.5 text-sm leading-relaxed text-gray-600">{stripEmoji(it.preview)}</p>
             <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs">
               {it.sourceType && <span className="pill">{it.sourceType}</span>}
               {it.hasUnverified && (

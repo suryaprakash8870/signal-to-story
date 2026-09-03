@@ -1,9 +1,9 @@
-# 09 — Build Phases and Tasks
+# 09 - Build Phases and Tasks
 
-See `00-OVERVIEW.md` for the recommended build *order* within Phase 1 —
+See `00-OVERVIEW.md` for the recommended build *order* within Phase 1 -
 this file is the task checklist once that order is underway.
 
-## Phase 1 — Core Pipeline + Connectors in Test Mode
+## Phase 1 - Core Pipeline + Connectors in Test Mode
 
 - [ ] Data model: all tables, indexes, RLS policies (`01`)
 - [ ] Intake form, minimal (`06`)
@@ -22,37 +22,37 @@ this file is the task checklist once that order is underway.
 
 **Definition of done for Phase 1:** a real person can submit a signal (or
 one arrives via a Test Mode connector), it gets classified, interpreted,
-routed, packaged — including a live talking-points version — sits in the
+routed, packaged - including a live talking-points version - sits in the
 review queue ordered by urgency, gets approved by a reviewer, and reaches
 both Teams and (on its scheduled cadence) the Gmail digest. Salesforce,
 Gong, and Crayon connectors exist and work against fixture data, clearly
 labeled as Test Mode.
 
-## Phase 2 — Connectors Go Live
+## Phase 2 - Connectors Go Live
 
 - [ ] Confirm Salesforce object/field names with Litera's admin; update
       `connectors.config` from the placeholder to the real mapping
 - [ ] Confirm Gong API access tier on Litera's plan
 - [ ] Confirm Crayon webhook/API access
 - [ ] Switch each connector's `mode` from `test` to `live` independently,
-      as each is confirmed — no pipeline code changes required
+      as each is confirmed - no pipeline code changes required
 - [ ] Define and apply a data-handling policy for Gong/Salesforce content
       before any live connector starts sending real customer-adjacent data
       to the LLM provider
 
-## Phase 3 — Feedback & Analytics
+## Phase 3 - Feedback & Analytics
 
 - [ ] Approval-rate and edit-rate tracking per output type (data already
       captured in `signal_outputs`; build the reporting view)
-- [ ] Review-queue throughput tracking — flag if it trends upward, per
+- [ ] Review-queue throughput tracking - flag if it trends upward, per
       the note in `05-HUMAN-REVIEW-WORKFLOW.md`
 - [ ] Teams reaction/engagement tracking as the primary adoption metric
-      (Gmail has no open tracking — see `10-OPTIMIZATION-NOTES.md`)
+      (Gmail has no open tracking - see `10-OPTIMIZATION-NOTES.md`)
 - [ ] Prompt refinement loop, driven by the above data
 
-## Open decisions that block specific tasks above (do not guess these — confirm with stakeholders)
+## Open decisions that block specific tasks above (do not guess these - confirm with stakeholders)
 
-- Who is the designated reviewer/approver for Phase 1 — single owner or
+- Who is the designated reviewer/approver for Phase 1 - single owner or
   rotating role? (Blocks: assigning the `reviewer` role in `user_profiles`.)
 - Weekly or bi-weekly digest cadence? (Blocks: default value for
   `connectors.cadence`.)

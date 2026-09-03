@@ -4,7 +4,7 @@ export type Audience = 'sales' | 'product' | 'marketing' | 'leadership';
 export type RoutingDecision = 'auto' | 'reviewer_discretion' | 'skip';
 
 /**
- * Stage 4 — Audience Routing. Deterministic rule layer, not an LLM call —
+ * Stage 4 - Audience Routing. Deterministic rule layer, not an LLM call -
  * see 02-PIPELINE-STAGES.md. Keep it cheap and predictable.
  */
 export function routeAudiences(

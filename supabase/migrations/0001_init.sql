@@ -1,4 +1,4 @@
--- Signal-to-Story Engine — initial schema.
+-- Signal-to-Story Engine - initial schema.
 -- See D:\signal to story\01-DATA-MODEL.md for the authoritative spec this
 -- migration implements. Tables are created in FK dependency order; RLS is
 -- enabled on every table before any app code runs against it.
@@ -81,7 +81,7 @@ create policy "authenticated users can insert signals"
   with check (auth.role() = 'authenticated');
 
 -- status transitions beyond insert (classified/interpreted/packaged/error)
--- are written by the backend using the service role, which bypasses RLS —
+-- are written by the backend using the service role, which bypasses RLS -
 -- see lib/supabase/server.ts. No client-side update policy is defined.
 
 -- ---------------------------------------------------------------------------

@@ -13,7 +13,7 @@ const DEMO_SIGNALS: { competitor: string; text: string }[] = [
       'drafts and reviews M&A transaction documents end to end, and named three ' +
       'AmLaw 100 firms as launch customers. Harvey also disclosed a $300M Series E ' +
       'funding round. The announcement positions Harvey as moving beyond legal ' +
-      "research into document drafting and deal workflows — directly overlapping " +
+      "research into document drafting and deal workflows - directly overlapping " +
       "Litera's transaction management and drafting products.",
   },
   {
@@ -30,7 +30,7 @@ const DEMO_SIGNALS: { competitor: string; text: string }[] = [
       'Ironclad released an AI "Contract Copilot" that drafts first-pass agreements ' +
       'from a plain-language prompt and integrates natively with Salesforce. Ironclad ' +
       'framed it as moving upmarket into law-firm workflows, not just in-house legal ' +
-      'ops — a segment where Litera is strong.',
+      'ops - a segment where Litera is strong.',
   },
   {
     competitor: 'Robin AI',
@@ -53,7 +53,7 @@ function pickSignal() {
  * "Compete Agent detected a new competitive signal": stages ONE new PENDING
  * signal (status 'draft') and emails the PMM a Review Signal notification.
  *
- * It deliberately does NOT run the pipeline — the AI is only called when the
+ * It deliberately does NOT run the pipeline - the AI is only called when the
  * PMM clicks Process on the specific signal they want (POST /api/signals/:id/
  * process). This keeps AI usage to what's actually reviewed instead of firing
  * a full pipeline for every triggered signal.
@@ -94,7 +94,7 @@ export async function POST() {
     return NextResponse.json({ error: error?.message ?? 'insert failed' }, { status: 500 });
   }
 
-  // No pipeline here — the signal stays 'draft' (pending) until the PMM
+  // No pipeline here - the signal stays 'draft' (pending) until the PMM
   // processes it. Email the PMM. Await so we can report whether it actually sent.
   let emailed: string[] = [];
   let emailError: string | null = null;

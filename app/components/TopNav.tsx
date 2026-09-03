@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 
 // Crayon-style top navigation (see reference/ screenshot): product switcher on
 // the left, a tab bar with a blue active underline, and search / new / avatar on
-// the right. Pure UI — the search box and avatar are presentational.
+// the right. Pure UI - the search box and avatar are presentational.
 const TABS = [
   { href: '/intake', label: 'Intake' },
   { href: '/review', label: 'Review' },

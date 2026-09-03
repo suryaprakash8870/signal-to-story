@@ -1,4 +1,4 @@
--- Task 5 — loosen the output-to-signal relationship (schema only).
+-- Task 5 - loosen the output-to-signal relationship (schema only).
 --
 -- Today a signal_output belongs to exactly one signal. Some distribution
 -- formats (a weekly digest, an MBR) combine MANY signals into one artifact.
@@ -10,7 +10,7 @@
 -- invisible to users; it only makes the schema ready for later work.
 
 -- ---------------------------------------------------------------------------
--- artifacts — a reviewable piece of content that may combine many signals.
+-- artifacts - a reviewable piece of content that may combine many signals.
 -- Mirrors signal_outputs' approval fields (unverified_claims / reviewed_by /
 -- reviewed_at / approved / published_at) so the review flow can be reused.
 -- ---------------------------------------------------------------------------
@@ -31,7 +31,7 @@ create table if not exists public.artifacts (
 );
 
 -- ---------------------------------------------------------------------------
--- artifact_signals — join table: which signals an artifact was built from.
+-- artifact_signals - join table: which signals an artifact was built from.
 -- ---------------------------------------------------------------------------
 create table if not exists public.artifact_signals (
   artifact_id uuid not null references public.artifacts(id) on delete cascade,
@@ -42,7 +42,7 @@ create index if not exists idx_artifact_signals_signal_id
   on public.artifact_signals(signal_id);
 
 -- ---------------------------------------------------------------------------
--- RLS — mirror the signal_outputs approval policy (Task 3), scoped by the
+-- RLS - mirror the signal_outputs approval policy (Task 3), scoped by the
 -- competitors of the artifact's linked signals.
 -- ---------------------------------------------------------------------------
 alter table public.artifacts enable row level security;

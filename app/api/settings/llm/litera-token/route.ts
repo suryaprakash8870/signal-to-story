@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     });
     if (res.status === 401) {
       return NextResponse.json(
-        { error: 'Token rejected (401) — it may be expired or incomplete. Paste a fresh token.' },
+        { error: 'Token rejected (401) - it may be expired or incomplete. Paste a fresh token.' },
         { status: 400 }
       );
     }

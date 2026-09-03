@@ -18,7 +18,7 @@ export interface SalesforceCredentials {
 
 // Inbound. Test Mode reads salesforce_sample.json; Live Mode queries the
 // Salesforce REST API. Field names come from connectors.config
-// (04-CONNECTORS.md) — never hardcoded — because Litera's real object/field
+// (04-CONNECTORS.md) - never hardcoded - because Litera's real object/field
 // names are unconfirmed until their admin verifies them (Phase 2 gate).
 export class SalesforceConnector implements Connector {
   type = 'salesforce' as const;

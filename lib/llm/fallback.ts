@@ -12,10 +12,10 @@ export interface FallbackLink {
  * `onlyOnUnavailable` controls WHY it falls through, and the distinction is the
  * whole point of this class:
  *
- *   false (Auto mode) — fall through on any error. The user asked for "whatever
+ *   false (Auto mode) - fall through on any error. The user asked for "whatever
  *   works", so a bad answer is as good a reason to move on as a dead backend.
  *
- *   true (pinned mode) — fall through ONLY when the backend is unavailable: an
+ *   true (pinned mode) - fall through ONLY when the backend is unavailable: an
  *   expired token, an exhausted quota, a timeout. A malformed answer is a
  *   prompt or model-quality problem that another backend would likely hit too,
  *   and switching silently would hide it. Pinning still means "this model
@@ -48,7 +48,7 @@ export class FallbackProvider implements LLMProvider {
         const isLast = i === this.chain.length - 1;
         console.warn(
           `[llm] ${link.label} failed (${msg.slice(0, 120)})` +
-            (isLast ? ' — no backends left' : ` — falling back to ${this.chain[i + 1].label}`)
+            (isLast ? ' - no backends left' : ` - falling back to ${this.chain[i + 1].label}`)
         );
       }
     }

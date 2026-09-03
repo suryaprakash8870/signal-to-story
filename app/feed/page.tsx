@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Loading from '../components/Loading';
+import { stripEmoji } from '@/lib/text';
 
 // The PM pull interface: pick a competitor, see what they shipped in the last
 // 30 days, filtered to product signal, each update carrying a "why it matters
@@ -85,7 +86,7 @@ function neutralise(text: string): string {
         : replacement
     );
   }
-  return out;
+  return stripEmoji(out);
 }
 
 // Which updates this browser has already seen, so the left rail can show a
@@ -337,7 +338,7 @@ export default function FeedPage() {
         {askError && <p className="text-sm text-red-600">{askError}</p>}
 
         {answer && (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-3">
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
               {neutralise(answer.answer)}
             </p>
@@ -443,8 +444,16 @@ export default function FeedPage() {
           {/* Feed */}
           <div className="min-w-0 space-y-3">
             {!selected ? (
-              <div className="card card-p muted text-sm">
-                Select a competitor to see what they have shipped recently.
+              <div className="flex h-80 flex-col items-center justify-center gap-3 text-center">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft text-accent">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                </span>
+                <p className="muted max-w-[240px] text-sm">
+                  Select a competitor to see what they have shipped recently.
+                </p>
               </div>
             ) : (
               <>
@@ -469,7 +478,7 @@ export default function FeedPage() {
                     push the filters out of reach. On small screens the page
                     scrolls normally, because a short nested window there is
                     worse than a long page. */}
-                <div className="space-y-3 lg:max-h-[calc(100vh-17rem)] lg:overflow-y-auto lg:pr-1">
+                <div className="space-y-3 md:max-h-[calc(100vh-17rem)] md:overflow-y-auto md:pr-1">
                 {loadingUpdates ? (
                   <Loading />
                 ) : updates.length === 0 ? (

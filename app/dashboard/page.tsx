@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Loading from '../components/Loading';
 import NotificationBanner from '../components/NotificationBanner';
 import { audienceLabel } from '@/lib/audience';
+import { stripEmoji } from '@/lib/text';
 
 type Row = {
   id: string;
@@ -34,7 +35,7 @@ function DashboardCard({ row: r }: { row: Row }) {
         <span className="ml-auto">{new Date(r.published_at).toLocaleDateString()}</span>
       </div>
       <p className={`mt-2 whitespace-pre-wrap text-sm text-gray-700 ${expanded ? '' : 'clamp-3'}`}>
-        {r.content}
+        {stripEmoji(r.content)}
       </p>
       {isLong && (
         <button
@@ -91,11 +92,11 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <NotificationBanner />
-      <h1 className="page-title">Dashboard — published outputs</h1>
+      <h1 className="page-title">Dashboard - published outputs</h1>
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
-        {/* Content — left */}
+        {/* Content - left */}
         <div className="space-y-4">
           {loading ? (
             <div className="card">
@@ -109,8 +110,14 @@ export default function DashboardPage() {
               </p>
 
               {rows.length === 0 && (
-                <div className="card card-p">
-                  <p className="muted">Nothing published yet for these filters.</p>
+                <div className="flex h-80 flex-col items-center justify-center gap-3 text-center">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft text-accent">
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="18" height="18" x="3" y="3" rx="2" />
+                      <path d="M9 9h6M9 13h6M9 17h3" />
+                    </svg>
+                  </span>
+                  <p className="muted max-w-[240px] text-sm">Nothing published yet for these filters.</p>
                 </div>
               )}
 
@@ -157,7 +164,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Filters — right */}
+        {/* Filters - right */}
         <aside>
           <div className="card card-p space-y-4 lg:sticky lg:top-6">
             <h2 className="section-title">Filters</h2>

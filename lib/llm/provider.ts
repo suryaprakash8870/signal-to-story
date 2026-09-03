@@ -3,7 +3,7 @@ import type { ZodType, ZodTypeDef } from 'zod';
 export interface GenerateStructuredParams<T> {
   systemPrompt: string;
   userPrompt: string;
-  // Output = T, Input = any — so schemas that coerce shapes via .transform()
+  // Output = T, Input = any - so schemas that coerce shapes via .transform()
   // (input type ≠ output type; see schemas.ts) are accepted and T is the
   // parsed output type.
   schema: ZodType<T, ZodTypeDef, any>;
@@ -15,7 +15,7 @@ export interface LLMProvider {
 
 /**
  * Strips markdown code fences if the model wraps its JSON despite
- * instructions not to — cheap defensive parsing, not a substitute for the
+ * instructions not to - cheap defensive parsing, not a substitute for the
  * "no markdown code fences" instruction in every system prompt.
  */
 export function stripCodeFences(text: string): string {

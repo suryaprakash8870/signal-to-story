@@ -1,5 +1,5 @@
-// The connector abstraction from 04-CONNECTORS.md. Every connector — inbound
-// or outbound, any vendor — implements this same interface, so adding one is
+// The connector abstraction from 04-CONNECTORS.md. Every connector - inbound
+// or outbound, any vendor - implements this same interface, so adding one is
 // a single adapter file and nothing else in the pipeline changes.
 
 export type ConnectorType = 'teams' | 'gmail' | 'salesforce' | 'gong' | 'crayon';

@@ -1,6 +1,6 @@
 /**
  * Single-call demo of the NEW Sales packaging prompt (tone calibration +
- * battlecard rewrite). One model call only — safe on a low-memory machine.
+ * battlecard rewrite). One model call only - safe on a low-memory machine.
  * Mirrors the exact prompt assembly in lib/pipeline/package.ts.
  *
  * Run:  npx tsx scripts/prompt-demo.ts
@@ -15,9 +15,9 @@ for (const line of readFileSync(path.join(process.cwd(), '.env.local'), 'utf8').
 // Same grounding tail as package.ts (kept in sync by hand for this demo).
 const GROUNDING_TAIL =
   'Do not state the unverified claims as fact. If a claim is unverified, ' +
-  'simply leave it out of the content — do NOT mention it, and do NOT write ' +
+  'simply leave it out of the content - do NOT mention it, and do NOT write ' +
   'meta-instructions such as "confirm any unverified claims" or "verify ' +
-  'pricing details". Write concise, ORIGINAL text in your own words — do NOT ' +
+  'pricing details". Write concise, ORIGINAL text in your own words - do NOT ' +
   'copy or paste sentences, headers, or dialogue from the source signal. ' +
   'MATCH YOUR CERTAINTY TO THE EVIDENCE: a product launch, webpage, or ' +
   'announcement is an EARLY signal to watch, NOT a proven market threat. Do ' +
@@ -40,7 +40,7 @@ async function main() {
       'native Salesforce add-in and AI-assisted clause tagging. It shows a demo ' +
       'CTA and a pricing teaser but no actual price, and names no customers.',
     why_it_matters:
-      'A competitor is moving into Salesforce-native e-signature — worth ' +
+      'A competitor is moving into Salesforce-native e-signature - worth ' +
       'tracking, though it is an early launch with no proof of traction.',
     unverified_claims: ['SignForge has real customer traction or a proven price point'],
   };
@@ -57,9 +57,9 @@ Return a JSON object with:
 - battlecard_snippet: an objection/response pair formatted as
   "Objection: ... Response: ...". The objection MUST be the specific
   competitive angle raised by THIS signal (name the competitor and their
-  actual hook — e.g. their integration, their pricing move, their new
+  actual hook - e.g. their integration, their pricing move, their new
   feature), phrased as a prospect would raise it. The response MUST directly
-  counter that specific angle with a concrete differentiator — never generic
+  counter that specific angle with a concrete differentiator - never generic
   filler like "we offer training" or "we ensure a smooth transition"
 - live_talking_points: a 1-2 minute spoken-style summary suitable for a
   live meeting update (e.g. a weekly revenue sync), not a written post

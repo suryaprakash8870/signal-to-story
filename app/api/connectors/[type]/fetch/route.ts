@@ -6,7 +6,7 @@ import { runPipeline, rerunSignal, findExistingSignalByText } from '@/lib/pipeli
 /**
  * Runs an inbound connector's fetch() and pushes each returned candidate
  * through the pipeline as a new signal. In Test Mode this reads the fixture
- * for that connector (08-TEST-FIXTURES-AND-TESTING.md) — real, working
+ * for that connector (08-TEST-FIXTURES-AND-TESTING.md) - real, working
  * behavior, clearly labeled as Test Mode in the UI.
  */
 export async function POST(req: NextRequest, { params }: { params: { type: string } }) {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: { type: strin
     );
   }
 
-  // Crayon signals land as PENDING (status 'draft') and are NOT auto-processed —
+  // Crayon signals land as PENDING (status 'draft') and are NOT auto-processed -
   // the reviewer runs each through the pipeline manually via the "Process" button
   // on the Signals page. This keeps AI load controlled (Crayon can return 20+
   // Sparks at once). Other connectors still auto-run on fetch.

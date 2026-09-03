@@ -3,7 +3,7 @@ import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
 
 // PATCH the reviewer-editable "what to do next" recommendation on a signal's
 // stored interpretation. Reviewer/admin only (checked here, then written via the
-// service role since signals has no user-facing UPDATE policy — the pipeline
+// service role since signals has no user-facing UPDATE policy - the pipeline
 // also writes signals via the service role). Only the what_to_do_next field is
 // touched; signal_summary and why_it_matters are left as generated.
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {

@@ -1,6 +1,6 @@
 'use client';
 
-// Hidden demo page — reachable only by typing /trigger (intentionally NOT in
+// Hidden demo page - reachable only by typing /trigger (intentionally NOT in
 // the sidebar). Clicking the button simulates Compete Agent detecting a new
 // competitive signal: it stages a signal + runs the pipeline, and emails the
 // PMM a "Review Signal" notification. The in-app badge/bell/banner light up
@@ -61,21 +61,28 @@ export default function TriggerPage() {
             <p className="text-red-600">Error: {result.error}</p>
           ) : (
             <>
-              <p className="font-medium text-emerald-700">
-                ✓ New signal detected{result.competitor ? ` — ${result.competitor}` : ''} and staged.
+              <p className="flex items-center gap-1.5 font-medium text-emerald-700">
+                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                New signal detected{result.competitor ? ` - ${result.competitor}` : ''} and staged.
               </p>
               {result.emailError ? (
                 <p className="text-amber-700">
                   Email could not be sent: {result.emailError}
                 </p>
               ) : (
-                <p className="text-gray-700">
-                  📧 Notification emailed to:{' '}
+                <p className="flex items-center gap-1.5 text-gray-700">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                  Notification emailed to:{' '}
                   <span className="font-medium">{(result.emailed ?? []).join(', ')}</span>
                 </p>
               )}
               <p className="text-gray-500">
-                The signal is processing — it will appear in your Review queue and the notification
+                The signal is processing - it will appear in your Review queue and the notification
                 badge within a few seconds.
               </p>
             </>

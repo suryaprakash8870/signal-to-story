@@ -36,7 +36,7 @@ export function markSignalSeen(id: string) {
   window.dispatchEvent(new Event('notifications-changed'));
 }
 
-/** Reactive set of seen signal ids — for "New" vs "Viewed" tags in lists. */
+/** Reactive set of seen signal ids - for "New" vs "Viewed" tags in lists. */
 export function useSeenSignals(): Set<string> {
   const [seen, setSeen] = useState<Set<string>>(() => getSeen());
   useEffect(() => {
@@ -67,7 +67,7 @@ export function useNotifications(pollMs = 6_000) {
       const json = await res.json();
       setRaw(json.signals ?? []);
     } catch {
-      /* transient — keep last known values */
+      /* transient - keep last known values */
     }
   }, []);
 

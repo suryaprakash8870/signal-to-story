@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const claim = claims[claim_index];
   const remainingClaims = claims.filter((_, i) => i !== claim_index);
   // "Confirm" moves the claim into the main content, now backed by human
-  // judgment, per 05-HUMAN-REVIEW-WORKFLOW.md — "remove" just drops it.
+  // judgment, per 05-HUMAN-REVIEW-WORKFLOW.md - "remove" just drops it.
   const newContent = action === 'confirm' ? `${output.content}\n\n${claim}` : output.content;
 
   const { error: updateErr } = await supabase

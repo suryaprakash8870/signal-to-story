@@ -50,7 +50,7 @@ export default function ConnectorsSettingsPage() {
   const byType = (t: string) => connectors.find((c) => c.type === t);
 
   if (loading) {
-    return <Loading />;
+    return <Loading fullPage />;
   }
 
   return (
@@ -58,9 +58,12 @@ export default function ConnectorsSettingsPage() {
       <h1 className="page-title">Connectors &amp; AI</h1>
       {error && <p className="text-sm text-red-600">{error}</p>}
 
+      <h2 className="section-title pt-2">Outbound - AI &amp; delivery</h2>
       {llm && <AiProviderCard llm={llm} onChange={load} />}
       {byType('teams') && <TeamsCard connector={byType('teams')!} onChange={load} />}
       {byType('gmail') && <GmailCard connector={byType('gmail')!} onChange={load} />}
+
+      <h2 className="section-title pt-2">Inbound sources</h2>
       {(['salesforce', 'gong', 'crayon'] as const).map(
         (t) => byType(t) && <InboundCard key={t} connector={byType(t)!} onChange={load} />
       )}
@@ -134,7 +137,7 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'save failed');
       setLiteraToken('');
-      setLitMsg('Litera token validated and saved ✓ — pin "Litera — gpt-5" in the Model list to use it.');
+      setLitMsg('Litera token validated and saved - pin "Litera - gpt-5" in the Model list to use it.');
       loadBackends();
       onChange();
     } catch (err) {
@@ -156,7 +159,7 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'save failed');
       setKey('');
-      setMessage(`Key saved — detected ${json.provider}. The pipeline now uses ${json.provider}.`);
+      setMessage(`Key saved - detected ${json.provider}. The pipeline now uses ${json.provider}.`);
       loadBackends();
       onChange();
     } catch (err) {
@@ -197,8 +200,8 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
       </div>
       <p className="mt-3 text-xs text-gray-500">
         {llm.api_key_set
-          ? `A ${llm.api_provider ?? 'hosted'} API key is stored — the pipeline uses it for every stage. Enter a new key to replace it, or remove it to revert to Ollama.`
-          : 'No API key set — the pipeline uses Ollama (remote box when reachable, local otherwise). Paste a Claude (sk-ant-…) or Gemini (AIza…) key and it is detected and used automatically.'}
+          ? `A ${llm.api_provider ?? 'hosted'} API key is stored - the pipeline uses it for every stage. Enter a new key to replace it, or remove it to revert to Ollama.`
+          : 'No API key set - the pipeline uses Ollama (remote box when reachable, local otherwise). Paste a Claude (sk-ant-…) or Gemini (AIza…) key and it is detected and used automatically.'}
       </p>
       <input
         type="password"
@@ -226,13 +229,13 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
         )}
       </div>
 
-      {/* Litera GPT-5 access token — the Entra token expires ~hourly, so paste a
+      {/* Litera GPT-5 access token - the Entra token expires ~hourly, so paste a
           fresh one here to refresh it without editing env or restarting. It is
           validated with a live call before saving. */}
       <div className="mt-4 border-t border-gray-200 pt-3">
         <label className="field-label">Litera access token (GPT-5)</label>
         <p className="mt-1 text-xs text-gray-500">
-          Paste the Litera Entra access token. It expires about every hour — when the pipeline
+          Paste the Litera Entra access token. It expires about every hour - when the pipeline
           returns a 401, paste a fresh token here. It is checked live before saving.
         </p>
         <textarea
@@ -254,7 +257,7 @@ function AiProviderCard({ llm, onChange }: { llm: LlmStatus; onChange: () => voi
         {litMsg && <p className="mt-2 text-xs text-gray-600">{litMsg}</p>}
       </div>
 
-      {/* Model selector — pin the pipeline to a specific model, or leave on
+      {/* Model selector - pin the pipeline to a specific model, or leave on
           Auto. Lists the hosted API plus every model on each reachable Ollama
           endpoint (the Mac on the WiFi and the local box). */}
       <div className="mt-4 border-t border-gray-200 pt-3">
@@ -591,18 +594,18 @@ function InboundCard({ connector, onChange }: { connector: Connector; onChange: 
           <h2 className="section-title">{titles[connector.type] ?? connector.type}</h2>
           <p className="text-xs text-gray-500">inbound · {connector.mode}</p>
         </div>
-        {/* Test-mode inbound connectors need no credential — they run against
-            fixtures — so show a Test Mode badge rather than connected/disconnected.
+        {/* Test-mode inbound connectors need no credential - they run against
+            fixtures - so show a Test Mode badge rather than connected/disconnected.
             In live mode, reflect the connector's real status. Inbound connectors
             like Crayon authenticate with an env API key (not a Vault credential),
-            so has_credential is not a reliable "connected" signal — use status. */}
+            so has_credential is not a reliable "connected" signal - use status. */}
         {connector.mode === 'test' ? (
           <span className="pill bg-amber-100 text-amber-700">test mode</span>
         ) : (
           <StatusBadge status={connector.status} />
         )}
       </div>
-      {/* Mode toggle — flipping to Live requires no pipeline changes, only a
+      {/* Mode toggle - flipping to Live requires no pipeline changes, only a
           credential (04-CONNECTORS.md). Confirm vendor access first (Phase 2). */}
       <div className="mt-3 flex items-center gap-2 text-xs">
         <span className="text-gray-500">mode</span>
@@ -629,7 +632,7 @@ function InboundCard({ connector, onChange }: { connector: Connector; onChange: 
       ) : (
         <div className="mt-3 space-y-2">
           <p className="rounded-lg bg-gray-100 px-3 py-2 text-xs text-gray-600">
-            Live Mode calls the real vendor API. Paste credentials as JSON — stored in Vault, never shown again.
+            Live Mode calls the real vendor API. Paste credentials as JSON - stored in Vault, never shown again.
           </p>
           <textarea
             placeholder={LIVE_CRED_PLACEHOLDER[connector.type]}

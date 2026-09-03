@@ -10,7 +10,7 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
  * Refreshes the Supabase session on every request (so an active user isn't
  * silently logged out when the 1-hour access token expires) and redirects
  * unauthenticated users to /login instead of letting them hit a confusing
- * "unauthenticated" error at submit time. API routes are left alone — they
+ * "unauthenticated" error at submit time. API routes are left alone - they
  * return their own 401 for fetch() callers.
  */
 export async function middleware(request: NextRequest) {

@@ -10,13 +10,13 @@ export const dynamic = 'force-dynamic';
  *
  * A signal is "notifiable" from the moment it starts being processed until the
  * reviewer has handled it. That's the union of:
- *   1. signals still IN FLIGHT — status in ('classified','interpreted') — so a
+ *   1. signals still IN FLIGHT - status in ('classified','interpreted') - so a
  *      freshly-detected signal shows up within seconds, not only after the full
  *      ~35s pipeline finishes; and
- *   2. signals AWAITING REVIEW — at least one output still approved=false AND
+ *   2. signals AWAITING REVIEW - at least one output still approved=false AND
  *      published_at is null.
  * Once every output is approved/published (or the signal is rejected), it drops
- * out here — which is why the badge clears itself after review. The per-browser
+ * out here - which is why the badge clears itself after review. The per-browser
  * "seen" filter (useNotifications) then hides ones the reviewer has opened.
  */
 export async function GET() {

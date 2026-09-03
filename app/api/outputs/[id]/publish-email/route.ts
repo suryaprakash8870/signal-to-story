@@ -16,7 +16,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /**
  * A separate Stage 6 distribution action, alongside the Teams publish route:
  * emails one approved output via Brevo to a recipient the reviewer types in at
- * publish time (05-HUMAN-REVIEW-WORKFLOW.md's approval gate still applies —
+ * publish time (05-HUMAN-REVIEW-WORKFLOW.md's approval gate still applies -
  * only approved outputs may be sent). Independent of the Teams publish flow;
  * either or both channels may be used for the same output.
  */
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const label = OUTPUT_TYPE_LABELS[output.output_type] ?? output.output_type;
-  const subject = `Signal-to-Story — ${label} (${output.audience})${competitor ? ` · ${competitor}` : ''}`;
+  const subject = `Signal-to-Story - ${label} (${output.audience})${competitor ? ` · ${competitor}` : ''}`;
   const lines = [
     `Audience: ${output.audience}`,
     `Type: ${label}`,
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     );
   }
 
-  // Distribution/status stamping is a backend action — service role, matching
+  // Distribution/status stamping is a backend action - service role, matching
   // the Teams route. Only stamp published_at if this is the first channel to
   // publish it; email may also be sent for an output already published via Teams.
   const db = supabaseServiceRole();

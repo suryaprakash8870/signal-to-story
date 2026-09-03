@@ -31,7 +31,7 @@ const tripsis = localFont({
 
 export const metadata = {
   title: 'Compete Agent',
-  description: 'A personal competitive agent for your sales and GTM teams — always watching, always ready.',
+  description: 'A personal competitive agent for your sales and GTM teams - always watching, always ready.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

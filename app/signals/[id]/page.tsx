@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import Loading from '../../components/Loading';
 import { markSignalSeen } from '../../components/useNotifications';
 import { audienceLabel } from '@/lib/audience';
+import { stripEmoji } from '@/lib/text';
 
-// Small "Back" control shown at the top of the signal detail page — returns to
+// Small "Back" control shown at the top of the signal detail page - returns to
 // the previous view (Signals list, Review queue, etc.) without using the nav.
 function BackButton() {
   const router = useRouter();
@@ -63,7 +64,7 @@ const AUDIENCE_INITIAL: Record<string, string> = {
   leadership: 'E',
 };
 
-// Default recipient per audience — prefilled in the "Send via Email" box, but
+// Default recipient per audience - prefilled in the "Send via Email" box, but
 // always editable before sending.
 const AUDIENCE_EMAIL: Record<string, string> = {
   sales: 'antony.onegtmlab@outlook.com',
@@ -86,7 +87,7 @@ function urgencyBadge(level: string) {
   return 'bg-gray-100 text-gray-600';
 }
 
-// Signal ids already auto-processed this page session — module-level so it
+// Signal ids already auto-processed this page session - module-level so it
 // survives StrictMode remounts and prevents duplicate pipeline runs.
 const autoProcessedIds = new Set<string>();
 
@@ -177,7 +178,7 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
   }
 
   // Auto-process on open: opening a pending ('draft') signal IS the intent to
-  // process it — no separate "Process" button. The module-level autoProcessedIds
+  // process it - no separate "Process" button. The module-level autoProcessedIds
   // set survives React StrictMode's double-mount, so a draft is never processed
   // twice (which is what created duplicate outputs). Errors are not auto-retried.
   useEffect(() => {
@@ -189,14 +190,14 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  // Opening this signal marks it "seen" — drops it from the notification
+  // Opening this signal marks it "seen" - drops it from the notification
   // badge/bell/banner immediately (Jira/GitHub-style read behavior).
   useEffect(() => {
     markSignalSeen(params.id);
   }, [params.id]);
 
   // On open, always play a short live "generating" sequence before revealing the
-  // outputs — so the agent is visibly seen working, even for a signal whose
+  // outputs - so the agent is visibly seen working, even for a signal whose
   // content is already in the DB. Genuinely in-flight signals show real progress
   // until packaged (see realProcessing below); this only adds the reveal step.
   const [revealed, setRevealed] = useState(false);
@@ -217,7 +218,7 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
 
   useEffect(() => {
     load();
-    // Poll while the pipeline is still running — statuses before
+    // Poll while the pipeline is still running - statuses before
     // 'packaged'/'error' mean Stages 2-5 are in flight server-side.
     const interval = setInterval(() => {
       setData((current) => {
@@ -242,7 +243,7 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
     return (
       <div>
         <BackButton />
-        <Loading />
+        <Loading fullPage />
       </div>
     );
 
@@ -272,7 +273,7 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-        {/* Main — outputs */}
+        {/* Main - outputs */}
         <div className="space-y-5">
           <SourceSignal text={signal.raw_text} links={signal.source_links} />
 
@@ -280,7 +281,7 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
             <PipelineProgress status={realProcessing ? signal.status : 'draft'} />
           ) : signal.status === 'error' ? (
             <div className="card card-p flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-red-600">Processing failed — the AI provider may be busy.</p>
+              <p className="text-sm text-red-600">Processing failed - the AI provider may be busy.</p>
               <button onClick={handleProcess} className="btn btn-primary text-sm">Retry</button>
             </div>
           ) : !revealed ? (
@@ -313,7 +314,7 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
           )}
         </div>
 
-        {/* Right — details */}
+        {/* Right - details */}
         <aside>
           <div className="card card-p space-y-4 lg:sticky lg:top-6">
             <h2 className="section-title">Details</h2>
@@ -369,7 +370,7 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
   );
 }
 
-// Live, staged progress shown while the AI pipeline is still running — so a
+// Live, staged progress shown while the AI pipeline is still running - so a
 // freshly-detected signal visibly moves through Classify → Interpret → Generate
 // (driven by the 2s status poll) instead of the finished content just appearing.
 // Clean centered spinner (the "Pipeline running…" look), with a live-updating
@@ -477,7 +478,7 @@ function SourceSignal({
     <div className="card p-4">
       <div className="field-label mb-1">Source signal</div>
       <p className={`whitespace-pre-wrap text-sm leading-relaxed text-gray-700 ${open ? '' : 'clamp-3'}`}>
-        {text}
+        {stripEmoji(text)}
       </p>
       {text.length > 200 && (
         <button
@@ -609,15 +610,20 @@ function OutputCard({
             {output.published_at ? 'Published to Teams' : 'Publish to Teams'}
           </button>
         )}
-        {/* A second, independent distribution channel — send this output as an
+        {/* A second, independent distribution channel - send this output as an
             email via Brevo to a recipient the reviewer chooses. */}
         {output.approved && (
           <button
             onClick={() => setEmailOpen((v) => !v)}
             disabled={emailSending}
-            className="btn btn-outline text-xs disabled:opacity-40"
+            className="btn btn-outline inline-flex items-center gap-1.5 text-xs disabled:opacity-40"
           >
-            {emailSent ? 'Email sent ✓' : 'Send via Email'}
+            {emailSent && (
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            )}
+            {emailSent ? 'Email sent' : 'Send via Email'}
           </button>
         )}
         {dirty && (

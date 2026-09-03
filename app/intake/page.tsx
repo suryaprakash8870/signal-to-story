@@ -54,9 +54,19 @@ export default function IntakePage() {
 
   return (
     <div className="relative isolate">
-      {/* Ambient background — a single centered blue glow that gently breathes */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="animate-breathe absolute left-1/2 top-1/2 h-[420px] w-[600px] rounded-full bg-accent/20 blur-3xl" />
+      {/* Ambient background - two soft, independently-drifting glows that fade
+          out via a radial mask instead of being clipped by the container edge
+          (a hard clip read as a visible "cut" line). */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+        style={{
+          maskImage: 'radial-gradient(ellipse 65% 55% at 50% 42%, black 35%, transparent 75%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 65% 55% at 50% 42%, black 35%, transparent 75%)',
+        }}
+      >
+        <div className="animate-breathe absolute left-1/2 top-1/2 h-[520px] w-[720px] rounded-full bg-accent/25 blur-[110px]" />
+        <div className="animate-breathe-alt absolute left-1/2 top-1/2 h-[420px] w-[600px] rounded-full bg-action/15 blur-[110px]" />
       </div>
 
       <div className="mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center">
@@ -68,7 +78,7 @@ export default function IntakePage() {
         <div className="rounded-2xl border border-gray-200 bg-surface p-3 shadow-sm transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
           <textarea
             ref={taRef}
-            placeholder="Paste a competitive signal — a call snippet, a competitor move, some news…"
+            placeholder="Paste a competitive signal - a call snippet, a competitor move, some news…"
             value={rawText}
             onChange={(e) => {
               setRawText(e.target.value);

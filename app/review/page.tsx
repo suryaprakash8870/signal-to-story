@@ -58,7 +58,7 @@ export default async function ReviewPage() {
       <NotificationBanner />
       <h1 className="page-title">Review queue</h1>
 
-      {/* Summary — a clean row of stat tiles at the top */}
+      {/* Summary - a clean row of stat tiles at the top */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <StatTile label="Pending" value={sorted.length} tone="slate" />
         <StatTile label="High" value={highCount} tone="red" />

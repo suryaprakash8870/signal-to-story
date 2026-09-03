@@ -6,7 +6,7 @@ import { storeCredential } from '@/lib/connectors/vault';
  * Writes a connector credential to Vault and stores only the returned
  * reference in connectors.credentials_ref. Never logs or echoes the raw
  * value (07-API-ENDPOINTS.md). Admin-only is enforced by the RLS policy on
- * connectors — the service-role update here runs only after we confirm the
+ * connectors - the service-role update here runs only after we confirm the
  * caller is an admin via their session.
  */
 export async function POST(req: NextRequest, { params }: { params: { type: string } }) {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: { type: strin
     .single();
   if (profile?.role !== 'admin' && profile?.role !== 'reviewer') {
     // connectors RLS is admin-only for writes; mirror that here. (Reviewer
-    // allowed too for single-owner Phase 1 setups — tighten to admin-only
+    // allowed too for single-owner Phase 1 setups - tighten to admin-only
     // once roles are finalized per 09-BUILD-PHASES-AND-TASKS.md.)
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
 
 // PATCH connector mode / config / cadence. Admin-only write is enforced by
-// the connectors RLS policy (01-DATA-MODEL.md) — the session client below
+// the connectors RLS policy (01-DATA-MODEL.md) - the session client below
 // is subject to it, so a non-admin update simply fails at the database.
 export async function PATCH(req: NextRequest, { params }: { params: { type: string } }) {
   const supabase = supabaseForRequest();

@@ -3,7 +3,7 @@ import path from 'path';
 
 /**
  * Loads a fixture JSON from /fixtures. Inbound connectors read these in Test
- * Mode (08-TEST-FIXTURES-AND-TESTING.md) — real, working behavior against
+ * Mode (08-TEST-FIXTURES-AND-TESTING.md) - real, working behavior against
  * sample data, not a placeholder.
  */
 export function loadFixture(name: string): any {

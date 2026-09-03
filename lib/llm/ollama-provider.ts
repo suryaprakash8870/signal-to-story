@@ -35,7 +35,7 @@ export class OllamaProvider implements LLMProvider {
       });
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
-      throw new Error(`Ollama unreachable — could not reach ${where} (${reason})`);
+      throw new Error(`Ollama unreachable - could not reach ${where} (${reason})`);
     }
     if (!res.ok) {
       throw new Error(`Ollama error from ${where}: ${res.status} ${res.statusText}`);

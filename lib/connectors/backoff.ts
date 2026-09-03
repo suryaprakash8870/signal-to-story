@@ -1,6 +1,6 @@
 /**
  * Exponential backoff with retry on 429/5xx, per 10-OPTIMIZATION-NOTES.md
- * ("Rate-limit and back off on 429s from any vendor API — implement
+ * ("Rate-limit and back off on 429s from any vendor API - implement
  * exponential backoff, not just a single retry"). Used by every live-mode
  * connector's fetch()/push().
  */
@@ -22,7 +22,7 @@ export async function fetchWithBackoff(
       const delay = Number.isFinite(retryAfter) && retryAfter > 0
         ? retryAfter * 1000
         : base * 2 ** attempt;
-      if (attempt === retries) return res; // out of retries — return the bad response
+      if (attempt === retries) return res; // out of retries - return the bad response
       await sleep(delay);
     } catch (err) {
       lastErr = err;

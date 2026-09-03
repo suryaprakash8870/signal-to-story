@@ -1,4 +1,4 @@
--- Task 3 — per-competitor ownership.
+-- Task 3 - per-competitor ownership.
 
 -- 3a: owner_id on competitors (nullable; references a user profile).
 alter table public.competitors
@@ -6,9 +6,9 @@ alter table public.competitors
 
 -- 3d: approval RLS becomes per-competitor.
 -- Replaces the global "only reviewers/admins can approve" policy with:
---   * admins  — always, OR
+--   * admins  - always, OR
 --   * the owner of the signal's competitor, OR
---   * any reviewer — but ONLY when the signal has no OWNED competitor.
+--   * any reviewer - but ONLY when the signal has no OWNED competitor.
 --
 -- That last clause preserves today's behaviour for every signal whose
 -- competitor is unassigned OR has no linked/known competitor at all (classify

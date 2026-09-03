@@ -1,4 +1,4 @@
-// Brevo transactional email — used for the "Send via Email" publish action
+// Brevo transactional email - used for the "Send via Email" publish action
 // (an alternative to the Teams connector). Uses Brevo's REST API directly
 // (https://api.brevo.com/v3/smtp/email) rather than SMTP, since we hold an
 // API key (xkeysib-…), not SMTP credentials.
@@ -27,7 +27,7 @@ export interface SendEmailParams {
 
 /**
  * Sends one transactional email via the Brevo API. Throws with a readable
- * message on failure — the caller (the publish-email route) turns that into
+ * message on failure - the caller (the publish-email route) turns that into
  * a 502 rather than silently succeeding.
  */
 export async function sendBrevoEmail(config: BrevoConfig, params: SendEmailParams): Promise<void> {

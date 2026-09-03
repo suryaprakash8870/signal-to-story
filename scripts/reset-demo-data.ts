@@ -3,7 +3,7 @@
  * recording. Deletes signals (cascades to signal_classification and
  * signal_outputs) and the test competitors created during development.
  * Does NOT touch: user accounts, connectors, LLM/backend config, Vault
- * secrets — only signal-related content.
+ * secrets - only signal-related content.
  *
  * Run:  npx tsx scripts/reset-demo-data.ts
  */
@@ -24,7 +24,7 @@ async function main() {
   console.log('BEFORE:', { signals: signalsBefore, outputs: outputsBefore, competitors: compsBefore });
 
   // Deleting signals cascades to signal_classification + signal_outputs (FKs
-  // are ON DELETE CASCADE — see supabase/migrations/0001_init.sql).
+  // are ON DELETE CASCADE - see supabase/migrations/0001_init.sql).
   const { error: sigErr } = await db.from('signals').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   if (sigErr) throw new Error(`failed to delete signals: ${sigErr.message}`);
 

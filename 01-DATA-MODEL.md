@@ -1,8 +1,8 @@
-# 01 — Data Model
+# 01 - Data Model
 
 Postgres via Supabase. Create tables in this order (foreign key dependency
 order). Enable Row-Level Security on every table before writing any app
-code against it — do not add RLS as an afterthought.
+code against it - do not add RLS as an afterthought.
 
 ## Extension
 
@@ -10,7 +10,7 @@ code against it — do not add RLS as an afterthought.
 create extension if not exists "uuid-ossp";
 ```
 
-## `users` (Supabase Auth handles the base table — this extends it)
+## `users` (Supabase Auth handles the base table - this extends it)
 
 ```sql
 create table public.user_profiles (
@@ -31,7 +31,7 @@ create policy "users can update own profile"
   using (auth.uid() = id);
 ```
 
-Roles are intentionally simple (submitter / reviewer / admin) — every
+Roles are intentionally simple (submitter / reviewer / admin) - every
 downstream RLS policy in this document checks against this table.
 
 ## `competitors`
@@ -101,11 +101,11 @@ create policy "authenticated users can insert signals"
 ```
 
 `raw_text_hash` + its index exist specifically to support the dedupe check
-in `10-OPTIMIZATION-NOTES.md` — before re-running the pipeline on a signal,
+in `10-OPTIMIZATION-NOTES.md` - before re-running the pipeline on a signal,
 check whether this hash already exists with `status != 'rejected'`.
 
 **Note:** `source_type` currently lists Gong, Salesforce, Teams, Crayon,
-Website, News, Manual. This list is provisional — confirm the complete,
+Website, News, Manual. This list is provisional - confirm the complete,
 current list of sources against Dale's source itemization before treating
 this constraint as final. Adding a source later is a one-line migration
 (`alter table ... drop constraint ... add constraint ...`), not a redesign.
@@ -132,7 +132,7 @@ create policy "authenticated users can read classification"
 ```
 
 Writes to this table happen only from the backend (service role), never
-directly from the client — the classification is a pipeline output, not
+directly from the client - the classification is a pipeline output, not
 user input.
 
 ## `signal_outputs`
@@ -180,7 +180,7 @@ create policy "only reviewers/admins can approve"
 ```
 
 The `with check` clause is the actual enforcement of the "unverified claims
-must be resolved before approval" rule — see `05-HUMAN-REVIEW-WORKFLOW.md`
+must be resolved before approval" rule - see `05-HUMAN-REVIEW-WORKFLOW.md`
 for how the UI surfaces this, but the database is what actually blocks it.
 
 ## `connectors`
@@ -218,7 +218,7 @@ create policy "only admins can modify connectors"
   );
 ```
 
-`credentials_ref` never stores the actual API key/token — it stores a
+`credentials_ref` never stores the actual API key/token - it stores a
 reference (e.g. a Vault secret name) that the backend resolves server-side.
 See `04-CONNECTORS.md`.
 
@@ -233,5 +233,5 @@ See `04-CONNECTORS.md`.
 }
 ```
 
-This is illustrative, not confirmed — see `04-CONNECTORS.md` and
+This is illustrative, not confirmed - see `04-CONNECTORS.md` and
 `08-TEST-FIXTURES-AND-TESTING.md`.

@@ -6,7 +6,7 @@ import { stripCodeFences, PIPELINE_TEMPERATURE } from './provider';
 // shape far more reliably than the small local Ollama models, which fixes the
 // "missing required field" classification failures.
 //
-// Creds come from env (CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN) — fine for
+// Creds come from env (CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN) - fine for
 // testing. For production the token should move into Vault like the other keys.
 export class CloudflareProvider implements LLMProvider {
   constructor(

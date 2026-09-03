@@ -6,7 +6,7 @@ import { routeAudiences } from './route';
 import { packageOutputs } from './package';
 
 /**
- * Runs Stages 2 through 5 for a signal, in order — see 02-PIPELINE-STAGES.md
+ * Runs Stages 2 through 5 for a signal, in order - see 02-PIPELINE-STAGES.md
  * for why these stay separate LLM calls rather than one merged call. On any
  * stage failure (including the second failed retry inside that stage),
  * marks the signal 'error' rather than leaving it silently stuck, per
@@ -16,7 +16,7 @@ export async function runPipeline(signalId: string): Promise<void> {
   const db = supabaseServiceRole();
   try {
     // Clear any existing outputs first so a re-run replaces rather than appends
-    // — prevents duplicate stakeholder cards if the pipeline runs more than once.
+    // - prevents duplicate stakeholder cards if the pipeline runs more than once.
     await db.from('signal_outputs').delete().eq('signal_id', signalId);
     const classification = await classifySignal(signalId);
     const interpretation = await interpretSignal(signalId);
@@ -30,7 +30,7 @@ export async function runPipeline(signalId: string): Promise<void> {
 }
 
 /**
- * Dedupe check from 10-OPTIMIZATION-NOTES.md — before running the pipeline,
+ * Dedupe check from 10-OPTIMIZATION-NOTES.md - before running the pipeline,
  * check whether this exact raw_text has already been submitted and isn't
  * rejected. Returns the existing signal (id + status) if found. The caller
  * dedupes a successful prior run, but re-runs one that had errored.
@@ -61,7 +61,7 @@ export async function rerunSignal(signalId: string): Promise<void> {
   await runPipeline(signalId);
 }
 
-// Postgres's raw_text_hash column uses md5() — mirror that here so the
+// Postgres's raw_text_hash column uses md5() - mirror that here so the
 // dedupe lookup can filter by the generated column without a round trip.
 function md5Hex(text: string): string {
   return createHash('md5').update(text).digest('hex');

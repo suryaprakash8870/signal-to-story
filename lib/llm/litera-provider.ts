@@ -75,7 +75,7 @@ export class LiteraProvider implements LLMProvider {
       // 401 almost always means the Entra token has expired.
       if (res.status === 401) {
         throw new Error(
-          `Litera API 401 — the access token is invalid or expired. Entra tokens last ~1 hour; refresh the token. ${errBody.slice(0, 200)}`
+          `Litera API 401 - the access token is invalid or expired. Entra tokens last ~1 hour; refresh the token. ${errBody.slice(0, 200)}`
         );
       }
       throw new Error(`Litera API request failed: ${res.status} ${errBody.slice(0, 300)}`);

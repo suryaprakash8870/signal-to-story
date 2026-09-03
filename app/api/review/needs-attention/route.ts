@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Signals that need a reviewer's attention outside the normal output queue:
- * - 'error': the pipeline failed (surface, don't let them vanish — 07-API).
+ * - 'error': the pipeline failed (surface, don't let them vanish - 07-API).
  * - 'classified' / 'interpreted': mid-pipeline. Usually transient, but if the
  *   process died (e.g. a restart) they're orphaned here and can be retried.
  */

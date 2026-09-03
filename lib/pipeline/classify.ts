@@ -24,7 +24,7 @@ Raw signal:
 ${rawText}`;
 }
 
-/** Stage 2 — Classification. Writes signal_classification, advances status. */
+/** Stage 2 - Classification. Writes signal_classification, advances status. */
 export async function classifySignal(signalId: string): Promise<Classification> {
   const db = supabaseServiceRole();
 

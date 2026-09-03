@@ -2,7 +2,7 @@ name: Inbound Connector Poll
 
 # Polls the live inbound connectors (Salesforce, Gong) on an interval, per
 # 10-OPTIMIZATION-NOTES.md (a 15–30 min interval is a reasonable default;
-# tune to actual signal frequency). Crayon is intentionally NOT polled here —
+# tune to actual signal frequency). Crayon is intentionally NOT polled here -
 # prefer its outbound webhook (/api/connectors/crayon/webhook) when available.
 #
 # Only connectors in Live Mode do real work; a Test-Mode connector's fetch
@@ -10,7 +10,7 @@ name: Inbound Connector Poll
 # connector is actually switched to Live.
 
 on:
-  # Scheduled runs are DISABLED — this app is not deployed, so the cron runs
+  # Scheduled runs are DISABLED - this app is not deployed, so the cron runs
   # would only fail. Re-enable by uncommenting when APP_URL/CRON_SECRET are set.
   # schedule:
   #   - cron: '*/30 * * * *' # every 30 minutes

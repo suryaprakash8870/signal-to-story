@@ -11,33 +11,33 @@ for (const line of readFileSync(path.join(process.cwd(), '.env.local'), 'utf8').
   if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
 }
 
-const SIGNAL = `[Gong Call — FY26 Renewal & Expansion Review: Wexley & Hart LLP × Litera — 2026-07-08]
+const SIGNAL = `[Gong Call - FY26 Renewal & Expansion Review: Wexley & Hart LLP × Litera - 2026-07-08]
 
 Priya Nair (Litera, Account Executive): Thanks for making time, everyone. This is our renewal and expansion check-in, and I know the innovation group had a few things to put on the table, so let's be candid.
-Diane Wexley (Wexley & Hart, Managing Partner): Appreciate it, Priya. The platform's been solid this year — adoption is good. But I'll be direct: we've been evaluating Nexdraft AI, and the partners want it on the record before we sign another term.
+Diane Wexley (Wexley & Hart, Managing Partner): Appreciate it, Priya. The platform's been solid this year - adoption is good. But I'll be direct: we've been evaluating Nexdraft AI, and the partners want it on the record before we sign another term.
 Priya Nair: I'd rather hear it straight. What prompted the Nexdraft look?
-Sam Okoro (Wexley & Hart, Head of Knowledge Management): A few things. On product, two features stood out in their demo — their drafting runs natively inside Word so associates never leave the document, and they have a cross-matter clause analytics view that flags off-standard language across a whole matter, not one doc at a time.
+Sam Okoro (Wexley & Hart, Head of Knowledge Management): A few things. On product, two features stood out in their demo - their drafting runs natively inside Word so associates never leave the document, and they have a cross-matter clause analytics view that flags off-standard language across a whole matter, not one doc at a time.
 Diane Wexley: The cross-matter piece is what caught the partners. Today our review is document-by-document, and at our size that's a real time sink.
 Priya Nair: Understood. Was pricing part of it?
-Sam Okoro: They floated numbers — roughly 20% under our current spend, per seat. Nothing formal in writing yet, and procurement will absolutely lead with that number.
-Diane Wexley: To be fair, Nexdraft is a newer, smaller vendor. When we pushed on security — SOC 2, audit trails, data residency — the answers were vague. For the matters we handle, that's not optional.
+Sam Okoro: They floated numbers - roughly 20% under our current spend, per seat. Nothing formal in writing yet, and procurement will absolutely lead with that number.
+Diane Wexley: To be fair, Nexdraft is a newer, smaller vendor. When we pushed on security - SOC 2, audit trails, data residency - the answers were vague. For the matters we handle, that's not optional.
 Ravi Menon (Wexley & Hart, Director of Legal Ops): And honestly, a lot of the demo was aspirational. When we dug in, the product didn't fully back the pitch. But the pitch is landing anyway.
 Priya Nair: Say more about the pitch landing.
 Ravi Menon: They're everywhere on the marketing side. A keynote at LegalTech last month, a "State of AI in Legal" report our partners are forwarding around, and a relentless "AI-first drafting" campaign on LinkedIn. It's shaping how the partners talk about the whole category.
-Diane Wexley: That's the part that worries me most — not the tech, the narrative. When partners start repeating a competitor's tagline in meetings, that's a problem for whoever they're comparing you to.
+Diane Wexley: That's the part that worries me most - not the tech, the narrative. When partners start repeating a competitor's tagline in meetings, that's a problem for whoever they're comparing you to.
 Priya Nair: Fair. Is the cross-matter analytics a must-have for this cycle, or exploratory?
 Sam Okoro: Trending to must-have. Our clients are asking sharper questions about risk exposure across engagements, and getting ahead of that is climbing the list fast.
 Priya Nair: And what's keeping you with us today, honestly?
-Diane Wexley: The integration's been dependable and the associates are trained up — switching has a real cost. But "dependable and familiar" is getting harder to defend to partners against something cheaper with a louder story.
+Diane Wexley: The integration's been dependable and the associates are trained up - switching has a real cost. But "dependable and familiar" is getting harder to defend to partners against something cheaper with a louder story.
 Priya Nair: Understood. Are you running a Nexdraft pilot?
-Ravi Menon: They offered a 60-day pilot with two practice groups. We haven't accepted — we wanted to talk to you first.
+Ravi Menon: They offered a 60-day pilot with two practice groups. We haven't accepted - we wanted to talk to you first.
 Priya Nair: I appreciate that. If you had to rank what would make renewing-and-expanding an easy yes to the partners?
-Diane Wexley: One, credible cross-matter risk analytics. Two, a total-cost story that closes most of that 20% gap. Three, a substantiated security position — which is where you should have an edge over a newer vendor, but only if it's proven, not asserted.
+Diane Wexley: One, credible cross-matter risk analytics. Two, a total-cost story that closes most of that 20% gap. Three, a substantiated security position - which is where you should have an edge over a newer vendor, but only if it's proven, not asserted.
 Priya Nair: That's specific and helpful. Any hard dates?
 Ravi Menon: Renewal's end of September. Partners want a recommendation the first week of September, so we need something concrete within three to four weeks.
-Priya Nair: Got it. Let me come back with a point of view on cross-matter analytics, a total-cost view against their number, and a substantiated security story — and an outcomes-led narrative, not just an AI checkbox.
+Priya Nair: Got it. Let me come back with a point of view on cross-matter analytics, a total-cost view against their number, and a substantiated security story - and an outcomes-led narrative, not just an AI checkbox.
 Diane Wexley: That's the right framing. Be direct with us and we'll be direct with you.
-Priya Nair: Thank you all — I'll follow up early next week with next steps.`;
+Priya Nair: Thank you all - I'll follow up early next week with next steps.`;
 
 async function main() {
   const { supabaseServiceRole } = await import('../lib/supabase/server');

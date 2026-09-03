@@ -1,4 +1,4 @@
--- Task 4 — "what to do next".
+-- Task 4 - "what to do next".
 -- The interpretation stage (what changed / why it matters / what to do next) was
 -- previously an in-memory intermediate, discarded after packaging. Persist the
 -- display-relevant fields so a reviewer can see and edit the recommendation.

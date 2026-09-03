@@ -8,7 +8,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: 'content is required' }, { status: 400 });
   }
 
-  // Read current edit_count to increment it, and stamp edited_at — this is the
+  // Read current edit_count to increment it, and stamp edited_at - this is the
   // data source for the approval/edit-rate metric (Phase 3).
   const { data: current } = await supabase
     .from('signal_outputs')

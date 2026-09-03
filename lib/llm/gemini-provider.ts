@@ -1,10 +1,10 @@
 import type { GenerateStructuredParams, LLMProvider } from './provider';
 import { stripCodeFences, PIPELINE_TEMPERATURE } from './provider';
 
-// Google Gemini via the Generative Language REST API — no SDK needed.
+// Google Gemini via the Generative Language REST API - no SDK needed.
 // responseMimeType: application/json forces raw JSON output, same contract
 // as the other providers. On free-tier rate limits (429) the call waits and
-// retries rather than failing — the pipeline makes several calls in a row and
+// retries rather than failing - the pipeline makes several calls in a row and
 // the free tier is ~10/min, so brief waits are expected, not errors.
 export class GeminiProvider implements LLMProvider {
   constructor(private apiKey: string) {}

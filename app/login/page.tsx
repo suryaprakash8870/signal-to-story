@@ -4,9 +4,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase/client';
 
-// Shared demo credentials — shown on the login screen and prefilled from the
+// Shared demo credentials - shown on the login screen and prefilled from the
 // home page "Try now" links (?demo=1).
-// Local only — a page.tsx must not export arbitrary consts (breaks `next build`).
+// Local only - a page.tsx must not export arbitrary consts (breaks `next build`).
 const DEMO_EMAIL = 'demo@compete-agent.com';
 const DEMO_PASSWORD = 'demo123';
 
@@ -64,10 +64,13 @@ function LoginForm() {
       <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-page/90 via-page/85 to-page/80" />
 
       <div className="relative w-full max-w-sm px-4">
-        {/* Litera logo above the card */}
+        {/* Litera logo above the card - the mark itself is dark, so it needs a
+            light backdrop to stay legible over the photo background. */}
         <div className="mb-6 flex justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/litera-logo.png" alt="Litera" className="h-10 w-auto object-contain" />
+          <div className="rounded-xl bg-white/95 px-5 py-2.5 shadow-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/litera-logo.png" alt="Litera" className="h-8 w-auto object-contain" />
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="card card-p w-full space-y-4 shadow-xl">
@@ -76,7 +79,7 @@ function LoginForm() {
             <p className="muted mt-1 text-sm">Compete Agent</p>
           </div>
 
-          {/* Demo credentials — for exploring the app */}
+          {/* Demo credentials - for exploring the app */}
           <div className="rounded-lg border border-accent-border bg-accent-soft p-3 text-xs">
             <p className="font-semibold text-accent">Log in with these credentials to explore</p>
             <p className="mt-1 text-gray-700">

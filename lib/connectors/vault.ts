@@ -2,7 +2,7 @@ import { supabaseServiceRole } from '../supabase/server';
 
 // Server-side only. Resolves and stores connector credentials via Supabase
 // Vault (04-CONNECTORS.md). NEVER import this from client code, and NEVER
-// return a resolved value in an API response body — resolve and use it in
+// return a resolved value in an API response body - resolve and use it in
 // the same server-side function.
 
 /** Store (or overwrite) a secret in Vault; returns the id for credentials_ref. */

@@ -28,7 +28,7 @@ const SIGNAL =
   'drafts and reviews M&A transaction documents end to end, and named three ' +
   'AmLaw 100 firms as launch customers. Harvey also disclosed a $300M Series E ' +
   'funding round. The announcement positions Harvey as moving beyond legal ' +
-  'research into document drafting and deal workflows — directly overlapping ' +
+  'research into document drafting and deal workflows - directly overlapping ' +
   "Litera's transaction management and drafting products.";
 
 async function main() {

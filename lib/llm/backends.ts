@@ -34,28 +34,28 @@ export interface Backend {
  */
 export async function listBackends(apiProvider: string | null): Promise<Backend[]> {
   const backends: Backend[] = [
-    { id: 'auto', label: 'Auto — API, then network, then local', kind: 'auto' },
+    { id: 'auto', label: 'Auto - API, then network, then local', kind: 'auto' },
   ];
   if (apiProvider) {
     const model = apiProvider === 'gemini' ? process.env.GEMINI_MODEL ?? 'gemini-2.5-flash' : process.env.CLAUDE_MODEL ?? 'claude';
-    backends.push({ id: 'api', label: `${apiProvider} — ${model}`, kind: 'api' });
+    backends.push({ id: 'api', label: `${apiProvider} - ${model}`, kind: 'api' });
   }
 
   const cf = getCloudflareConfig();
   if (cf) {
-    backends.push({ id: 'cloudflare', label: `Cloudflare — ${cf.model}`, kind: 'api' });
+    backends.push({ id: 'cloudflare', label: `Cloudflare - ${cf.model}`, kind: 'api' });
   }
 
   const litera = await getLiteraConfig();
   if (litera) {
-    backends.push({ id: 'litera', label: `Litera — ${litera.model ?? 'gpt-5'}`, kind: 'api' });
+    backends.push({ id: 'litera', label: `Litera - ${litera.model ?? 'gpt-5'}`, kind: 'api' });
   }
 
   const gemini = await getGeminiEntraConfig();
   if (gemini) {
     backends.push({
       id: 'gemini-entra',
-      label: `Litera — Gemini (${gemini.model})`,
+      label: `Litera - Gemini (${gemini.model})`,
       kind: 'api',
     });
   }
@@ -68,13 +68,13 @@ export async function listBackends(apiProvider: string | null): Promise<Backend[
       for (const m of data.models ?? []) {
         backends.push({
           id: `ollama|${ep.url}|${m.name}`,
-          label: `Ollama ${ep.name} — ${m.name}`,
+          label: `Ollama ${ep.name} - ${m.name}`,
           kind: 'ollama',
           reachable: true,
         });
       }
     } catch {
-      // endpoint unreachable from the server — skip it
+      // endpoint unreachable from the server - skip it
     }
   }
   return backends;

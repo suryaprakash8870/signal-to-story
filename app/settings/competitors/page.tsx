@@ -17,6 +17,23 @@ type User = { id: string; label: string; role: string };
 // Tier labels (1 = Primary, 2 = Secondary, 3 = Watching). Data only for now.
 const TIER_LABELS: Record<number, string> = { 1: 'Primary', 2: 'Secondary', 3: 'Watching' };
 
+const PAGE_SIZE = 5;
+
+// Condensed page list: always show first, last, current and its neighbors,
+// with '…' gaps - same pattern as the Review queue's pagination.
+function pageWindow(current: number, total: number): (number | '…')[] {
+  const keep = new Set([1, total, current, current - 1, current + 1]);
+  const nums = [...keep].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+  const out: (number | '…')[] = [];
+  let prev = 0;
+  for (const p of nums) {
+    if (p - prev > 1) out.push('…');
+    out.push(p);
+    prev = p;
+  }
+  return out;
+}
+
 export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -27,6 +44,7 @@ export default function CompetitorsPage() {
   // Fifty competitors, each rendered as a card. Searchable for the same reason
   // the feed rail is: nobody scans a list that long.
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
 
   const load = useCallback(async () => {
     try {
@@ -54,6 +72,16 @@ export default function CompetitorsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Reset to page 1 whenever the search narrows the list, so pagination never
+  // strands the user on a now-empty page.
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
+
+  const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageItems = visible.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   async function addCompetitor() {
     setBusy(true);
@@ -89,7 +117,7 @@ export default function CompetitorsPage() {
     <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="page-title">Competitors</h1>
       <p className="muted text-sm">
-        Known facts here ground the interpretation stage — the model treats them as fact, and
+        Known facts here ground the interpretation stage - the model treats them as fact, and
         anything beyond them gets flagged as an unverified claim.
       </p>
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -134,7 +162,15 @@ export default function CompetitorsPage() {
             <p className="muted py-6 text-center text-sm">No competitor matches that name.</p>
           )}
 
-          {visible.map((c) => (
+          {visible.length > 0 && (
+            <p className="muted text-sm">
+              {visible.length} competitor{visible.length === 1 ? '' : 's'}
+              {visible.length > PAGE_SIZE &&
+                ` · showing ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, visible.length)}`}
+            </p>
+          )}
+
+          {pageItems.map((c) => (
             <CompetitorCard
               key={c.id}
               competitor={c}
@@ -143,6 +179,46 @@ export default function CompetitorsPage() {
               onDelete={() => deleteCompetitor(c.id)}
             />
           ))}
+
+          {pageCount > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="btn btn-outline"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {pageWindow(currentPage, pageCount).map((n, i) =>
+                  n === '…' ? (
+                    <span key={`gap-${i}`} className="px-1 text-sm text-gray-400">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={n}
+                      onClick={() => setPage(n)}
+                      className={`h-8 w-8 rounded-lg text-sm font-medium ${
+                        n === currentPage
+                          ? 'bg-action text-action-ink'
+                          : 'border border-gray-300 bg-surface text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  )
+                )}
+              </div>
+              <button
+                onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                disabled={currentPage === pageCount}
+                className="btn btn-outline"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

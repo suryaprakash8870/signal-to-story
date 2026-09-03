@@ -4,7 +4,7 @@ import { buildConnector, type ConnectorRow } from '@/lib/connectors/registry';
 import type { OutboundPayload } from '@/lib/connectors/connector';
 
 /**
- * Stage 6 — Distribution. Only fires after approval (04-CONNECTORS.md).
+ * Stage 6 - Distribution. Only fires after approval (04-CONNECTORS.md).
  * Pushes an approved output to Teams and stamps published_at. The
  * approved-gate is enforced two ways: RLS already blocked approval while
  * unverified_claims were present, and this route refuses to publish
@@ -56,7 +56,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     competitor = comp?.name ?? null;
   }
 
-  // Who approved it (for the card footer) — full_name, else the email local part.
+  // Who approved it (for the card footer) - full_name, else the email local part.
   let approverName: string | null = null;
   if (output.reviewed_by) {
     const { data: profile } = await supabase
@@ -71,7 +71,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     approverName = reviewer?.email ? reviewer.email.split('@')[0] : 'a reviewer';
   }
 
-  // Distribution and the published_at stamp are backend actions — use the
+  // Distribution and the published_at stamp are backend actions - use the
   // service role, same as the pipeline stages.
   const db = supabaseServiceRole();
   const { data: connectorRow, error: connErr } = await db

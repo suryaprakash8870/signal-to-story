@@ -1,4 +1,4 @@
--- Task 1 — carry source links through to the reviewer.
+-- Task 1 - carry source links through to the reviewer.
 -- Crayon Spark content contains footnote links to the underlying insights.
 -- These are stripped from raw_text (which feeds the pipeline unchanged); we now
 -- also store them separately for display, so a reviewer can open the original in

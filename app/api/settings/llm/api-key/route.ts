@@ -22,10 +22,10 @@ async function requireReviewerOrAdmin() {
 
 /**
  * Stores an LLM API key in Vault. The provider is auto-detected from the key
- * format (sk-ant-… = Claude, AIza…/AQ.… = Gemini) — whichever key is given,
+ * format (sk-ant-… = Claude, AIza…/AQ.… = Gemini) - whichever key is given,
  * the pipeline uses that provider automatically; no key means Ollama. Keys are
  * stored in a single Vault slot ("llm_api_key"), so saving a new key OVERWRITES
- * the previous one in place — there is never more than one key on record. The
+ * the previous one in place - there is never more than one key on record. The
  * raw key is never logged, echoed, or returned.
  */
 export async function POST(req: NextRequest) {

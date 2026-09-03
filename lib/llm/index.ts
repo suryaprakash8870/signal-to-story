@@ -81,7 +81,7 @@ async function standbyLinks(
  * The pin is still honoured for every successful call: the chosen backend is
  * always tried first, and it is the only one allowed to answer a request that
  * merely came back malformed. Standby backends are reached ONLY on an
- * availability failure — an expired token, an exhausted quota, a timeout.
+ * availability failure - an expired token, an exhausted quota, a timeout.
  *
  * This is what stops a single expired Entra token or a spent Cloudflare
  * allowance from taking the whole feature offline.
@@ -111,39 +111,39 @@ async function withStandby(
 export async function getLLMProvider(): Promise<LLMProvider> {
   const [api, selection] = await Promise.all([getApiConfig(), getSelectedBackend()]);
 
-  // STRICT — pinned to a specific Ollama endpoint+model. Only this runs.
+  // STRICT - pinned to a specific Ollama endpoint+model. Only this runs.
   if (selection && selection.startsWith('ollama|')) {
     const { url, model } = parsePinnedOllama(selection);
     return new OllamaProvider(url, model);
   }
 
-  // STRICT — pinned to Cloudflare Workers AI (testing backend). Only this runs.
+  // STRICT - pinned to Cloudflare Workers AI (testing backend). Only this runs.
   if (selection === 'cloudflare') {
     const cf = getCloudflareConfig();
     if (cf)
       return withStandby('cloudflare', new CloudflareProvider(cf.accountId, cf.apiToken, cf.model), api);
   }
 
-  // STRICT — pinned to the Litera Entra gateway (gpt-5). Only this runs.
+  // STRICT - pinned to the Litera Entra gateway (gpt-5). Only this runs.
   if (selection === 'litera') {
     const lc = await getLiteraConfig();
     if (lc) return withStandby('litera', new LiteraProvider(lc.endpoint, lc.token, lc.model), api);
   }
 
-  // STRICT — pinned to Gemini via Litera's APIM gateway. Only this runs.
+  // STRICT - pinned to Gemini via Litera's APIM gateway. Only this runs.
   if (selection === 'gemini-entra') {
     const gc = await getGeminiEntraConfig();
     if (gc)
       return withStandby('gemini-entra', new GeminiEntraProvider(gc.endpoint, gc.token, gc.model), api);
   }
 
-  // STRICT — pinned to the hosted API. Only this runs (it self-retries rate
-  // limits internally; if it still fails, the signal errors — no Ollama switch).
+  // STRICT - pinned to the hosted API. Only this runs (it self-retries rate
+  // limits internally; if it still fails, the signal errors - no Ollama switch).
   if (selection === 'api' && api) {
     return withStandby('api', apiProvider(api), api);
   }
 
-  // AUTO (explicit) — fallback chain. Also the path when nothing is pinned.
+  // AUTO (explicit) - fallback chain. Also the path when nothing is pinned.
   const ollamaLinks = await ollamaChain();
   const chain: Link[] = [];
   if (api) chain.push({ label: api.provider, provider: apiProvider(api) });
