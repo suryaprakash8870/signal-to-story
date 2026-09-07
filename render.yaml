@@ -21,22 +21,32 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      # --- AI provider: set the one you use (Cloudflare / Litera / Claude) ---
-      - key: CLOUDFLARE_ACCOUNT_ID
-        sync: false
-      - key: CLOUDFLARE_API_TOKEN
-        sync: false
-      - key: CLOUDFLARE_MODEL
-        sync: false
+      # --- AI provider: Litera's Entra gateway is the production backend ---
       - key: LITERA_API_URL
-        sync: false
-      - key: LITERA_API_TOKEN
         sync: false
       - key: LITERA_MODEL
         sync: false
-      - key: ANTHROPIC_API_KEY
+      # Entra audience for the gateway. Has a sensible default in code; set it
+      # here only if the gateway's audience changes.
+      - key: LITERA_TOKEN_RESOURCE
         sync: false
-      - key: CLAUDE_MODEL
+      # Token refresh. On a server there is nobody to sign in, so the app must
+      # authenticate as itself: these three let it request and renew its own
+      # token. Without them it falls back to LITERA_API_TOKEN, which expires
+      # after an hour and will not survive a scheduled run.
+      - key: LITERA_TENANT_ID
+        sync: false
+      - key: LITERA_CLIENT_ID
+        sync: false
+      - key: LITERA_CLIENT_SECRET
+        sync: false
+      # Manual fallback only, for a deploy made before the credentials exist.
+      - key: LITERA_API_TOKEN
+        sync: false
+      # --- Optional second backend, reached only if Litera is unavailable ---
+      - key: GEMINI_ENTRA_URL
+        sync: false
+      - key: GEMINI_ENTRA_MODEL
         sync: false
       # --- Email (Brevo) + PMM notification ---
       - key: BREVO_API_KEY
