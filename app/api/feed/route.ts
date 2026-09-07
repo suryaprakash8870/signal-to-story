@@ -19,6 +19,31 @@ function windowStart(): string {
   return d.toISOString();
 }
 
+/**
+ * Turns a database error into a safe response.
+ *
+ * Two things go wrong here that should not reach a reader as a raw 500. The
+ * upstream gateway rejects anything that looks like an injection attempt and
+ * answers with an HTML block page rather than JSON, so `error.message` can be a
+ * whole web page. And a rejected filter value is the caller's mistake, not a
+ * server fault, so it deserves a 400.
+ *
+ * The detail goes to the server log either way; the caller gets a sentence.
+ */
+function dbError(error: { message: string }, context: string) {
+  const raw = error.message ?? '';
+  console.error(`[feed] ${context}: ${raw.slice(0, 300)}`);
+
+  const looksLikeHtml = /<!DOCTYPE|<html/i.test(raw);
+  if (looksLikeHtml) {
+    return NextResponse.json(
+      { error: 'That request could not be processed. Please check the filter values and try again.' },
+      { status: 400 }
+    );
+  }
+  return NextResponse.json({ error: 'The feed could not be loaded.' }, { status: 500 });
+}
+
 export async function GET(req: NextRequest) {
   const supabase = supabaseForRequest();
   const {
@@ -37,7 +62,7 @@ export async function GET(req: NextRequest) {
       .from('competitor_updates')
       .select('competitor_name, id, published_at')
       .gte('published_at', since);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return dbError(error, 'competitor list');
 
     type Row = { competitor_name: string; id: string; published_at: string };
     type Entry = {
@@ -107,7 +132,7 @@ export async function GET(req: NextRequest) {
   if (type && type !== 'all') query = query.eq('update_type', type);
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return dbError(error, 'competitor updates');
 
   return NextResponse.json({ updates: data ?? [], windowDays: WINDOW_DAYS });
 }

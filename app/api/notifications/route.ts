@@ -21,10 +21,15 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   const supabase = supabaseForRequest();
+  // Row-level security already prevents a signed-out caller from reading any
+  // rows, so this is not the thing keeping the data safe. It is here so the
+  // caller is told they are signed out, rather than being handed an empty list
+  // that looks like "there is nothing here". The POST handlers alongside these
+  // have always checked; the GETs did not, and the inconsistency showed.
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ count: 0, signals: [] });
+  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const db = supabaseServiceRole();
 

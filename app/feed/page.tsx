@@ -39,6 +39,10 @@ const TYPE_FILTERS: { value: string; label: string }[] = [
   { value: 'win', label: 'Customer win' },
   { value: 'expansion', label: 'Expansion' },
   { value: 'risk', label: 'Risk' },
+  // Updates that carried no emoji from Crayon and that neither the keyword
+  // rules nor the model could place. Without a chip they were reachable only
+  // by scrolling "All", which hid a large share of the feed.
+  { value: 'other', label: 'Other' },
 ];
 
 const TYPE_STYLE: Record<string, string> = {
