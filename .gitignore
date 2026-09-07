@@ -12,3 +12,4 @@ Context documents/
 # Scratch logs from backfill and classification scripts.
 notes.log
 classify.log
+refresh.log
