@@ -123,22 +123,6 @@ async function loadApiConfig(): Promise<{ provider: ApiProvider; key: string } |
 }
 
 /**
- * Cloudflare Workers AI config from env (a free/cheap TESTING backend). Returns
- * null unless both account id and token are set. Default model is a 32B coder
- * model - reliable JSON shape. For production the token should move to Vault.
- */
-export function getCloudflareConfig(): { accountId: string; apiToken: string; model: string } | null {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
-  if (!accountId || !apiToken) return null;
-  return {
-    accountId,
-    apiToken,
-    model: process.env.CLOUDFLARE_MODEL ?? '@cf/qwen/qwen2.5-coder-32b-instruct',
-  };
-}
-
-/**
  * Litera internal Azure/Entra OpenAI-compatible gateway config from env.
  * Returns null unless both the endpoint URL and the Bearer token are set.
  * NOTE: the token is an Entra JWT that expires (~1h) - fine for testing/demo,
@@ -202,7 +186,7 @@ export async function getGeminiEntraConfig(): Promise<{
 
 /**
  * The user's pinned backend from the settings dropdown, or null for auto.
- * Values: 'auto' | 'api' | 'cloudflare' | 'litera' | 'gemini-entra'
+ * Values: 'auto' | 'api' | 'litera' | 'gemini-entra'
  *         | 'ollama|<baseUrl>|<model>'.
  */
 export async function getSelectedBackend(): Promise<string | null> {

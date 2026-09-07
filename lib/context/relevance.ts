@@ -3,8 +3,7 @@ import { z } from 'zod';
 import { getLLMProvider } from '../llm';
 import { flexibleString } from '../llm/schemas';
 import { supabaseServiceRole } from '../supabase/server';
-import { rankSectionsByEmbedding, SHORTLIST_SIZE } from './embeddings';
-import { rankLexically } from './lexical';
+import { rankLexically, SHORTLIST_SIZE } from './lexical';
 
 /**
  * Records that a model's answer had to be coerced into shape.
@@ -344,20 +343,13 @@ Return only the JSON object.`,
  * backfilled yet or the embedding provider is unavailable, so the feature
  * degrades rather than breaking.
  */
-async function selectSections(update: string, sections: SectionRow[]): Promise<SectionRow[]> {
+function selectSections(update: string, sections: SectionRow[]): SectionRow[] {
   const byId = new Map(sections.map((s) => [s.id, s]));
 
-  // Embeddings first when they have been backfilled: they handle synonyms that
-  // share no words, which is the one thing lexical matching cannot do.
-  const embedded = await rankSectionsByEmbedding(update, SHORTLIST_SIZE);
-  if (embedded && embedded.length > 0) {
-    return embedded.map((r) => byId.get(r.id)).filter((s): s is SectionRow => Boolean(s));
-  }
-
-  // BM25 over heading AND content. This is the dependable path: no API call, no
-  // quota, deterministic, and it solves the original defect, which was that the
-  // shortlist could only see headings. Product names like "Kira" tell a reader
-  // nothing; the text underneath them does.
+  // BM25 over heading AND content. No API call, no quota, deterministic, and it
+  // solves the original defect, which was that the shortlist could only see
+  // headings. Product names like "Kira" tell a reader nothing; the text
+  // underneath them does.
   const lexical = rankLexically(
     update,
     sections.map((s) => ({ id: s.id, text: `${s.heading}
@@ -389,7 +381,7 @@ export async function generateRelevanceNote(update: string): Promise<RelevanceNo
     return { note, groundedIn: null, general: true, model, inputHash: noteInputHash(update, []) };
   }
 
-  const chosen = await selectSections(update, sections);
+  const chosen = selectSections(update, sections);
   const inputHash = noteInputHash(update, chosen.map((c) => c.id));
 
   if (chosen.length === 0) {

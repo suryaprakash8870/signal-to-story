@@ -1,0 +1,50 @@
+name: Competitor Feed Daily Refresh
+
+# Pulls the latest Crayon Sparks into the competitor feed once a day, then
+# writes the "why it matters for us" note on anything new.
+#
+# Crayon's Sparks API is a pull, not a push, so the feed only moves when
+# something asks it to. Without this the feed silently ages: a PM opening it
+# sees a "last 30 days" heading above updates that stopped a week ago.
+#
+# Deduplicated on (spark_id, spark_index), so a repeated run adds nothing and
+# only genuinely new activity appears.
+#
+# Requires: the app deployed at APP_URL, and the APP_URL / CRON_SECRET repo
+# secrets set. The endpoint accepts the secret in place of a user session.
+
+on:
+  # Scheduled runs are DISABLED until the app is deployed, because the cron
+  # would only fail against a URL that does not answer. Uncomment once APP_URL
+  # and CRON_SECRET are set in the repository secrets.
+  # schedule:
+  #   - cron: '0 6 * * *' # 06:00 UTC daily, before the working day in both US and UK
+  workflow_dispatch: {} # manual runs from the Actions tab meanwhile
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh the competitor feed
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          echo "Refreshing the competitor feed…"
+          HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+            --max-time 900 \
+            -X POST "${APP_URL}/api/feed/refresh" \
+            -H "x-cron-secret: ${CRON_SECRET}")
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/resp.json
+          echo
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "Refresh failed."
+            exit 1
+          fi
+          # A refresh can succeed at pulling updates but fail to write their
+          # notes; the endpoint reports that separately, so surface it rather
+          # than letting a half-finished run look clean.
+          if grep -q '"notesFailed":[1-9]' /tmp/resp.json; then
+            echo "::warning::Some notes could not be generated - check the LLM access."
+          fi

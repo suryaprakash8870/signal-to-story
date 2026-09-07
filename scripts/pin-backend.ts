@@ -5,7 +5,7 @@ for (const line of readFileSync(path.join(process.cwd(), '.env.local'), 'utf8').
   if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
 }
 async function main() {
-  const backend = process.argv[2] ?? 'cloudflare';
+  const backend = process.argv[2] ?? 'litera';
   const { supabaseServiceRole } = await import('../lib/supabase/server');
   const db = supabaseServiceRole();
   const { error } = await db

@@ -4,7 +4,8 @@
 // local box). Queries run server-side, so LAN endpoints the browser can't
 // reach are still listed as long as the app server can reach them.
 
-import { getCloudflareConfig, getLiteraConfig, getGeminiEntraConfig } from './config';
+import { getLiteraConfig, getGeminiEntraConfig } from './config';
+
 
 export interface OllamaEndpoint {
   name: string;
@@ -39,11 +40,6 @@ export async function listBackends(apiProvider: string | null): Promise<Backend[
   if (apiProvider) {
     const model = apiProvider === 'gemini' ? process.env.GEMINI_MODEL ?? 'gemini-2.5-flash' : process.env.CLAUDE_MODEL ?? 'claude';
     backends.push({ id: 'api', label: `${apiProvider} - ${model}`, kind: 'api' });
-  }
-
-  const cf = getCloudflareConfig();
-  if (cf) {
-    backends.push({ id: 'cloudflare', label: `Cloudflare - ${cf.model}`, kind: 'api' });
   }
 
   const litera = await getLiteraConfig();

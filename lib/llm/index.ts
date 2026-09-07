@@ -2,13 +2,11 @@ import type { LLMProvider } from './provider';
 import { ClaudeProvider } from './claude-provider';
 import { GeminiProvider } from './gemini-provider';
 import { OllamaProvider } from './ollama-provider';
-import { CloudflareProvider } from './cloudflare-provider';
 import { LiteraProvider } from './litera-provider';
 import { GeminiEntraProvider } from './gemini-entra-provider';
 import {
   getApiConfig,
   getSelectedBackend,
-  getCloudflareConfig,
   getLiteraConfig,
   getGeminiEntraConfig,
 } from './config';
@@ -60,14 +58,6 @@ async function standbyLinks(
     });
   }
 
-  const cf = getCloudflareConfig();
-  if (cf && exclude !== 'cloudflare') {
-    links.push({
-      label: 'cloudflare',
-      provider: new CloudflareProvider(cf.accountId, cf.apiToken, cf.model),
-    });
-  }
-
   if (api && exclude !== 'api') {
     links.push({ label: api.provider, provider: apiProvider(api) });
   }
@@ -83,8 +73,8 @@ async function standbyLinks(
  * merely came back malformed. Standby backends are reached ONLY on an
  * availability failure - an expired token, an exhausted quota, a timeout.
  *
- * This is what stops a single expired Entra token or a spent Cloudflare
- * allowance from taking the whole feature offline.
+ * This is what stops a single expired Entra token from taking the whole
+ * feature offline.
  */
 async function withStandby(
   pinned: string,
@@ -115,13 +105,6 @@ export async function getLLMProvider(): Promise<LLMProvider> {
   if (selection && selection.startsWith('ollama|')) {
     const { url, model } = parsePinnedOllama(selection);
     return new OllamaProvider(url, model);
-  }
-
-  // STRICT - pinned to Cloudflare Workers AI (testing backend). Only this runs.
-  if (selection === 'cloudflare') {
-    const cf = getCloudflareConfig();
-    if (cf)
-      return withStandby('cloudflare', new CloudflareProvider(cf.accountId, cf.apiToken, cf.model), api);
   }
 
   // STRICT - pinned to the Litera Entra gateway (gpt-5). Only this runs.
@@ -161,7 +144,7 @@ export async function getLLMProvider(): Promise<LLMProvider> {
  * returns the key itself.
  */
 export async function getProviderStatus(): Promise<{
-  provider: 'claude' | 'gemini' | 'ollama' | 'cloudflare' | 'litera' | 'gemini-entra';
+  provider: 'claude' | 'gemini' | 'ollama' | 'litera' | 'gemini-entra';
   location?: 'remote' | 'local';
   model?: string;
   strict?: boolean;
@@ -171,10 +154,6 @@ export async function getProviderStatus(): Promise<{
   if (selection && selection.startsWith('ollama|')) {
     const { model } = parsePinnedOllama(selection);
     return { provider: 'ollama', model, strict: true };
-  }
-  if (selection === 'cloudflare') {
-    const cf = getCloudflareConfig();
-    if (cf) return { provider: 'cloudflare', model: cf.model, strict: true };
   }
   if (selection === 'litera') {
     const lc = await getLiteraConfig();

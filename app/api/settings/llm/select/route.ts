@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
   const valid =
     backend === 'auto' ||
     backend === 'api' ||
-    backend === 'cloudflare' ||
     backend === 'litera' ||
     backend === 'gemini-entra' ||
     backend.startsWith('ollama|');

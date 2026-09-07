@@ -9,7 +9,7 @@ import { generateRelevanceNote } from '@/lib/context/relevance';
  */
 /**
  * Turns a provider failure into something a PM can act on. The raw text from
- * Cloudflare or Entra mentions neuron allocations and bearer tokens, which is
+ * Entra mentions bearer tokens and audiences, which is
  * noise to the person reading the feed, so the detail stays in the server log
  * and the UI gets a plain sentence.
  */

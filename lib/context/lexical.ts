@@ -14,6 +14,12 @@
 // Embeddings still win on pure synonym matching, so they are used in preference
 // when vectors are present; this is the dependable floor beneath them.
 
+/**
+ * How many sections to hand to the note writer. Five is enough for the writer
+ * to have a genuine choice without burying the relevant one in noise.
+ */
+export const SHORTLIST_SIZE = 5;
+
 /** Words carrying no retrieval signal in this domain. */
 const STOP = new Set([
   'the','a','an','and','or','but','if','then','than','that','this','these','those',
