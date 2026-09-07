@@ -421,13 +421,20 @@ export default function FeedPage() {
                   <span className={`min-w-0 truncate ${c.count === 0 ? 'text-gray-400' : ''}`}>
                     {c.name}
                   </span>
+                  {/* Both states are pills so the rail keeps one shape down the
+                      column. The difference is weight, not form: unread is a
+                      solid teal pill, already-read is a quiet outline. A bare
+                      number for read items made the row look unfinished next to
+                      its neighbours. */}
                   {unread > 0 ? (
                     <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[11px] font-semibold text-ink-on">
                       {unread}
                     </span>
-                  ) : (
-                    <span className="shrink-0 text-xs text-gray-400">{c.count || ''}</span>
-                  )}
+                  ) : c.count > 0 ? (
+                    <span className="shrink-0 rounded-full border border-gray-200 bg-surface-subtle px-1.5 py-0.5 text-[11px] font-medium text-gray-500">
+                      {c.count}
+                    </span>
+                  ) : null}
                 </button>
               );
             })}
