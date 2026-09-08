@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { getLLMProvider } from '../llm';
 import { supabaseServiceRole } from '../supabase/server';
+import { fetchAllRows } from '../supabase/paginate';
 import type { UpdateType } from './parse-updates';
 
 // Classifies the updates that emoji and keyword matching could not identify.
@@ -95,15 +96,30 @@ export interface ClassifyResult {
 export async function classifyUnknownTypes(limit = 1000): Promise<ClassifyResult> {
   const db = supabaseServiceRole();
 
-  const { data, error } = await db
-    .from('competitor_updates')
-    .select('id, content, type_source')
-    .eq('update_type', 'other')
-    // `type_source <> 'model'` alone would exclude every existing row: rows
-    // predating the column hold NULL, and in SQL `NULL <> 'model'` is NULL
-    // rather than true, so they never match. Ask for null OR not-model.
-    .or('type_source.is.null,type_source.neq.model')
-    .limit(limit);
+  // Paginated, because `.limit(2000)` is silently served as 1,000 rows.
+  type Row = { id: string; content: string; type_source: string | null };
+  let data: Row[] | null = null;
+  let error: { message: string } | null = null;
+  try {
+    const all = await fetchAllRows<Row>(
+      (from, to) =>
+        db
+          .from('competitor_updates')
+          .select('id, content, type_source')
+          .eq('update_type', 'other')
+          // `type_source <> 'model'` alone would exclude every existing row:
+          // rows predating the column hold NULL, and in SQL `NULL <> 'model'`
+          // is NULL rather than true, so they never match. Ask for null OR
+          // not-model.
+          .or('type_source.is.null,type_source.neq.model')
+          .order('id', { ascending: true })
+          .range(from, to),
+      'read updates to classify'
+    );
+    data = all.slice(0, limit);
+  } catch (err) {
+    error = { message: err instanceof Error ? err.message : String(err) };
+  }
 
   const empty: ClassifyResult = {
     examined: 0,

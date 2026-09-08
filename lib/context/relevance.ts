@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { getLLMProvider } from '../llm';
 import { flexibleString } from '../llm/schemas';

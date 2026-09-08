@@ -1,4 +1,5 @@
 import { supabaseServiceRole } from '../supabase/server';
+import { fetchAllRows } from '../supabase/paginate';
 import { parseSparkUpdates } from './parse-updates';
 
 // Pulls Crayon Sparks, splits each into its individual competitor updates, and
@@ -184,6 +185,14 @@ export async function ingestCompetitorUpdates(perPage = 50): Promise<IngestResul
  * single note failed still reported success, which is how an expired token went
  * unnoticed across 721 updates.
  */
+interface NoteTarget {
+  id: string;
+  competitor_name: string;
+  content: string;
+  relevance_note: string | null;
+  published_at: string;
+}
+
 export interface PregenerateResult {
   generated: number;
   failed: number;
@@ -200,23 +209,35 @@ export async function pregenerateNotes(
   const since = new Date();
   since.setDate(since.getDate() - 30);
 
-  const { data: rows, error } = await db
-    .from('competitor_updates')
-    .select('id, competitor_name, content, relevance_note, published_at')
-    .gte('published_at', since.toISOString())
-    .order('published_at', { ascending: false });
-  if (error || !rows) {
+  // Paginated: a plain select stops at 1,000 rows without saying so, which
+  // left several hundred in-window updates permanently invisible to this step.
+  // The id tiebreak keeps paging stable when several updates share a timestamp,
+  // which is the norm here because a Spark's items all publish together.
+  let rows: NoteTarget[];
+  try {
+    rows = await fetchAllRows<NoteTarget>(
+      (from, to) =>
+        db
+          .from('competitor_updates')
+          .select('id, competitor_name, content, relevance_note, published_at')
+          .gte('published_at', since.toISOString())
+          .order('published_at', { ascending: false })
+          .order('id', { ascending: true })
+          .range(from, to),
+      'read updates for notes'
+    );
+  } catch (err) {
     return {
       generated: 0,
       failed: 0,
-      errors: error ? [`could not read updates: ${error.message}`] : [],
+      errors: [`could not read updates: ${err instanceof Error ? err.message : String(err)}`],
     };
   }
 
   // Take the newest N per competitor that do not already have a note.
   const seenPerCompetitor = new Map<string, number>();
   const targets: { id: string; competitor_name: string; content: string }[] = [];
-  for (const r of rows as { id: string; competitor_name: string; content: string; relevance_note: string | null }[]) {
+  for (const r of rows) {
     const n = seenPerCompetitor.get(r.competitor_name) ?? 0;
     if (n >= perCompetitor) continue;
     seenPerCompetitor.set(r.competitor_name, n + 1);

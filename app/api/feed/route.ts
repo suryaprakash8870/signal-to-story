@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { ensureFeedSchedule } from '@/lib/feed/auto-refresh';
+import { fetchAllRows } from '@/lib/supabase/paginate';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -10,6 +12,12 @@ export const dynamic = 'force-dynamic';
 // GET /api/feed                      -> competitor list with counts
 // GET /api/feed?competitor=Name      -> that competitor's updates
 // GET /api/feed?competitor=X&type=release -> filtered by product-signal type
+
+// Starting the daily Crayon refresh from here, rather than from a server
+// startup hook, keeps it on the Node runtime where it belongs. It costs one
+// boolean check per request and starts the first pull twenty seconds after
+// someone opens the feed.
+ensureFeedSchedule();
 
 const WINDOW_DAYS = 30;
 
@@ -58,13 +66,28 @@ export async function GET(req: NextRequest) {
 
   // No competitor selected: return the left-rail list with per-competitor counts.
   if (!competitor) {
-    const { data, error } = await db
-      .from('competitor_updates')
-      .select('competitor_name, id, published_at')
-      .gte('published_at', since);
-    if (error) return dbError(error, 'competitor list');
-
     type Row = { competitor_name: string; id: string; published_at: string };
+
+    // Paginated. A plain select returns at most 1,000 rows and reports no
+    // error, so the rail was counting whichever thousand came back: Avvoka
+    // showed 9 updates against the 42 actually held.
+    let data: Row[];
+    try {
+      data = await fetchAllRows<Row>(
+        (from, to) =>
+          db
+            .from('competitor_updates')
+            .select('competitor_name, id, published_at')
+            .gte('published_at', since)
+            .order('published_at', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, to),
+        'competitor list'
+      );
+    } catch (err) {
+      return dbError({ message: err instanceof Error ? err.message : String(err) }, 'competitor list');
+    }
+
     type Entry = {
       name: string;
       count: number;
@@ -73,7 +96,7 @@ export async function GET(req: NextRequest) {
       inCrayon?: boolean;
     };
     const byName = new Map<string, Entry>();
-    for (const row of (data ?? []) as Row[]) {
+    for (const row of data) {
       const entry: Entry = byName.get(row.competitor_name) ?? {
         name: row.competitor_name,
         count: 0,
