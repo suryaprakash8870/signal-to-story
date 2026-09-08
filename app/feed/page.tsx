@@ -300,7 +300,16 @@ export default function FeedPage() {
   }, [competitors, railQuery]);
 
   return (
-    <div className="space-y-4">
+    // On large screens the page fills the shell's content area exactly and the
+    // two columns scroll inside it, so the page itself never scrolls.
+    //
+    // 7rem is not a guess: the shell is a full-height flex column with a 4rem
+    // header and 1.5rem of padding above and below its content. Everything
+    // between here and the rail - the title, the ask box - takes its natural
+    // height, and the grid below simply takes what is left. The previous
+    // `calc(100vh-15rem)` tried to predict that and was 83px out, which is why
+    // the bottom of the competitor list sat below the fold.
+    <div className="space-y-4 lg:flex lg:h-[calc(100vh-7rem)] lg:flex-col">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="page-title">Competitor feed</h1>
@@ -391,12 +400,12 @@ export default function FeedPage() {
           No updates yet. Click “Refresh from Crayon” to pull the latest competitor activity.
         </div>
       ) : (
-        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[248px_1fr]">
+        <div className="grid grid-cols-1 items-start gap-5 lg:min-h-0 lg:flex-1 lg:grid-cols-[248px_1fr] lg:items-stretch">
           {/* Left rail - competitors with unread counts.
               Fifty entries is past the point of scanning, so the rail gets its
               own search and its own scroll. Sticky on large screens so the list
               stays reachable while a long feed scrolls beside it. */}
-          <aside className="lg:sticky lg:top-4">
+          <aside className="lg:flex lg:h-full lg:min-h-0 lg:flex-col">
             <input
               type="search"
               value={railQuery}
@@ -406,7 +415,7 @@ export default function FeedPage() {
               className="input mb-2 py-1.5"
             />
 
-            <div className="max-h-[22rem] space-y-1 overflow-y-auto pr-1 lg:max-h-[calc(100vh-15rem)]">
+            <div className="max-h-[22rem] space-y-1 overflow-y-auto pr-1 lg:max-h-none lg:min-h-0 lg:flex-1">
             {visibleCompetitors.map((c) => {
               const unread = unreadCount(c);
               const active = selected === c.name;
@@ -453,7 +462,7 @@ export default function FeedPage() {
           </aside>
 
           {/* Feed */}
-          <div className="min-w-0 space-y-3">
+          <div className="flex min-w-0 flex-col space-y-3 lg:h-full lg:min-h-0">
             {!selected ? (
               <div className="flex h-80 flex-col items-center justify-center gap-3 text-center">
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft text-accent">
@@ -489,7 +498,7 @@ export default function FeedPage() {
                     push the filters out of reach. On small screens the page
                     scrolls normally, because a short nested window there is
                     worse than a long page. */}
-                <div className="space-y-3 md:max-h-[calc(100vh-17rem)] md:overflow-y-auto md:pr-1">
+                <div className="space-y-3 md:max-h-[calc(100vh-17rem)] md:overflow-y-auto md:pr-1 lg:max-h-none lg:min-h-0 lg:flex-1">
                 {loadingUpdates ? (
                   <Loading />
                 ) : updates.length === 0 ? (
