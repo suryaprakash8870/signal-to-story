@@ -2,7 +2,12 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Pages that don't require a session.
-const PUBLIC_PATHS = ['/login'];
+//
+// /welcome is where an invitation link lands. The invitee arrives with their
+// session in the URL fragment, which only the browser can read - the server
+// sees no cookie yet, so guarding this path would bounce them to /login and
+// throw the invitation away.
+const PUBLIC_PATHS = ['/login', '/welcome'];
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 

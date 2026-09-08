@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { supabaseServiceRole } from '@/lib/supabase/server';
 import { ensureFeedSchedule } from '@/lib/feed/auto-refresh';
 import { fetchAllRows } from '@/lib/supabase/paginate';
+import { requireRole, RESEARCHERS } from '@/lib/auth/roles';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -53,11 +54,11 @@ function dbError(error: { message: string }, context: string) {
 }
 
 export async function GET(req: NextRequest) {
-  const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  // Matrix rows 1, 3 and 4: Admin, PMM and PM work in the feed and a Viewer
+  // reads it. A Consumer receives content in Teams and email instead, and has
+  // no feed access at all.
+  const guard = await requireRole([...RESEARCHERS, 'viewer']);
+  if (!guard.ok) return guard.response;
 
   const competitor = req.nextUrl.searchParams.get('competitor');
   const type = req.nextUrl.searchParams.get('type');

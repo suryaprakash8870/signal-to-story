@@ -46,6 +46,9 @@ type SignalDetail = {
       why_it_matters?: string;
       what_to_do_next?: string;
     } | null;
+    // Matrix row 9: who owns the follow-up, and whether it is done.
+    action_owner_id?: string | null;
+    action_done_at?: string | null;
   };
   classification: {
     competitor_id: string | null;
@@ -94,6 +97,16 @@ const autoProcessedIds = new Set<string>();
 export default function SignalDetailPage({ params }: { params: { id: string } }) {
   const [data, setData] = useState<SignalDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // People a follow-up can be assigned to: the PMMs and admins, same list the
+  // competitor owner selector uses.
+  const [owners, setOwners] = useState<{ id: string; label: string }[]>([]);
+
+  useEffect(() => {
+    fetch('/api/users')
+      .then((r) => (r.ok ? r.json() : { users: [] }))
+      .then((j) => setOwners(j.users ?? []))
+      .catch(() => setOwners([]));
+  }, []);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/signals/${params.id}`);
@@ -142,6 +155,20 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content }),
     });
+    load();
+  }
+
+  async function saveAction(patch: { action_owner_id?: string | null; done?: boolean }) {
+    const res = await fetch(`/api/signals/${params.id}/action`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      alert(json.error ?? 'Could not update the follow-up.');
+      return;
+    }
     load();
   }
 
@@ -292,6 +319,10 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
                 <InterpretationPanel
                   interp={signal.interpretation}
                   onSave={saveInterpretation}
+                  actionOwnerId={signal.action_owner_id ?? null}
+                  actionDoneAt={signal.action_done_at ?? null}
+                  owners={owners}
+                  onAction={saveAction}
                 />
               )}
               {Object.entries(byAudience).map(([audience, rows]) => (
@@ -395,9 +426,17 @@ function PipelineProgress({ status }: { status: string }) {
 function InterpretationPanel({
   interp,
   onSave,
+  actionOwnerId,
+  actionDoneAt,
+  owners,
+  onAction,
 }: {
   interp: { signal_summary?: string; why_it_matters?: string; what_to_do_next?: string };
   onSave: (v: string) => void | Promise<void>;
+  actionOwnerId: string | null;
+  actionDoneAt: string | null;
+  owners: { id: string; label: string }[];
+  onAction: (patch: { action_owner_id?: string | null; done?: boolean }) => void | Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(interp.what_to_do_next ?? '');
@@ -462,6 +501,91 @@ function InterpretationPanel({
           </p>
         )}
       </div>
+
+      <FollowUp
+        ownerId={actionOwnerId}
+        doneAt={actionDoneAt}
+        owners={owners}
+        onChange={onAction}
+      />
+    </div>
+  );
+}
+
+/**
+ * Who owns the follow-up, and whether it is done.
+ *
+ * Matrix row 9 and step 6 of the PMM flow: a recommendation with nobody's name
+ * on it is a sentence, not a commitment. An open follow-up stays visibly open
+ * until someone closes it, and closing records who did.
+ */
+function FollowUp({
+  ownerId,
+  doneAt,
+  owners,
+  onChange,
+}: {
+  ownerId: string | null;
+  doneAt: string | null;
+  owners: { id: string; label: string }[];
+  onChange: (patch: { action_owner_id?: string | null; done?: boolean }) => void | Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const done = Boolean(doneAt);
+
+  async function change(patch: { action_owner_id?: string | null; done?: boolean }) {
+    setBusy(true);
+    await onChange(patch);
+    setBusy(false);
+  }
+
+  return (
+    <div className="border-t border-gray-200 pt-3">
+      <div className="mb-2 flex items-center justify-between">
+        <div className="field-label">Follow-up</div>
+        {done ? (
+          <span className="pill bg-emerald-50 text-emerald-700">Done</span>
+        ) : ownerId ? (
+          <span className="pill bg-amber-50 text-amber-700">Open</span>
+        ) : (
+          <span className="pill text-gray-400">Unassigned</span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={ownerId ?? ''}
+          disabled={busy}
+          onChange={(e) => change({ action_owner_id: e.target.value || null })}
+          className="input flex-1 text-sm disabled:opacity-50"
+        >
+          <option value="">Nobody assigned</option>
+          {owners.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={() => change({ done: !done })}
+          disabled={busy || (!ownerId && !done)}
+          title={!ownerId && !done ? 'Assign someone before closing this' : undefined}
+          className={`btn text-xs disabled:opacity-50 ${done ? 'btn-outline' : 'btn-primary'}`}
+        >
+          {done ? 'Reopen' : 'Mark done'}
+        </button>
+      </div>
+
+      {done && (
+        <p className="mt-2 text-xs text-gray-500">
+          Closed {new Date(doneAt!).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })}
+        </p>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
 import { parseDocx, parsePlainText } from '@/lib/context/parse';
 import { saveContextDocument, listContextDocuments } from '@/lib/context/store';
 
@@ -21,7 +22,7 @@ async function requireReviewerOrAdmin() {
     .select('role')
     .eq('id', user.id)
     .single();
-  if (profile?.role !== 'admin' && profile?.role !== 'reviewer') {
+  if (!DISTRIBUTORS.includes(profile?.role as Role)) {
     return { error: 'forbidden', status: 403 as const };
   }
   return { user };

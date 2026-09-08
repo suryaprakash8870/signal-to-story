@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
 
 // PATCH the reviewer-editable "what to do next" recommendation on a signal's
 // stored interpretation. Reviewer/admin only (checked here, then written via the
@@ -17,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     .select('role')
     .eq('id', user.id)
     .single();
-  if (profile?.role !== 'admin' && profile?.role !== 'reviewer') {
+  if (!DISTRIBUTORS.includes(profile?.role as Role)) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 

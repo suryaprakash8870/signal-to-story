@@ -5,6 +5,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { useNotifications } from './useNotifications';
+import { useRole, ROLE_LABELS } from './useRole';
+import type { Role } from '@/lib/auth/roles';
 
 // Collapsible left sidebar navigation. Pure UI - no data or handlers beyond
 // routing and the open/close toggle.
@@ -16,31 +18,39 @@ function Svg({ children }: { children: ReactNode }) {
   );
 }
 
-type Item = { href: string; label: string; icon: ReactNode };
+// `roles` lists who sees the item, following the capability matrix in Dale
+// Harris's "Roles, Access, and User Flows". Hiding is presentation only - the
+// route behind each link enforces the same rule server-side.
+type Item = { href: string; label: string; icon: ReactNode; roles: Role[] };
+
+const ALL_WORKING: Role[] = ['admin', 'pmm', 'pm'];
+const DISTRIBUTE: Role[] = ['admin', 'pmm'];
+const ADMIN_ONLY: Role[] = ['admin'];
 
 const GROUPS: { title: string; items: Item[] }[] = [
   {
     title: 'Workspace',
     items: [
-      { href: '/intake', label: 'New signal', icon: <Svg><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" /></Svg> },
-      { href: '/signals', label: 'Signals', icon: <Svg><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></Svg> },
-      { href: '/feed', label: 'Competitor feed', icon: <Svg><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></Svg> },
-      { href: '/review', label: 'Review', icon: <Svg><rect width="8" height="4" x="8" y="2" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" /></Svg> },
+      { href: '/intake', label: 'New signal', icon: <Svg><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" /></Svg> , roles: DISTRIBUTE },
+      { href: '/signals', label: 'Signals', icon: <Svg><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></Svg> , roles: DISTRIBUTE },
+      { href: '/feed', label: 'Competitor feed', icon: <Svg><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></Svg> , roles: [...ALL_WORKING, 'viewer'] },
+      { href: '/review', label: 'Review', icon: <Svg><rect width="8" height="4" x="8" y="2" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" /></Svg> , roles: DISTRIBUTE },
     ],
   },
   {
     title: 'Insights',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: <Svg><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></Svg> },
-      { href: '/analytics', label: 'Analytics', icon: <Svg><path d="M3 3v18h18" /><path d="M18 17V9M13 17V5M8 17v-3" /></Svg> },
+      { href: '/dashboard', label: 'Dashboard', icon: <Svg><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></Svg> , roles: ALL_WORKING },
+      { href: '/analytics', label: 'Analytics', icon: <Svg><path d="M3 3v18h18" /><path d="M18 17V9M13 17V5M8 17v-3" /></Svg> , roles: [...ALL_WORKING, 'viewer'] },
     ],
   },
   {
     title: 'Settings',
     items: [
-      { href: '/settings/competitors', label: 'Competitors', icon: <Svg><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></Svg> },
-      { href: '/settings/context', label: 'Context library', icon: <Svg><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></Svg> },
-      { href: '/settings/connectors', label: 'Connectors', icon: <Svg><path d="M9 2v6M15 2v6" /><path d="M18 8v5a6 6 0 0 1-12 0V8Z" /><path d="M12 19v3" /></Svg> },
+      { href: '/settings/competitors', label: 'Competitors', icon: <Svg><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></Svg> , roles: ALL_WORKING },
+      { href: '/settings/context', label: 'Context library', icon: <Svg><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></Svg> , roles: DISTRIBUTE },
+      { href: '/settings/users', label: 'Users and roles', icon: <Svg><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></Svg>, roles: ADMIN_ONLY },
+      { href: '/settings/connectors', label: 'Connectors', icon: <Svg><path d="M9 2v6M15 2v6" /><path d="M18 8v5a6 6 0 0 1-12 0V8Z" /><path d="M12 19v3" /></Svg> , roles: ADMIN_ONLY },
     ],
   },
 ];
@@ -56,7 +66,17 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [userToggled, setUserToggled] = useState(false);
   const { count } = useNotifications();
+  const { me, loading: roleLoading } = useRole();
   const [name, setName] = useState<string | null>(null);
+
+  // Only the groups this role can use. Computed after the role arrives, so the
+  // nav never flashes items and then withdraws them.
+  const groups = roleLoading
+    ? []
+    : GROUPS.map((g) => ({
+        ...g,
+        items: g.items.filter((i) => (me ? i.roles.includes(me.role) : false)),
+      })).filter((g) => g.items.length > 0);
 
   useEffect(() => {
     supabaseBrowser()
@@ -83,8 +103,9 @@ export default function Sidebar() {
     router.refresh();
   }
 
-  // The login screen stands on its own - no app chrome.
-  if (pathname === '/login') return null;
+  // The login screen and the invitation landing page stand on their own - no
+  // app chrome.
+  if (pathname === '/login' || pathname === '/welcome') return null;
 
   return (
     <aside
@@ -105,7 +126,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-2">
-        {GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.title} className="mb-4">
             {!collapsed && (
               <div className="px-2.5 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
@@ -177,7 +198,9 @@ export default function Sidebar() {
           {!collapsed && (
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium text-gray-900">{name ?? 'My Account'}</div>
-              <div className="truncate text-xs text-gray-500">Product Manager</div>
+              <div className="truncate text-xs text-gray-500">
+                {me ? ROLE_LABELS[me.role] : ''}
+              </div>
             </div>
           )}
         </div>

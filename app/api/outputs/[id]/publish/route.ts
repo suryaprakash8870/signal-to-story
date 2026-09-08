@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { requireDistributor } from '@/lib/auth/roles';
 import { buildConnector, type ConnectorRow } from '@/lib/connectors/registry';
 import type { OutboundPayload } from '@/lib/connectors/connector';
 
@@ -11,11 +12,13 @@ import type { OutboundPayload } from '@/lib/connectors/connector';
  * anything not marked approved.
  */
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+  // Dale's rule one: only the PMM who owns this competitor may distribute it.
+  // The row-level policy cannot do this on its own, because the stamp and the
+  // Teams push below run through the service role, which bypasses it.
+  const guard = await requireDistributor(params.id);
+  if (!guard.ok) return guard.response;
+
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   // Read the output through the caller's session so RLS applies.
   const { data: output, error: outputErr } = await supabase
@@ -67,8 +70,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     approverName = profile?.full_name ?? null;
   }
   if (!approverName) {
-    const { data: { user: reviewer } } = await supabase.auth.getUser();
-    approverName = reviewer?.email ? reviewer.email.split('@')[0] : 'a reviewer';
+    approverName = guard.actor.email ? guard.actor.email.split('@')[0] : 'a PMM';
   }
 
   // Distribution and the published_at stamp are backend actions - use the

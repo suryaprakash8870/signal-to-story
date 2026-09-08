@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
 import { deleteContextDocument } from '@/lib/context/store';
 
 /** DELETE a context document (its sections cascade). Reviewer/admin only. */
@@ -14,7 +15,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     .select('role')
     .eq('id', user.id)
     .single();
-  if (profile?.role !== 'admin' && profile?.role !== 'reviewer') {
+  if (!DISTRIBUTORS.includes(profile?.role as Role)) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 

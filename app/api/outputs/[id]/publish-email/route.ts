@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { requireDistributor } from '@/lib/auth/roles';
 import { getBrevoConfig, sendBrevoEmail } from '@/lib/email/brevo';
 
 const OUTPUT_TYPE_LABELS: Record<string, string> = {
@@ -21,11 +22,13 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * either or both channels may be used for the same output.
  */
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  // Same ownership rule as the Teams route: email is distribution too, and it
+  // stamps published_at through the service role, so the row-level policy alone
+  // would not stop a non-owner sending this.
+  const guard = await requireDistributor(params.id);
+  if (!guard.ok) return guard.response;
+
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
   const to = typeof body?.to === 'string' ? body.to.trim() : '';

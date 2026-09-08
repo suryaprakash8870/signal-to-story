@@ -7,7 +7,9 @@ import NotificationBell from './NotificationBell';
 
 // Routes that render full-screen, WITHOUT the app chrome (sidebar + header):
 // the marketing home page and the login screen.
-const FULLSCREEN = new Set(['/', '/login']);
+// /welcome joins these: someone finishing an invitation has no role yet, so
+// app chrome would show them a sidebar of things they cannot open.
+const FULLSCREEN = new Set(['/', '/login', '/welcome']);
 
 export default function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';

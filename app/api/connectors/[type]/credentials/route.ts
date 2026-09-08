@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
 import { storeCredential } from '@/lib/connectors/vault';
 
 /**
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: { type: strin
     .select('role')
     .eq('id', user.id)
     .single();
-  if (profile?.role !== 'admin' && profile?.role !== 'reviewer') {
+  if (!DISTRIBUTORS.includes(profile?.role as Role)) {
     // connectors RLS is admin-only for writes; mirror that here. (Reviewer
     // allowed too for single-owner Phase 1 setups - tighten to admin-only
     // once roles are finalized per 09-BUILD-PHASES-AND-TASKS.md.)

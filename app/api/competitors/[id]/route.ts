@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/auth/roles';
 
 // PATCH a competitor's tier and/or owner. Only the fields present in the body
 // are updated. tier: 1=Primary, 2=Secondary, 3=Watching, or null to unassign.
 // owner_id: a user id, or null to unassign. RLS restricts the update to
 // reviewer/admin. Tier is data only; owner drives notification + approval.
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  // Matrix row 10: the watchlist is Admin-managed. A PMM reads it and edits the
+  // known facts of competitors they own, which is a different endpoint.
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
+
   const supabase = supabaseForRequest();
   const body = (await req.json().catch(() => ({}))) as {
     tier?: number | null;
@@ -37,6 +43,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 // no cascade, by design - history is not destroyed); that returns a clear
 // message rather than a raw constraint error.
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
+
   const supabase = supabaseForRequest();
   const { error } = await supabase.from('competitors').delete().eq('id', params.id);
   if (error) {

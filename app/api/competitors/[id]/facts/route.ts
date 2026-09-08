@@ -1,16 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseForRequest } from '@/lib/supabase/server';
+import { supabaseServiceRole } from '@/lib/supabase/server';
+import { canEditFacts, currentActor } from '@/lib/auth/roles';
 
 type KnownFact = { fact: string; source: string; added_by?: string; added_at?: string };
+
+/**
+ * An admin, or the PMM who owns this competitor.
+ *
+ * The write goes through the service role afterwards. Since migration 0020 the
+ * row-level policy on `competitors` admits admins only, and it cannot express
+ * "a PMM may change this one column" - row-level security is row-level, not
+ * column-level. So the ownership rule lives here, and this route is the only
+ * path that writes known facts.
+ */
+async function guardFacts(competitorId: string) {
+  const actor = await currentActor();
+  if (!actor) {
+    return { ok: false as const, response: NextResponse.json({ error: 'unauthenticated' }, { status: 401 }) };
+  }
+  if (!(await canEditFacts(actor, competitorId))) {
+    return {
+      ok: false as const,
+      response: NextResponse.json(
+        { error: 'Only an admin, or the PMM who owns this competitor, can change its known facts.' },
+        { status: 403 }
+      ),
+    };
+  }
+  return { ok: true as const, actor };
+}
 
 // POST: append a fact to a competitor's known_facts array. Shape per
 // 01-DATA-MODEL.md - each fact is independently citable by the grounding step.
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  const guard = await guardFacts(params.id);
+  if (!guard.ok) return guard.response;
+  const supabase = supabaseServiceRole();
 
   const { fact, source } = await req.json();
   if (typeof fact !== 'string' || !fact.trim()) {
@@ -30,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   facts.push({
     fact: fact.trim(),
     source: typeof source === 'string' && source.trim() ? source.trim() : 'internal',
-    added_by: user.id,
+    added_by: guard.actor.id,
     added_at: new Date().toISOString().slice(0, 10),
   });
 
@@ -45,7 +70,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
 // DELETE: remove a fact by index.
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = supabaseForRequest();
+  const guard = await guardFacts(params.id);
+  if (!guard.ok) return guard.response;
+  const supabase = supabaseServiceRole();
+
   const { fact_index } = await req.json();
   if (typeof fact_index !== 'number') {
     return NextResponse.json({ error: 'fact_index (number) is required' }, { status: 400 });

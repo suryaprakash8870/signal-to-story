@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { DENIED_MESSAGE } from '@/lib/auth/roles';
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = supabaseForRequest();
@@ -28,11 +29,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   // judgment, per 05-HUMAN-REVIEW-WORKFLOW.md - "remove" just drops it.
   const newContent = action === 'confirm' ? `${output.content}\n\n${claim}` : output.content;
 
-  const { error: updateErr } = await supabase
+  const { data: updated, error: updateErr } = await supabase
     .from('signal_outputs')
     .update({ unverified_claims: remainingClaims, content: newContent })
-    .eq('id', params.id);
+    .eq('id', params.id)
+    .select('id');
   if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ error: DENIED_MESSAGE }, { status: 403 });
+  }
 
   return NextResponse.json({ ok: true, remaining: remainingClaims.length });
 }

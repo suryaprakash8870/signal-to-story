@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { requireRole, RESEARCHERS } from '@/lib/auth/roles';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -7,16 +8,12 @@ export const dynamic = 'force-dynamic';
 
 // GET: list competitors with their known_facts (grounds Stage 3).
 export async function GET() {
+  // Matrix row 10 gives Admin, PMM and PM sight of the watchlist; only the
+  // Admin may change it.
+  const guard = await requireRole(RESEARCHERS);
+  if (!guard.ok) return guard.response;
+
   const supabase = supabaseForRequest();
-  // Row-level security already prevents a signed-out caller from reading any
-  // rows, so this is not the thing keeping the data safe. It is here so the
-  // caller is told they are signed out, rather than being handed an empty list
-  // that looks like "there is nothing here". The POST handlers alongside these
-  // have always checked; the GETs did not, and the inconsistency showed.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
   const { data, error } = await supabase
     .from('competitors')
     .select('id, name, known_facts, tier, owner_id, created_at')
@@ -28,6 +25,9 @@ export async function GET() {
 // POST: create a competitor. Write is RLS-gated to reviewer/admin - a
 // non-privileged caller's insert simply fails at the database.
 export async function POST(req: NextRequest) {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
+
   const supabase = supabaseForRequest();
   const { name } = await req.json();
   if (typeof name !== 'string' || !name.trim()) {

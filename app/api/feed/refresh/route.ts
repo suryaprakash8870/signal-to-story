@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
 import { ingestCompetitorUpdates } from '@/lib/feed/ingest';
 
 /**
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
       .select('role')
       .eq('id', user.id)
       .single();
-    if (profile?.role !== 'admin' && profile?.role !== 'reviewer') {
+    if (!DISTRIBUTORS.includes(profile?.role as Role)) {
       return NextResponse.json({ error: 'forbidden' }, { status: 403 });
     }
   }

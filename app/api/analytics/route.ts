@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { requireRole, RESEARCHERS } from '@/lib/auth/roles';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -14,16 +15,14 @@ export const dynamic = 'force-dynamic';
  * Broken down per output_type. Selects only needed columns (optimization note).
  */
 export async function GET() {
+  // Matrix row 14: Admin and PMM see the metrics, PM and Viewer read them, a
+  // Consumer does not. Row-level security stops a signed-out caller reading any
+  // rows; this says which roles may ask at all, and tells the rest so plainly
+  // rather than handing back an empty list that reads as "nothing happened".
+  const guard = await requireRole([...RESEARCHERS, 'viewer']);
+  if (!guard.ok) return guard.response;
+
   const supabase = supabaseForRequest();
-  // Row-level security already prevents a signed-out caller from reading any
-  // rows, so this is not the thing keeping the data safe. It is here so the
-  // caller is told they are signed out, rather than being handed an empty list
-  // that looks like "there is nothing here". The POST handlers alongside these
-  // have always checked; the GETs did not, and the inconsistency showed.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
   const { data, error } = await supabase
     .from('signal_outputs')
     .select('output_type, approved, rejected, edited_at, created_at, reviewed_at, published_at');

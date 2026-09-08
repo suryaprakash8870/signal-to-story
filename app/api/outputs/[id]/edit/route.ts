@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { DENIED_MESSAGE } from '@/lib/auth/roles';
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = supabaseForRequest();
@@ -16,15 +17,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     .eq('id', params.id)
     .single();
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('signal_outputs')
     .update({
       content,
       edited_at: new Date().toISOString(),
       edit_count: (current?.edit_count ?? 0) + 1,
     })
-    .eq('id', params.id);
+    .eq('id', params.id)
+    .select('id');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // Editing a recommendation is a PMM capability in Dale's matrix, enforced by
+  // the same ownership policy as approval. Zero rows means it was refused.
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ error: DENIED_MESSAGE }, { status: 403 });
+  }
   return NextResponse.json({ ok: true });
 }

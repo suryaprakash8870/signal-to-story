@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseForRequest } from '@/lib/supabase/server';
 import { groundExternalAnswer } from '@/lib/context/relevance';
+import { requireRole, RESEARCHERS } from '@/lib/auth/roles';
 
 // The ask box: a natural-language question answered across Crayon's full
 // competitive knowledge base.
@@ -13,11 +13,10 @@ import { groundExternalAnswer } from '@/lib/context/relevance';
 const CRAYON_BASE = 'https://app.crayon.co';
 
 export async function POST(req: NextRequest) {
-  const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  // Matrix row 2: Admin, PMM and PM have full-history search. Consumer and
+  // Viewer do not - a Viewer observes the workspace, they do not query it.
+  const guard = await requireRole(RESEARCHERS);
+  if (!guard.ok) return guard.response;
 
   const { question } = await req.json().catch(() => ({}));
   if (typeof question !== 'string' || !question.trim()) {
