@@ -1,4 +1,5 @@
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { currentActor, DISTRIBUTORS } from '@/lib/auth/roles';
 import NeedsAttention from './NeedsAttention';
 import ReviewList, { type ReviewItem } from './ReviewList';
 import NotificationBanner from '../components/NotificationBanner';
@@ -6,6 +7,24 @@ import NotificationBanner from '../components/NotificationBanner';
 const URGENCY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
 export default async function ReviewPage() {
+  // This page reads Supabase directly rather than through an API route, so the
+  // guard on /api/review/needs-attention does not protect it. Row-level
+  // security lets any signed-in user read signal_outputs, which meant a PM, a
+  // Consumer or a Viewer could open the queue and read every unapproved draft.
+  // Rows 5 and 6 of the matrix make review a PMM capability.
+  const actor = await currentActor();
+  if (!actor || !DISTRIBUTORS.includes(actor.role)) {
+    return (
+      <div data-access-denied className="mx-auto max-w-3xl px-6 py-10">
+        <h1 className="page-title">Review queue</h1>
+        <p className="muted mt-3 text-sm">
+          Reviewing and approving content is a Product Marketing Manager task.
+          Ask an admin if you need access.
+        </p>
+      </div>
+    );
+  }
+
   const supabase = supabaseForRequest();
 
   // Mirrors the query in 05-HUMAN-REVIEW-WORKFLOW.md; ordering is applied

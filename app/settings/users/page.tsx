@@ -188,7 +188,7 @@ export default function UsersPage() {
 
   if (me?.role !== 'admin') {
     return (
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div data-access-denied className="mx-auto max-w-3xl px-6 py-10">
         <h1 className="text-xl font-semibold text-gray-900">Users and roles</h1>
         <p className="mt-3 text-sm text-gray-500">
           Only an admin can view or change roles. Ask an admin if you need access changed.

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
-import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
+import { DISTRIBUTORS, requireRole, type Role } from '@/lib/auth/roles';
 import { parseDocx, parsePlainText } from '@/lib/context/parse';
 import { saveContextDocument, listContextDocuments } from '@/lib/context/store';
 
@@ -28,13 +28,16 @@ async function requireReviewerOrAdmin() {
   return { user };
 }
 
-/** GET: list the current context library (any signed-in user). */
+/**
+ * GET: list the current context library.
+ *
+ * PMM and Admin only. This is Litera's own roadmap, positioning and GTM
+ * strategy - it was previously listed to anyone signed in, which put internal
+ * documents in front of a Consumer and a Viewer.
+ */
 export async function GET() {
-  const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
 
   try {
     const documents = await listContextDocuments();

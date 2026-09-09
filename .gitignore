@@ -14,3 +14,6 @@ notes.log
 classify.log
 refresh.log
 backfill.log
+
+# Generated audit output (screenshots + PDF).
+reports/
