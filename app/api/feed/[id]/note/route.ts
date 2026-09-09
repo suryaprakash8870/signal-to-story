@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { RESEARCHERS, requireRole } from '@/lib/auth/roles';
 import { generateRelevanceNote } from '@/lib/context/relevance';
 
 /**
@@ -27,11 +28,9 @@ function readableError(e: unknown): string {
 }
 
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+  const guard = await requireRole(RESEARCHERS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const db = supabaseServiceRole();
   const { data: update, error: readErr } = await db

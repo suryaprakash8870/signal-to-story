@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
-import { DENIED_MESSAGE } from '@/lib/auth/roles';
+import { DENIED_MESSAGE, DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
   const { claim_index, action } = await req.json();
   if (typeof claim_index !== 'number' || (action !== 'confirm' && action !== 'remove')) {

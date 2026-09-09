@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -20,6 +21,8 @@ export const dynamic = 'force-dynamic';
  * "seen" filter (useNotifications) then hides ones the reviewer has opened.
  */
 export async function GET() {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
   // Row-level security already prevents a signed-out caller from reading any
   // rows, so this is not the thing keeping the data safe. It is here so the

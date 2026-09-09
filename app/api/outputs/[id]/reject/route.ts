@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
-import { DENIED_MESSAGE } from '@/lib/auth/roles';
+import { DENIED_MESSAGE, DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const { data: output, error: outputErr } = await supabase
     .from('signal_outputs')
@@ -22,7 +20,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   // changed rows back and treat "none" as the refusal it is.
   const { data: updated, error: approveErr } = await supabase
     .from('signal_outputs')
-    .update({ reviewed_by: user.id, reviewed_at: new Date().toISOString(), rejected: true })
+    .update({ reviewed_by: guard.actor.id, reviewed_at: new Date().toISOString(), rejected: true })
     .eq('id', params.id)
     .select('id');
   if (approveErr) return NextResponse.json({ error: approveErr.message }, { status: 500 });

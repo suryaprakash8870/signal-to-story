@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
-import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
+import { requireRole } from '@/lib/auth/roles';
 import { invalidateConfigCache } from '@/lib/llm/config';
 
 /**
@@ -9,19 +9,9 @@ import { invalidateConfigCache } from '@/lib/llm/config';
  *   'auto' | 'api' | 'ollama|<baseUrl>|<model>'
  */
 export async function POST(req: NextRequest) {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  if (!DISTRIBUTORS.includes(profile?.role as Role)) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
 
   const { backend } = await req.json();
   if (typeof backend !== 'string' || !backend) {

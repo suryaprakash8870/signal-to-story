@@ -441,6 +441,16 @@ async function main() {
       (recreated as { role?: string } | null)?.role === 'pmm',
       JSON.stringify(recreated ?? null));
 
+    // Put the PM actor back. This test deliberately promotes it to PMM to prove
+    // a profile row is recreated, and every later assertion about "a PM" would
+    // silently be testing a PMM if it stayed that way - which is exactly what
+    // happened the first time this section was added.
+    await admin.from('user_profiles').update({ role: 'pm' }).eq('id', strandedId);
+    const pmAgain = await call('pm', '/api/me');
+    const pmAgainBody = await pmAgain.json().catch(() => ({}));
+    check('the PM actor is back to pm for the tests that follow',
+      pmAgainBody.role === 'pm', JSON.stringify(pmAgainBody).slice(0, 70));
+
     const ghost = await call('admin', '/api/users', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -502,7 +512,60 @@ async function main() {
     check('a PM cannot resend an invitation either', pmResend.status === 403,
       `got ${pmResend.status}`);
 
-    // ------------------------- 8. the refusal is reported, not silently ignored
+    // ------------------------- 8. rows 11 and 12: configuration is Admin-only
+    console.log('\nRows 11 and 12: configuration is Admin-only');
+
+    const adminOnly: [string, string, RequestInit?][] = [
+      ['row 11: model backend', '/api/settings/llm/select',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ backend: 'litera' }) }],
+      ['row 11: Litera token', '/api/settings/llm/litera-token',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: 'x' }) }],
+      ['row 11: provider API key', '/api/settings/llm/api-key',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: 'x' }) }],
+      ['row 11: connector credentials', '/api/connectors/teams/credentials',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: 'x' }) }],
+      ['row 11: trigger a Crayon fetch', '/api/connectors/crayon/fetch', { method: 'POST' }],
+      ['row 12: connector + delivery config', '/api/connectors'],
+      ['row 11: model status', '/api/settings/llm'],
+      ['row 11: available backends', '/api/settings/llm/backends'],
+    ];
+
+    for (const [label, url, init] of adminOnly) {
+      const asPmm = await call('owner', url, init);
+      check(`${label} - refused to a PMM`, asPmm.status === 403, `got ${asPmm.status}`);
+      const asPm = await call('pm', url, init);
+      check(`${label} - refused to a PM`, asPm.status === 403, `got ${asPm.status}`);
+    }
+
+    const adminReads = await call('admin', '/api/connectors');
+    check('an admin can still read the connector configuration',
+      adminReads.status === 200, `got ${adminReads.status}`);
+
+    // PMM work surfaces stay open to a PMM and shut to a PM.
+    console.log('\nPMM work surfaces');
+
+    for (const [label, url] of [
+      ['the signals list', '/api/signals'],
+      ['the review queue', '/api/review/needs-attention'],
+      ['review notifications', '/api/notifications'],
+    ] as [string, string][]) {
+      const pmm = await call('owner', url);
+      check(`${label} - open to a PMM`, pmm.status === 200, `got ${pmm.status}`);
+      const pm = await call('pm', url);
+      check(`${label} - shut to a PM`, pm.status === 403, `got ${pm.status}`);
+    }
+
+    const pmCreatesSignal = await call('pm', '/api/signals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ raw_text: 'should not run', source_type: 'manual' }),
+    });
+    check('a PM cannot create a signal and fire the pipeline',
+      pmCreatesSignal.status === 403, `got ${pmCreatesSignal.status}`);
+    // Belt and braces: if that ever succeeds, do not leave the signal behind.
+    await admin.from('signals').delete().eq('raw_text', 'should not run');
+
+    // ------------------------- 9. the refusal is reported, not silently ignored
     console.log('\nA refused write is reported as a refusal');
 
     await admin.from('signal_outputs').update({ approved: false }).eq('id', outputId);

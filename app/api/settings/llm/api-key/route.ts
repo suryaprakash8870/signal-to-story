@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
-import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
+import { requireRole } from '@/lib/auth/roles';
 import { storeCredential } from '@/lib/connectors/vault';
 import { detectProvider, invalidateConfigCache } from '@/lib/llm/config';
 
@@ -10,14 +10,6 @@ async function requireReviewerOrAdmin() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: 'unauthenticated', status: 401 as const };
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  if (!DISTRIBUTORS.includes(profile?.role as Role)) {
-    return { error: 'forbidden', status: 403 as const };
-  }
   return { user };
 }
 
@@ -30,6 +22,8 @@ async function requireReviewerOrAdmin() {
  * raw key is never logged, echoed, or returned.
  */
 export async function POST(req: NextRequest) {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
   const auth = await requireReviewerOrAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -60,6 +54,8 @@ export async function POST(req: NextRequest) {
 
 /** Removes the stored key, reverting the pipeline to Ollama. */
 export async function DELETE() {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
   const auth = await requireReviewerOrAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/auth/roles';
 import { buildConnector, type ConnectorRow } from '@/lib/connectors/registry';
 
 /**
@@ -8,11 +9,9 @@ import { buildConnector, type ConnectorRow } from '@/lib/connectors/registry';
  * to the channel - the only way to verify an Incoming Webhook actually works.
  */
 export async function POST(_req: NextRequest, { params }: { params: { type: string } }) {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const db = supabaseServiceRole();
   const { data: connectorRow, error } = await db

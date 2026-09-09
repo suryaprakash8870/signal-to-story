@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/auth/roles';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -9,6 +10,8 @@ export const dynamic = 'force-dynamic';
 // selected (it is just an opaque Vault id, not the secret) but the raw
 // secret is never returned - see 04-CONNECTORS.md.
 export async function GET() {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
   const { data, error } = await supabase
     .from('connectors')

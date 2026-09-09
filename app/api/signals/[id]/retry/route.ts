@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
 import { runPipeline } from '@/lib/pipeline/orchestrate';
 
 /**
@@ -9,11 +10,9 @@ import { runPipeline } from '@/lib/pipeline/orchestrate';
  * status to 'draft', then re-runs Stages 2–5.
  */
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const db = supabaseServiceRole();
   const { data: signal, error } = await db

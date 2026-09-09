@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -12,6 +13,8 @@ export const dynamic = 'force-dynamic';
  *   process died (e.g. a restart) they're orphaned here and can be retried.
  */
 export async function GET() {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
   const { data, error } = await supabase
     .from('signals')

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/auth/roles';
 import { buildConnector, type ConnectorRow } from '@/lib/connectors/registry';
 import { runPipeline, rerunSignal, findExistingSignalByText } from '@/lib/pipeline/orchestrate';
 
@@ -17,12 +18,11 @@ export async function POST(req: NextRequest, { params }: { params: { type: strin
 
   let submittedBy: string | null = null;
   if (!isCron) {
-    const supabase = supabaseForRequest();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
-    submittedBy = user.id;
+    // Matrix row 11 makes connectors Admin-only. Any signed-in user could
+    // previously trigger a fetch, which is unmetered work against Crayon.
+    const guard = await requireRole(['admin']);
+    if (!guard.ok) return guard.response;
+    submittedBy = guard.actor.id;
   }
 
   const db = supabaseServiceRole();

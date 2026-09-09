@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
 import { sendReviewNotification, getPmmRecipients } from '@/lib/email/review-notification';
 
 // A small rotation of realistic competitive signals, so repeated triggers look
@@ -59,11 +60,9 @@ function pickSignal() {
  * a full pipeline for every triggered signal.
  */
 export async function POST() {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const db = supabaseServiceRole();
   const pick = pickSignal();

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/auth/roles';
 import { buildConnector, type ConnectorRow } from '@/lib/connectors/registry';
 import { GmailConnector, formatDigest, type DigestItem } from '@/lib/connectors/gmail-connector';
 
@@ -20,11 +21,9 @@ export async function POST(req: NextRequest) {
   const isCron = !!cronSecret && presented === cronSecret;
 
   if (!isCron) {
-    const supabase = supabaseForRequest();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+    // Sending a digest is distribution, and configuring it is row 11 territory.
+    const guard = await requireRole(['admin']);
+    if (!guard.ok) return guard.response;
   }
 
   const db = supabaseServiceRole();

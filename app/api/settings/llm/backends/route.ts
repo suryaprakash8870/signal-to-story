@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/auth/roles';
 import { getApiConfig, getSelectedBackend } from '@/lib/llm/config';
 import { listBackends } from '@/lib/llm/backends';
 
@@ -13,11 +14,9 @@ export const dynamic = 'force-dynamic';
  * endpoint. Also returns the currently-selected backend id.
  */
 export async function GET() {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const api = await getApiConfig();
   const [backends, selected] = await Promise.all([

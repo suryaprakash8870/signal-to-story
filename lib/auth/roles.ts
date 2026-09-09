@@ -71,7 +71,12 @@ export async function currentActor(): Promise<Actor | null> {
 export async function requireRole(allowed: Role[]): Promise<Guard> {
   const actor = await currentActor();
   if (!actor) return deny(401, 'unauthenticated');
-  if (!allowed.includes(actor.role)) return deny(403, 'forbidden');
+  // A readable sentence, not "forbidden". Several screens render this string
+  // straight to the user, and a PMM who opens an admin page deserves to know
+  // why rather than seeing a stack-trace word in red.
+  if (!allowed.includes(actor.role)) {
+    return deny(403, 'This is only available to an admin. Ask an admin if you need access.');
+  }
   return { ok: true, actor };
 }
 

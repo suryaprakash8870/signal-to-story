@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/auth/roles';
 import { getProviderStatus } from '@/lib/llm';
 
 // Reads request state and live data, so it must never be statically
@@ -12,11 +13,9 @@ export const dynamic = 'force-dynamic';
  * stored. Never returns the key itself.
  */
 export async function GET() {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const { data } = await supabase
     .from('llm_config')

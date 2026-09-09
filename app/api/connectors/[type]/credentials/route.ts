@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
-import { DISTRIBUTORS, type Role } from '@/lib/auth/roles';
+import { requireRole } from '@/lib/auth/roles';
 import { storeCredential } from '@/lib/connectors/vault';
 
 /**
@@ -11,23 +11,10 @@ import { storeCredential } from '@/lib/connectors/vault';
  * caller is an admin via their session.
  */
 export async function POST(req: NextRequest, { params }: { params: { type: string } }) {
+  const guard = await requireRole(['admin']);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  if (!DISTRIBUTORS.includes(profile?.role as Role)) {
-    // connectors RLS is admin-only for writes; mirror that here. (Reviewer
-    // allowed too for single-owner Phase 1 setups - tighten to admin-only
-    // once roles are finalized per 09-BUILD-PHASES-AND-TASKS.md.)
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
 
   const { value } = await req.json();
   if (typeof value !== 'string' || !value.trim()) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { RESEARCHERS, requireRole } from '@/lib/auth/roles';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -11,6 +12,8 @@ export const dynamic = 'force-dynamic';
  * on signal_outputs, which grows large over time (10-OPTIMIZATION-NOTES.md).
  */
 export async function GET(req: NextRequest) {
+  const guard = await requireRole(RESEARCHERS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
   // Row-level security already prevents a signed-out caller from reading any
   // rows, so this is not the thing keeping the data safe. It is here so the

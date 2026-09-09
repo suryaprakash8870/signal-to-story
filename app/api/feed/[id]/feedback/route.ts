@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest, supabaseServiceRole } from '@/lib/supabase/server';
+import { RESEARCHERS, requireRole } from '@/lib/auth/roles';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,11 +16,9 @@ export const dynamic = 'force-dynamic';
  * Sending the same value twice clears it, so a misclick is undoable.
  */
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  const guard = await requireRole(RESEARCHERS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
   const value = Number(body?.value);
@@ -45,7 +44,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .update({
       note_feedback: next,
       note_feedback_at: next === null ? null : new Date().toISOString(),
-      note_feedback_by: next === null ? null : user.id,
+      note_feedback_by: next === null ? null : guard.actor.id,
     })
     .eq('id', params.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

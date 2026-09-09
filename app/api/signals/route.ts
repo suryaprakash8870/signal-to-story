@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
 import { runPipeline, rerunSignal, findExistingSignalByText } from '@/lib/pipeline/orchestrate';
 
 // Reads request state and live data, so it must never be statically
@@ -7,11 +8,9 @@ import { runPipeline, rerunSignal, findExistingSignalByText } from '@/lib/pipeli
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const body = await req.json();
   const { raw_text, source_type, source_ref } = body ?? {};
@@ -32,7 +31,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('signals')
-    .insert({ raw_text, source_type, source_ref, submitted_by: user.id })
+    .insert({ raw_text, source_type, source_ref, submitted_by: guard.actor.id })
     .select('id')
     .single();
 
@@ -48,6 +47,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
   // Row-level security already prevents a signed-out caller from reading any
   // rows, so this is not the thing keeping the data safe. It is here so the

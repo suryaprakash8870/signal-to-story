@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
+import { RESEARCHERS, requireRole } from '@/lib/auth/roles';
 import { generateRelevanceNote } from '@/lib/context/relevance';
 
 /**
@@ -8,11 +9,9 @@ import { generateRelevanceNote } from '@/lib/context/relevance';
  * which document section it was grounded in (or null when it stayed general).
  */
 export async function POST(req: NextRequest) {
+  const guard = await requireRole(RESEARCHERS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   const { update } = await req.json().catch(() => ({}));
   if (typeof update !== 'string' || !update.trim()) {

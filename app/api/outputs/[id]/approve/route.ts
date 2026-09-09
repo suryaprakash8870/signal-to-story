@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseForRequest } from '@/lib/supabase/server';
-import { DENIED_MESSAGE } from '@/lib/auth/roles';
+import { DENIED_MESSAGE, DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
 
 /**
  * Blocked by RLS if unverified_claims is non-empty (01-DATA-MODEL.md's
@@ -8,11 +8,9 @@ import { DENIED_MESSAGE } from '@/lib/auth/roles';
  * relies on the database to enforce it and surfaces the resulting error.
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const guard = await requireRole(DISTRIBUTORS);
+  if (!guard.ok) return guard.response;
   const supabase = supabaseForRequest();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
   // `.select()` matters. An update the row-level policy forbids affects zero
   // rows and returns no error, so without asking for the changed rows back this
@@ -20,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   // success and the signal stayed pending.
   const { data, error } = await supabase
     .from('signal_outputs')
-    .update({ approved: true, reviewed_by: user.id, reviewed_at: new Date().toISOString() })
+    .update({ approved: true, reviewed_by: guard.actor.id, reviewed_at: new Date().toISOString() })
     .eq('id', params.id)
     .select('id');
 
