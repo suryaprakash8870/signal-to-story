@@ -104,6 +104,16 @@ async function main() {
   const browser = await chromium.launch();
 
   try {
+    // Compile the routes before measuring anything. Next builds each page on
+    // first request in dev, and the first role tested would otherwise absorb
+    // all of that latency and time out mid-render.
+    const warm = await (await browser.newContext()).newPage();
+    for (const screen of [{ path: '/feed' }, ...SCREENS]) {
+      await warm.goto(`${BASE}${screen.path}`, { waitUntil: 'networkidle' }).catch(() => {});
+    }
+    await warm.close();
+    console.log('routes warmed\n');
+
     for (const member of CAST) {
       const userId = idByEmail.get(member.email);
       if (!userId) {
@@ -133,7 +143,27 @@ async function main() {
 
       // ---- the sidebar ----
       await page.goto(`${BASE}/feed`, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(1200);
+
+      // The navigation is filtered client-side once /api/me resolves, so a
+      // fixed pause races a cold dev server: read too early and a correct
+      // sidebar looks empty. Wait for the role label the footer renders, which
+      // only appears after that call lands. A Consumer legitimately has no nav
+      // items, so waiting for links instead would never settle.
+      await page
+        .waitForFunction(
+          () => {
+            const aside = document.querySelector('aside');
+            return (
+              !!aside &&
+              /Admin|Product Marketing Manager|Product Manager|Consumer|Viewer/.test(
+                (aside as HTMLElement).innerText
+              )
+            );
+          },
+          { timeout: 45000 }
+        )
+        .catch(() => console.log('  (sidebar role label never appeared)'));
+
       const actualNav: string[] = await page.evaluate(() =>
         [...document.querySelectorAll('aside nav a')].map((a) => a.getAttribute('href') ?? '')
       );
@@ -149,7 +179,14 @@ async function main() {
       // ---- each screen ----
       for (const screen of SCREENS) {
         await page.goto(`${BASE}${screen.path}`, { waitUntil: 'networkidle' });
-        await page.waitForTimeout(1400);
+
+        // Client-rendered screens show a loading state before they know the
+        // caller's role, and a denial only appears after that resolves. Reading
+        // during the spinner reported a correctly blocked page as visible.
+        await page
+          .waitForFunction(() => !/^\s*Loading/m.test(document.body.innerText), { timeout: 20000 })
+          .catch(() => {});
+        await page.waitForTimeout(600);
 
         // A blocked screen says so in the markup. Matching the prose instead
         // was fragile - the review page's wording differed from the others, so

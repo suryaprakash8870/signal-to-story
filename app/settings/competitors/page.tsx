@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Loading from '../../components/Loading';
+import { useRole } from '../../components/useRole';
 
 type KnownFact = { fact: string; source: string; added_by?: string; added_at?: string };
 type Competitor = {
@@ -35,6 +36,8 @@ function pageWindow(current: number, total: number): (number | '…')[] {
 }
 
 export default function CompetitorsPage() {
+  const { me } = useRole();
+  const isAdmin = me?.role === 'admin';
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [newName, setNewName] = useState('');
@@ -122,24 +125,26 @@ export default function CompetitorsPage() {
       </p>
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="card card-p">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="New competitor name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="input flex-1"
-          />
-          <button
-            onClick={addCompetitor}
-            disabled={!newName.trim() || busy}
-            className="btn btn-primary"
-          >
-            Add competitor
-          </button>
+      {isAdmin && (
+        <div className="card card-p">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="New competitor name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="input flex-1"
+            />
+            <button
+              onClick={addCompetitor}
+              disabled={!newName.trim() || busy}
+              className="btn btn-primary"
+            >
+              Add competitor
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {loading ? (
         <Loading />
@@ -175,6 +180,8 @@ export default function CompetitorsPage() {
               key={c.id}
               competitor={c}
               users={users}
+              isAdmin={isAdmin}
+              currentUserId={me?.id ?? null}
               onChange={load}
               onDelete={() => deleteCompetitor(c.id)}
             />
@@ -228,14 +235,23 @@ export default function CompetitorsPage() {
 function CompetitorCard({
   competitor,
   users,
+  isAdmin,
+  currentUserId,
   onChange,
   onDelete,
 }: {
   competitor: Competitor;
   users: User[];
+  isAdmin: boolean;
+  currentUserId: string | null;
   onChange: () => void;
   onDelete: () => void;
 }) {
+  // Matrix row 10: only an Admin manages the watchlist (tier, owner, whether a
+  // competitor exists at all). The one exception, per migration 0020, is known
+  // facts - the owning PMM keeps those current, since they ground the model's
+  // understanding of a competitor they are responsible for day to day.
+  const canEditFacts = isAdmin || (!!currentUserId && competitor.owner_id === currentUserId);
   const [fact, setFact] = useState('');
   const [source, setSource] = useState('internal');
   const [busy, setBusy] = useState(false);
@@ -289,33 +305,43 @@ function CompetitorCard({
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <select
-            aria-label="Owner"
-            value={competitor.owner_id ?? ''}
-            onChange={(e) => setOwner(e.target.value === '' ? null : e.target.value)}
-            className="select w-auto text-xs"
-          >
-            <option value="">No owner</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.label}
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label="Tier"
-            value={competitor.tier ?? ''}
-            onChange={(e) => setTier(e.target.value === '' ? null : Number(e.target.value))}
-            className="select w-auto text-xs"
-          >
-            <option value="">Unassigned</option>
-            <option value="1">Tier 1 · Primary</option>
-            <option value="2">Tier 2 · Secondary</option>
-            <option value="3">Tier 3 · Watching</option>
-          </select>
-          <button onClick={onDelete} className="btn btn-ghost text-red-600">
-            Delete
-          </button>
+          {isAdmin ? (
+            <>
+              <select
+                aria-label="Owner"
+                value={competitor.owner_id ?? ''}
+                onChange={(e) => setOwner(e.target.value === '' ? null : e.target.value)}
+                className="select w-auto text-xs"
+              >
+                <option value="">No owner</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="Tier"
+                value={competitor.tier ?? ''}
+                onChange={(e) => setTier(e.target.value === '' ? null : Number(e.target.value))}
+                className="select w-auto text-xs"
+              >
+                <option value="">Unassigned</option>
+                <option value="1">Tier 1 · Primary</option>
+                <option value="2">Tier 2 · Secondary</option>
+                <option value="3">Tier 3 · Watching</option>
+              </select>
+              <button onClick={onDelete} className="btn btn-ghost text-red-600">
+                Delete
+              </button>
+            </>
+          ) : (
+            // Read-only for anyone but an admin: the owner's name (or "No
+            // owner"), matching what the live selects above show when open.
+            <span className="text-xs text-gray-500">
+              {users.find((u) => u.id === competitor.owner_id)?.label ?? 'No owner'}
+            </span>
+          )}
         </div>
       </div>
 
@@ -331,41 +357,45 @@ function CompetitorCard({
                 ({f.source}{f.added_at ? ` · ${f.added_at}` : ''})
               </span>
             </div>
-            <button
-              onClick={() => removeFact(i)}
-              className="shrink-0 text-xs text-gray-500 hover:text-red-600"
-            >
-              remove
-            </button>
+            {canEditFacts && (
+              <button
+                onClick={() => removeFact(i)}
+                className="shrink-0 text-xs text-gray-500 hover:text-red-600"
+              >
+                remove
+              </button>
+            )}
           </div>
         ))}
       </div>
 
-      <div className="mt-3 flex gap-2">
-        <input
-          type="text"
-          placeholder="Add a known fact…"
-          value={fact}
-          onChange={(e) => setFact(e.target.value)}
-          className="input flex-1"
-        />
-        <select
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-          className="select w-auto"
-        >
-          <option value="internal">internal</option>
-          <option value="public">public</option>
-          <option value="verified">verified</option>
-        </select>
-        <button
-          onClick={addFact}
-          disabled={!fact.trim() || busy}
-          className="btn btn-outline"
-        >
-          Add fact
-        </button>
-      </div>
+      {canEditFacts && (
+        <div className="mt-3 flex gap-2">
+          <input
+            type="text"
+            placeholder="Add a known fact…"
+            value={fact}
+            onChange={(e) => setFact(e.target.value)}
+            className="input flex-1"
+          />
+          <select
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+            className="select w-auto"
+          >
+            <option value="internal">internal</option>
+            <option value="public">public</option>
+            <option value="verified">verified</option>
+          </select>
+          <button
+            onClick={addFact}
+            disabled={!fact.trim() || busy}
+            className="btn btn-outline"
+          >
+            Add fact
+          </button>
+        </div>
+      )}
     </div>
   );
 }

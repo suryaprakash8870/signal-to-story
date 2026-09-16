@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import Loading from '../components/Loading';
+import { useRole } from '../components/useRole';
 import { stripEmoji } from '@/lib/text';
 
 // The PM pull interface: pick a competitor, see what they shipped in the last
@@ -115,6 +117,13 @@ function markSeen(ids: string[]) {
 }
 
 export default function FeedPage() {
+  const router = useRouter();
+  // Row 7 of the matrix, "Distribute to a team", is PMM/Admin only - a
+  // Product Manager reads the feed and was never meant to trigger the
+  // drafting-and-approval pipeline from it.
+  const { me } = useRole();
+  const canSendToSignals = me?.role === 'pmm' || me?.role === 'admin';
+  const [sendingId, setSendingId] = useState<string | null>(null);
   const [competitors, setCompetitors] = useState<FeedCompetitor[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [updates, setUpdates] = useState<FeedUpdate[]>([]);
@@ -258,6 +267,26 @@ export default function FeedPage() {
       );
     } finally {
       setNotingId(null);
+    }
+  }
+
+  // The bridge: hands a feed item's own text to the drafting-and-approval
+  // pipeline (the same one every other signal goes through), then takes the
+  // PMM straight to it. Replaces retyping the update into the manual-entry
+  // screen, which was the only way to escalate a feed item before this.
+  async function sendToSignals(id: string) {
+    setSendingId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/feed/${id}/send-to-signals`, { method: 'POST' });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error ?? 'could not send this to Signals');
+        return;
+      }
+      router.push(`/signals/${json.id}`);
+    } finally {
+      setSendingId(null);
     }
   }
 
@@ -596,16 +625,36 @@ export default function FeedPage() {
                         )}
                       </div>
 
-                      {u.source_url && (
-                        <a
-                          href={u.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block text-xs font-medium text-accent hover:underline"
-                        >
-                          View source →
-                        </a>
-                      )}
+                      <div className="flex items-center justify-between gap-3">
+                        {u.source_url ? (
+                          <a
+                            href={u.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block text-xs font-medium text-accent hover:underline"
+                          >
+                            View source →
+                          </a>
+                        ) : (
+                          <span />
+                        )}
+
+                        {/* Sends this update to the drafting desk, where it
+                            becomes four team-specific drafts awaiting
+                            approval. PMM/Admin only - reading the feed never
+                            requires this, and a PM was never meant to trigger
+                            distribution from here. */}
+                        {canSendToSignals && (
+                          <button
+                            type="button"
+                            onClick={() => sendToSignals(u.id)}
+                            disabled={sendingId === u.id}
+                            className="shrink-0 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            {sendingId === u.id ? 'Sending…' : 'Send to Signals'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))
                 )}
