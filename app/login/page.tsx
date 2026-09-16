@@ -8,7 +8,7 @@ import { supabaseBrowser } from '@/lib/supabase/client';
 // home page "Try now" links (?demo=1).
 // Local only - a page.tsx must not export arbitrary consts (breaks `next build`).
 const DEMO_EMAIL = 'demo@compete-agent.com';
-const DEMO_PASSWORD = 'demo123';
+const DEMO_PASSWORD = '12345678';
 
 export default function LoginPage() {
   return (

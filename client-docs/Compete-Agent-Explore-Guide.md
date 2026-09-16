@@ -22,7 +22,7 @@ It sits **on top of the tools you already use** (Crayon today, Gong next); it do
 
 **Demo login (already set up for you):**
 - **Email:** `demo@compete-agent.com`
-- **Password:** `demo123`
+- **Password:** `12345678`
 
 These credentials are also shown on the login screen. On the home page, clicking **"Try now"** takes you straight to a login with the demo details already filled in - just click **Sign in**.
 
