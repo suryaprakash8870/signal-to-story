@@ -32,7 +32,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   const db = supabaseServiceRole();
   const { data: update, error } = await db
     .from('competitor_updates')
-    .select('content, competitor_name, source_url')
+    .select('content, competitor_name, source_url, relevance_note, grounded_document')
     .eq('id', params.id)
     .maybeSingle();
 
@@ -43,7 +43,40 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   // uses (lib/feed/ingest.ts) - it is what lets the classify stage identify
   // the right competitor from plain text, since no competitor_id is passed at
   // signal creation.
-  const raw_text = `Competitor: ${update.competitor_name}\n\n${update.content}`;
+  //
+  // The note is carried across too. Producing it already cost a model call and
+  // it was written against Litera's own roadmap and positioning, so the feed
+  // knows things the raw Crayon text does not - which Litera product answers
+  // this, and which document says so. Sending only `content` made the pipeline
+  // start from less than we already had, and it showed: on the Cosmos DB vector
+  // search item the feed named Lito's Firm AI Search, while the packaged
+  // version named no Litera product at all and simply restated the advice
+  // Crayon's own analyst had written into the source text.
+  //
+  // It is kept separate from the source text rather than pasted into it, so the
+  // grounding rules still treat Crayon's words as the only thing that counts as
+  // fact about the competitor.
+  //
+  // The heading says "do not refer to this section" because the first attempt
+  // did exactly that: the summary came back reading "the signal advises
+  // positioning Litera's differentiation around…", which talks about its own
+  // input instead of the competitor, and is the kind of meta-sentence the
+  // packaging prompts already forbid.
+  const raw_text = [
+    `Competitor: ${update.competitor_name}`,
+    '',
+    update.content,
+    ...(update.relevance_note
+      ? [
+          '',
+          '--- Background for your own reasoning. Use it to judge what matters,',
+          '--- but never quote it or refer to it. It is not part of the source.',
+          update.grounded_document
+            ? `(from ${update.grounded_document}) ${update.relevance_note}`
+            : update.relevance_note,
+        ]
+      : []),
+  ].join('\n');
 
   // Mirrors POST /api/signals: dedupe on identical text, and treat an ERRORED
   // prior attempt as worth retrying rather than a duplicate.
