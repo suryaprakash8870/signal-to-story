@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Phase 3 reporting view. All metrics are computed from data already captured
- * in signal_outputs (05-HUMAN-REVIEW-WORKFLOW.md / 09-BUILD-PHASES-AND-TASKS.md):
+ * in signal_outputs:
  *  - approval rate without edits - clearest proxy for pipeline quality
  *  - edit rate - how often reviewers change content before approving
  *  - review-queue throughput - created_at → reviewed_at, watch for upward trend
