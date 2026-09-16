@@ -77,7 +77,16 @@ function buildFallback(
  * on Sparks that are then thrown away, leaving watchlist competitors looking
  * quiet when they are not.
  */
-export async function ingestCompetitorUpdates(perPage = 50): Promise<IngestResult> {
+export async function ingestCompetitorUpdates(
+  perPage = 50,
+  options: { generateNotes?: boolean } = {}
+): Promise<IngestResult> {
+  // Writing notes inline is right for a scheduled job and wrong for a button.
+  // Each note is two model calls, about 25 seconds, and a backlog of a few
+  // hundred is hours of work - far longer than any browser will wait. The
+  // interactive path pulls from Crayon, returns, and writes notes afterwards.
+  const { generateNotes = true } = options;
+
   const apiKey = process.env.CRAYON_API_KEY;
   if (!apiKey) throw new Error('CRAYON_API_KEY is not configured.');
 
@@ -160,7 +169,9 @@ export async function ingestCompetitorUpdates(perPage = 50): Promise<IngestResul
     }
   }
 
-  const notes = await pregenerateNotes();
+  const notes = generateNotes
+    ? await pregenerateNotes()
+    : { generated: 0, failed: 0, errors: [] as string[] };
 
   return {
     sparksFetched: sparks.length,

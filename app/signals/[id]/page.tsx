@@ -134,6 +134,67 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
     load();
   }
 
+  // Dale's flow has a PMM reviewing "the four audience drafts" - one decision
+  // per team, not one per artefact. Sales needs three pieces (a talk track, a
+  // battlecard snippet, and points for its own team sync), but they stand or
+  // fall together, so the whole team's material is approved in one act.
+  async function approveTeam(rows: SignalOutput[]) {
+    const results = await Promise.all(
+      rows.filter((r) => !r.approved).map((r) =>
+        fetch(`/api/outputs/${r.id}/approve`, { method: 'PATCH' }).then(async (res) => ({
+          ok: res.ok,
+          error: res.ok ? null : (await res.json().catch(() => ({}))).error,
+        }))
+      )
+    );
+    const failed = results.find((r) => !r.ok);
+    if (failed) alert(failed.error ?? 'approve failed');
+    load();
+  }
+
+  async function rejectTeam(rows: SignalOutput[]) {
+    const results = await Promise.all(
+      rows.map((r) =>
+        fetch(`/api/outputs/${r.id}/reject`, { method: 'PATCH' }).then(async (res) => ({
+          ok: res.ok,
+          error: res.ok ? null : (await res.json().catch(() => ({}))).error,
+        }))
+      )
+    );
+    const failed = results.find((r) => !r.ok);
+    if (failed) alert(failed.error ?? 'reject failed');
+    load();
+  }
+
+  // Distribution runs one piece at a time, in order, so a failure part-way
+  // names the piece that failed rather than leaving the whole batch ambiguous.
+  async function publishTeam(rows: SignalOutput[]) {
+    for (const r of rows.filter((x) => x.approved && !x.published_at)) {
+      const res = await fetch(`/api/outputs/${r.id}/publish`, { method: 'POST' });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        alert(`${r.output_type}: ${json.error ?? 'publish failed'}`);
+        break;
+      }
+    }
+    load();
+  }
+
+  async function sendEmailTeam(rows: SignalOutput[], to: string) {
+    for (const r of rows.filter((x) => x.approved)) {
+      const res = await fetch(`/api/outputs/${r.id}/publish-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(`${r.output_type}: ${json.error ?? 'email failed'}`);
+      }
+    }
+    load();
+  }
+
   async function approve(outputId: string) {
     const res = await fetch(`/api/outputs/${outputId}/approve`, { method: 'PATCH' });
     const json = await res.json();
@@ -326,20 +387,16 @@ export default function SignalDetailPage({ params }: { params: { id: string } })
                 />
               )}
               {Object.entries(byAudience).map(([audience, rows]) => (
-                <div key={audience} className="space-y-3">
-                  <h2 className="section-title">{audienceLabel(audience)}</h2>
-                  {rows.map((o) => (
-                    <OutputCard
-                      key={o.id}
-                      output={o}
-                      onApprove={() => approve(o.id)}
-                      onReject={() => reject(o.id)}
-                      onSaveEdit={(content) => saveEdit(o.id, content)}
-                      onPublish={() => publish(o.id)}
-                      onSendEmail={(to) => sendEmail(o.id, to)}
-                    />
-                  ))}
-                </div>
+                <TeamCard
+                  key={audience}
+                  audience={audience}
+                  rows={rows}
+                  onApprove={() => approveTeam(rows)}
+                  onReject={() => rejectTeam(rows)}
+                  onSaveEdit={(id, content) => saveEdit(id, content)}
+                  onPublish={() => publishTeam(rows)}
+                  onSendEmail={(to) => sendEmailTeam(rows, to)}
+                />
               ))}
             </>
           )}
@@ -638,28 +695,54 @@ function SourceSignal({
 
 // A Crayon-insight-style output card: source badge + type tag, editable content,
 // and an action footer (approve / reject / publish / save edit).
-function OutputCard({
-  output,
+/** Plain names for the artefact types, so a card does not read as a schema. */
+const PIECE_LABEL: Record<string, string> = {
+  talk_track: 'Talk track — said to the customer',
+  battlecard_snippet: 'Battlecard — objection and response',
+  live_talking_points: 'Talking points — for your own team sync',
+  watchout: 'Watch-out',
+  marketing_angle: 'Positioning angle',
+  leadership_summary: 'Executive summary',
+};
+
+/**
+ * One team, one decision.
+ *
+ * Dale's flow has a PMM reviewing "the four audience drafts", so the card is the
+ * team rather than the artefact. Sales carries three pieces because a rep needs
+ * three different things from the same signal - what to say to a buyer is not
+ * what you brief your own team with - but they are approved together.
+ */
+function TeamCard({
+  audience,
+  rows,
   onApprove,
   onReject,
   onSaveEdit,
   onPublish,
   onSendEmail,
 }: {
-  output: SignalOutput;
+  audience: string;
+  rows: SignalOutput[];
   onApprove: () => void;
   onReject: () => void;
-  onSaveEdit: (content: string) => void;
+  onSaveEdit: (id: string, content: string) => void;
   onPublish: () => void;
   onSendEmail: (to: string) => Promise<void>;
 }) {
-  const [content, setContent] = useState(output.content);
-  const dirty = content !== output.content;
+  const [drafts, setDrafts] = useState<Record<string, string>>(
+    Object.fromEntries(rows.map((r) => [r.id, r.content]))
+  );
   const [emailOpen, setEmailOpen] = useState(false);
-  const [emailTo, setEmailTo] = useState(AUDIENCE_EMAIL[output.audience] ?? '');
+  const [emailTo, setEmailTo] = useState(AUDIENCE_EMAIL[audience] ?? '');
   const [emailSending, setEmailSending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+
+  const approved = rows.every((r) => r.approved);
+  const published = rows.every((r) => r.published_at);
+  const unpublished = rows.filter((r) => r.approved && !r.published_at).length;
+  const edited = rows.filter((r) => drafts[r.id] !== undefined && drafts[r.id] !== r.content);
 
   async function handleSendEmail() {
     setEmailSending(true);
@@ -680,16 +763,20 @@ function OutputCard({
       {/* Header */}
       <div className="mb-3 flex items-center gap-2">
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-[10px] font-bold text-ink-on">
-          {AUDIENCE_INITIAL[output.audience] ?? output.audience.charAt(0).toUpperCase()}
+          {AUDIENCE_INITIAL[audience] ?? audience.charAt(0).toUpperCase()}
         </span>
-        <span className="text-sm font-semibold text-gray-900">{audienceLabel(output.audience)}</span>
-        <span className="text-xs text-gray-300">·</span>
-        <span className="text-xs text-gray-500">{output.output_type}</span>
-        {output.published_at ? (
+        <span className="text-sm font-semibold text-gray-900">{audienceLabel(audience)}</span>
+        {rows.length > 1 && (
+          <>
+            <span className="text-xs text-gray-300">·</span>
+            <span className="text-xs text-gray-500">{rows.length} pieces</span>
+          </>
+        )}
+        {published ? (
           <span className="ml-auto rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
             Published
           </span>
-        ) : output.approved ? (
+        ) : approved ? (
           <span className="ml-auto rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
             Approved
           </span>
@@ -700,43 +787,42 @@ function OutputCard({
         )}
       </div>
 
-      {/* Editable content */}
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        rows={4}
-        className="w-full resize-y rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm leading-relaxed text-gray-800 outline-none transition-colors focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20"
-      />
+      {/* Each piece, labelled and separately editable - one decision, several
+          bits of writing. */}
+      <div className="space-y-3">
+        {rows.map((r) => (
+          <div key={r.id}>
+            {rows.length > 1 && (
+              <div className="field-label mb-1">{PIECE_LABEL[r.output_type] ?? r.output_type}</div>
+            )}
+            <textarea
+              value={drafts[r.id] ?? r.content}
+              onChange={(e) => setDrafts((d) => ({ ...d, [r.id]: e.target.value }))}
+              rows={4}
+              className="w-full resize-y rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm leading-relaxed text-gray-800 outline-none transition-colors focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20"
+            />
+          </div>
+        ))}
+      </div>
 
-      {/* Action footer */}
-      <div className="mt-3 flex items-center gap-2 border-t border-gray-100 pt-3">
-        <button
-          onClick={onApprove}
-          disabled={output.approved}
-          className="btn btn-primary text-xs disabled:opacity-40"
-        >
-          Approve
+      {/* Action footer - one decision for the team */}
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3">
+        <button onClick={onApprove} disabled={approved} className="btn btn-primary text-xs disabled:opacity-40">
+          {rows.length > 1 ? `Approve all ${rows.length}` : 'Approve'}
         </button>
-        <button
-          onClick={onReject}
-          disabled={output.approved}
-          className="btn btn-outline text-xs disabled:opacity-40"
-        >
+        <button onClick={onReject} disabled={approved} className="btn btn-outline text-xs disabled:opacity-40">
           Reject
         </button>
-        {/* Publish only appears once approved and becomes inert after it posts. */}
-        {output.approved && (
-          <button
-            onClick={onPublish}
-            disabled={!!output.published_at}
-            className="btn btn-success text-xs disabled:opacity-40"
-          >
-            {output.published_at ? 'Published to Teams' : 'Publish to Teams'}
+        {approved && (
+          <button onClick={onPublish} disabled={published} className="btn btn-success text-xs disabled:opacity-40">
+            {published
+              ? 'Published to Teams'
+              : unpublished > 1
+                ? `Publish ${unpublished} to Teams`
+                : 'Publish to Teams'}
           </button>
         )}
-        {/* A second, independent distribution channel - send this output as an
-            email via Brevo to a recipient the reviewer chooses. */}
-        {output.approved && (
+        {approved && (
           <button
             onClick={() => setEmailOpen((v) => !v)}
             disabled={emailSending}
@@ -750,9 +836,12 @@ function OutputCard({
             {emailSent ? 'Email sent' : 'Send via Email'}
           </button>
         )}
-        {dirty && (
-          <button onClick={() => onSaveEdit(content)} className="btn btn-ghost ml-auto text-xs">
-            Save edit
+        {edited.length > 0 && (
+          <button
+            onClick={() => edited.forEach((r) => onSaveEdit(r.id, drafts[r.id]))}
+            className="btn btn-ghost ml-auto text-xs"
+          >
+            {edited.length > 1 ? `Save ${edited.length} edits` : 'Save edit'}
           </button>
         )}
       </div>
@@ -772,7 +861,7 @@ function OutputCard({
               disabled={emailSending || !emailTo}
               className="btn btn-primary text-xs disabled:opacity-40"
             >
-              {emailSending ? 'Sending…' : 'Send'}
+              {emailSending ? 'Sending…' : rows.length > 1 ? `Send ${rows.length}` : 'Send'}
             </button>
             <button onClick={() => setEmailOpen(false)} className="btn btn-ghost text-xs">
               Cancel

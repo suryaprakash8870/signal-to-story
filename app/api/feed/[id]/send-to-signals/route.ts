@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseServiceRole } from '@/lib/supabase/server';
 import { DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
-import { findExistingSignalByText, rerunSignal, runPipeline } from '@/lib/pipeline/orchestrate';
+import { findExistingSignalByText, rerunSignal } from '@/lib/pipeline/orchestrate';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -71,9 +71,13 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: insertErr?.message ?? 'could not create the signal' }, { status: 500 });
   }
 
-  // Fired without blocking the response - the PMM watches progress on
-  // /signals/[id], the same as every other entry point into the pipeline.
-  runPipeline(signal.id).catch((err) => console.error('[send-to-signals] pipeline error:', err));
-
+  // Deliberately NOT started here. The signal is left as a draft and the page
+  // we redirect to runs it - that page already auto-processes anything it finds
+  // in draft, because opening a pending signal is the intent to process it.
+  //
+  // Starting it here as well produced two concurrent runs: this one fired, the
+  // redirect landed before the status had moved off 'draft', and the page
+  // started a second. Each wrote a full set of outputs, so every escalated feed
+  // item came back with twelve cards instead of six.
   return NextResponse.json({ id: signal.id }, { status: 201 });
 }

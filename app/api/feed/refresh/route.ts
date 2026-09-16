@@ -32,17 +32,36 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await ingestCompetitorUpdates();
+    // Pull from Crayon and store what is new. This is seconds of work, so the
+    // caller gets an answer straight away and the new items appear in the feed.
+    const result = await ingestCompetitorUpdates(50, { generateNotes: false });
 
-    // A refresh where every note failed used to report plain success. Say so
-    // instead, in words a PM can act on, while still returning the updates that
-    // were ingested successfully.
-    const warning =
-      result.notesFailed > 0
-        ? `${result.notesGenerated} notes generated, ${result.notesFailed} could not be: ${result.noteErrors[0] ?? 'unknown reason'}`
-        : null;
+    // Notes are written afterwards, without the caller waiting. Two model
+    // calls each means a backlog runs for hours; holding the request open for
+    // that is what made the Refresh button appear to hang forever.
+    const { pregenerateNotes } = await import('@/lib/feed/ingest');
+    pregenerateNotes()
+      .then((n) => {
+        if (n.failed > 0) {
+          console.warn(`[feed/refresh] ${n.generated} notes written, ${n.failed} failed: ${n.errors[0] ?? ''}`);
+        } else {
+          console.log(`[feed/refresh] ${n.generated} notes written`);
+        }
+      })
+      .catch((err) => console.error('[feed/refresh] note generation failed:', err));
 
-    return NextResponse.json({ ok: true, warning, ...result });
+    // How many updates are still waiting for a note, so the screen can say so
+    // rather than leaving blank cards unexplained.
+    const { supabaseServiceRole } = await import('@/lib/supabase/server');
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+    const { count: pendingNotes } = await supabaseServiceRole()
+      .from('competitor_updates')
+      .select('*', { count: 'exact', head: true })
+      .gte('published_at', since.toISOString())
+      .is('relevance_note', null);
+
+    return NextResponse.json({ ok: true, warning: null, pendingNotes: pendingNotes ?? 0, ...result });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'refresh failed' },

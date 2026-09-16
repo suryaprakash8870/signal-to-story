@@ -26,6 +26,22 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   }
 
   if (signal.status === 'draft') {
+    // Claim it before running. Reading the status and then acting on it leaves a
+    // window where two callers both see 'draft' and both start a run, which is
+    // exactly what doubled the outputs on every escalated feed item. Moving the
+    // status in the same statement that tests it closes that window: only the
+    // caller whose update actually changes a row proceeds.
+    const { data: claimed } = await db
+      .from('signals')
+      .update({ status: 'classified' })
+      .eq('id', signal.id)
+      .eq('status', 'draft')
+      .select('id');
+
+    if (!claimed || claimed.length === 0) {
+      return NextResponse.json({ ok: true, processing: true, alreadyRunning: true });
+    }
+
     runPipeline(signal.id).catch((e) => console.error('[pipeline] process error:', e));
   } else if (signal.status === 'error') {
     // Errored → clear any partial outputs and re-run from scratch.

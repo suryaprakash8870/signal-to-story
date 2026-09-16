@@ -135,6 +135,7 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [loadingUpdates, setLoadingUpdates] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [seen, setSeen] = useState<Set<string>>(new Set());
   const [notingId, setNotingId] = useState<string | null>(null);
@@ -202,6 +203,7 @@ export default function FeedPage() {
   }
 
   async function refresh() {
+    setNotice(null);
     setRefreshing(true);
     setError(null);
     try {
@@ -211,9 +213,20 @@ export default function FeedPage() {
         setError(json.error ?? 'refresh failed');
         return;
       }
-      // A refresh can succeed at pulling updates but fail to write their notes.
-      // Say so rather than letting a half-finished run look complete.
-      if (json.warning) setError(json.warning);
+      // The pull is done; notes are still being written in the background.
+      // Saying so is the difference between "nothing happened" and "it is
+      // working" - each note takes about half a minute, so a backlog is
+      // visible for a while.
+      if (json.warning) {
+        setError(json.warning);
+      } else if (json.pendingNotes > 0) {
+        setNotice(
+          `${json.inserted} new update${json.inserted === 1 ? '' : 's'}. ` +
+            `${json.pendingNotes} still being explained - reload in a few minutes to see them.`
+        );
+      } else {
+        setNotice(`${json.inserted} new update${json.inserted === 1 ? '' : 's'}.`);
+      }
       await loadCompetitors();
       if (selected) await loadUpdates(selected, typeFilter);
     } finally {
@@ -352,6 +365,7 @@ export default function FeedPage() {
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {notice && <p className="text-sm text-accent">{notice}</p>}
 
       {/* Ask box - queries Crayon directly, so unlike the feed it is not limited
           to the last 30 days. */}
