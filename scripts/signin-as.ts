@@ -6,7 +6,7 @@
  * That is the same path an invitation takes, so it is also a live check of the
  * invitation flow.
  *
- * Run:  npx tsx scripts/signin-as.ts test-reviewer-a@example.com
+ * Run:  npx tsx scripts/signin-as.ts pmm@compete-agent.com
  *       npx tsx scripts/signin-as.ts            (lists everyone and their role)
  *
  * Development only. It uses the service-role key, which is why it is a script

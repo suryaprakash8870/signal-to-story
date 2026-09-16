@@ -27,8 +27,8 @@ type Role = 'admin' | 'pmm' | 'pm';
 
 const ROLE_ACCOUNT: Record<Role, { email: string; label: string }> = {
   admin: { email: 'demo@compete-agent.com', label: 'Admin' },
-  pmm: { email: 'test-reviewer-a@example.com', label: 'Product Marketing Manager' },
-  pm: { email: 'test-submitter@example.com', label: 'Product Manager' },
+  pmm: { email: 'pmm@compete-agent.com', label: 'Product Marketing Manager' },
+  pm: { email: 'pm@compete-agent.com', label: 'Product Manager' },
 };
 
 const ROLE = (process.argv[2] as Role) ?? 'pmm';

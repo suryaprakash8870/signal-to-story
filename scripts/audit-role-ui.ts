@@ -33,10 +33,10 @@ type Role = 'admin' | 'pmm' | 'pm' | 'consumer' | 'viewer';
 /** Which account plays each role. `borrowed` accounts are restored at the end. */
 const CAST: { role: Role; email: string; label: string; borrowed?: boolean }[] = [
   { role: 'admin', email: 'demo@compete-agent.com', label: 'Admin' },
-  { role: 'pmm', email: 'test-reviewer-a@example.com', label: 'PMM (Owner)' },
-  { role: 'pm', email: 'test-submitter@example.com', label: 'Product Manager' },
-  { role: 'consumer', email: 'test-reviewer-b@example.com', label: 'Consumer', borrowed: true },
-  { role: 'viewer', email: 'test-reviewer-b@example.com', label: 'Viewer', borrowed: true },
+  { role: 'pmm', email: 'pmm@compete-agent.com', label: 'PMM (Owner)' },
+  { role: 'pm', email: 'pm@compete-agent.com', label: 'Product Manager' },
+  { role: 'consumer', email: 'pmm.second@compete-agent.com', label: 'Consumer', borrowed: true },
+  { role: 'viewer', email: 'pmm.second@compete-agent.com', label: 'Viewer', borrowed: true },
 ];
 
 /** The screens, and who the matrix says may reach each one. */

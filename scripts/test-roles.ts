@@ -39,9 +39,9 @@ const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 // fixtures; nothing is created and nothing is signed up for.
 const ACTORS = {
   admin: 'demo@compete-agent.com',
-  owner: 'test-reviewer-a@example.com',
-  other: 'test-reviewer-b@example.com',
-  pm: 'test-submitter@example.com',
+  owner: 'pmm@compete-agent.com',
+  other: 'pmm.second@compete-agent.com',
+  pm: 'pm@compete-agent.com',
 } as const;
 type ActorKey = keyof typeof ACTORS;
 
