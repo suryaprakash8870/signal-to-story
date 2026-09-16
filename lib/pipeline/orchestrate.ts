@@ -50,6 +50,32 @@ export async function findExistingSignalByText(
 }
 
 /**
+ * Finds a signal already raised from a given source, regardless of its text.
+ *
+ * Deduping on the text alone breaks the moment the text changes for a reason
+ * that is not a new event: carrying the feed's note across rewrote every
+ * escalation's raw_text, so pressing Send to Signals on an item escalated
+ * before that change produced a second signal for the same update.
+ *
+ * The ref must identify one feed item. The Crayon URL does not - 349 of them
+ * are shared by more than one item here, and one covers 35 - so the feed item's
+ * own id is used instead.
+ */
+export async function findExistingSignalBySourceRef(
+  sourceRef: string
+): Promise<{ id: string; status: string } | null> {
+  const db = supabaseServiceRole();
+  const { data } = await db
+    .from('signals')
+    .select('id, status')
+    .eq('source_ref', sourceRef)
+    .neq('status', 'rejected')
+    .limit(1)
+    .maybeSingle();
+  return data ? { id: data.id, status: data.status as string } : null;
+}
+
+/**
  * Re-runs the full pipeline for an existing signal (used when the same text is
  * resubmitted and the prior run had errored): clears any partial outputs,
  * resets to draft, and runs Stages 2–5 again from scratch.

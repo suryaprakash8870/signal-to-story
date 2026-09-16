@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { supabaseServiceRole } from '@/lib/supabase/server';
 import { DISTRIBUTORS, requireRole } from '@/lib/auth/roles';
-import { findExistingSignalByText, rerunSignal } from '@/lib/pipeline/orchestrate';
+import {
+  findExistingSignalBySourceRef,
+  findExistingSignalByText,
+  rerunSignal,
+} from '@/lib/pipeline/orchestrate';
 
 // Reads request state and live data, so it must never be statically
 // evaluated at build time.
@@ -78,9 +82,16 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
       : []),
   ].join('\n');
 
-  // Mirrors POST /api/signals: dedupe on identical text, and treat an ERRORED
-  // prior attempt as worth retrying rather than a duplicate.
-  const existing = await findExistingSignalByText(raw_text);
+  // One feed item raises one signal, keyed on the item itself rather than on
+  // its text. Text is too fragile a key here: any change to how the text is
+  // assembled - carrying the note across did exactly this - makes every
+  // previously escalated item look new and escalate a second time.
+  //
+  // The text check stays as a fallback, for signals raised before this key
+  // existed and for the same wording arriving through another route.
+  const sourceRef = `feed:${params.id}`;
+  const existing =
+    (await findExistingSignalBySourceRef(sourceRef)) ?? (await findExistingSignalByText(raw_text));
   if (existing) {
     if (existing.status === 'error') {
       rerunSignal(existing.id).catch((err) => console.error('[send-to-signals] rerun error:', err));
@@ -94,7 +105,13 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     .insert({
       raw_text,
       source_type: 'crayon',
-      source_ref: update.source_url ?? params.id,
+      source_ref: sourceRef,
+      // The Crayon link moves here rather than being lost to the new ref. It
+      // is what the signal page shows as the source, and several feed items
+      // can share one link, which is why it cannot be the key.
+      ...(update.source_url
+        ? { source_links: [{ ref: 'Crayon', url: update.source_url }] }
+        : {}),
       submitted_by: guard.actor.id,
     })
     .select('id')
