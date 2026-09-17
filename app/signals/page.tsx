@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Loading from '../components/Loading';
 import { useNotifications, useSeenSignals } from '../components/useNotifications';
 import { stripEmoji } from '@/lib/text';
+import NeedsAttention from '../components/NeedsAttention';
 
 type Signal = {
   id: string;
@@ -13,7 +14,18 @@ type Signal = {
   source_type: string;
   status: string;
   submitted_at: string;
+  // From the old Review queue, now carried on the signal itself.
+  urgency: 'high' | 'medium' | 'low' | null;
+  pendingTeams: number;
+  unverified: boolean;
 };
+
+const URGENCY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+/** Awaiting a decision: packaged, with at least one team still unapproved. */
+function awaitingReview(s: Signal) {
+  return s.pendingTeams > 0 && s.status !== 'draft' && s.status !== 'error';
+}
 
 // 'draft' = pulled/created but NOT yet run through the pipeline → "pending".
 function statusLabel(status: string) {
@@ -89,6 +101,22 @@ export default function SignalsPage() {
 
   const pendingCount = signals.filter((s) => s.status === 'draft').length;
 
+  // The Review queue's summary, over signals rather than artefacts.
+  const waiting = signals.filter(awaitingReview);
+  const byUrgency = (u: string) => waiting.filter((s) => (s.urgency ?? 'low') === u).length;
+
+  // Most urgent first, then newest. Anything still to process stays at the top
+  // regardless: it cannot be reviewed until it has run.
+  const ordered = [...signals].sort((a, b) => {
+    const ap = a.status === 'draft' ? 0 : 1;
+    const bp = b.status === 'draft' ? 0 : 1;
+    if (ap !== bp) return ap - bp;
+    const ua = URGENCY_ORDER[a.urgency ?? 'low'] ?? 2;
+    const ub = URGENCY_ORDER[b.urgency ?? 'low'] ?? 2;
+    if (ua !== ub) return ua - ub;
+    return b.submitted_at.localeCompare(a.submitted_at);
+  });
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -111,6 +139,23 @@ export default function SignalsPage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
+      {/* Was the Review page. A summary belongs above the queue it summarises,
+          not on a page of its own that could only link back to this one. */}
+      {!loading && waiting.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatTile label="Awaiting review" value={waiting.length} tone="plain" />
+          <StatTile label="High" value={byUrgency('high')} tone="red" />
+          <StatTile label="Medium" value={byUrgency('medium')} tone="amber" />
+          <StatTile
+            label="Unverified"
+            value={waiting.filter((s) => s.unverified).length}
+            tone="orange"
+          />
+        </div>
+      )}
+
+      <NeedsAttention />
+
       {loading ? (
         <div className="card">
           <Loading label="Loading signals…" />
@@ -121,7 +166,7 @@ export default function SignalsPage() {
         <ul className="space-y-3 md:max-h-[calc(100vh-14rem)] md:overflow-y-auto md:pr-1">
           {/* The queue only grows, so it scrolls in its own pane on large
               screens rather than stretching the page indefinitely. */}
-          {signals.map((s) => {
+          {ordered.map((s) => {
             const pending = s.status === 'draft';
             const isNew = unreadIds.has(s.id);
             const isViewed = !isNew && seen.has(s.id);
@@ -142,6 +187,28 @@ export default function SignalsPage() {
                   {statusLabel(s.status)}
                 </span>
                 <span className="text-gray-500">{s.source_type}</span>
+                {/* What the Review queue used to say, on the row itself. The
+                    count is teams, matching the cards on the signal page. */}
+                {awaitingReview(s) && (
+                  <>
+                    {s.urgency === 'high' && (
+                      <span className="rounded-full bg-red-50 px-2 py-0.5 font-semibold text-red-600">
+                        High
+                      </span>
+                    )}
+                    {s.urgency === 'medium' && (
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-600">
+                        Medium
+                      </span>
+                    )}
+                    <span className="text-gray-500">
+                      {s.pendingTeams} {s.pendingTeams === 1 ? 'team' : 'teams'} awaiting review
+                    </span>
+                    {s.unverified && (
+                      <span className="font-medium text-neon-orange">Unverified</span>
+                    )}
+                  </>
+                )}
                 <span className="ml-auto text-gray-400">{new Date(s.submitted_at).toLocaleString()}</span>
               </div>
             );
@@ -188,6 +255,32 @@ export default function SignalsPage() {
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** Summary tile, carried over from the Review page. */
+function StatTile({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: 'plain' | 'red' | 'amber' | 'orange';
+}) {
+  const color =
+    tone === 'red'
+      ? 'text-red-600'
+      : tone === 'amber'
+      ? 'text-amber-600'
+      : tone === 'orange'
+      ? 'text-neon-orange'
+      : 'text-gray-900';
+  return (
+    <div className="card card-p">
+      <div className={`text-2xl font-semibold ${color}`}>{value}</div>
+      <div className="mt-0.5 text-xs font-medium uppercase tracking-wide text-gray-500">{label}</div>
     </div>
   );
 }

@@ -224,7 +224,7 @@ async function main() {
   try {
     // Warm the routes first. A dev server compiling a page on camera looks
     // like the product is slow, which is not what the recording is for.
-    for (const p of ['/feed', '/signals', '/review', '/dashboard', '/analytics', '/settings/competitors', '/settings/context', '/settings/users', '/settings/connectors']) {
+    for (const p of ['/feed', '/signals', '/dashboard', '/analytics', '/settings/competitors', '/settings/context', '/settings/users', '/settings/connectors']) {
       await page.goto(`${BASE}${p}`, { waitUntil: 'networkidle' }).catch(() => {});
     }
 
@@ -362,7 +362,6 @@ async function main() {
 
     // ------------------------------------------------- the rest of the nav
     const TOUR: { href: string; title: string; detail: string; scroll?: number }[] = [
-      { href: '/review', title: 'Review queue', detail: 'What is waiting for a decision, most urgent first.', scroll: 2 },
       { href: '/dashboard', title: 'Dashboard', detail: 'The current state at a glance.', scroll: 1 },
       { href: '/analytics', title: 'Analytics', detail: 'How often drafts are approved without edits, which is how we measure whether the writing is good enough.', scroll: 2 },
       { href: '/settings/competitors', title: 'Competitors', detail: 'The watchlist: tier, owner, and the background facts the AI reasons from.', scroll: 2 },

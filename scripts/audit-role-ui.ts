@@ -43,7 +43,6 @@ const CAST: { role: Role; email: string; label: string; borrowed?: boolean }[] =
 const SCREENS: { path: string; name: string; matrix: string; allowed: Role[] }[] = [
   { path: '/feed', name: 'Competitor feed', matrix: 'Rows 1, 3, 4 - feed, filters, why it matters', allowed: ['admin', 'pmm', 'pm', 'viewer'] },
   { path: '/signals', name: 'Signals', matrix: 'Rows 5, 6 - edit, approve or reject', allowed: ['admin', 'pmm'] },
-  { path: '/review', name: 'Review queue', matrix: 'Row 6 - approve or reject', allowed: ['admin', 'pmm'] },
   { path: '/dashboard', name: 'Dashboard', matrix: 'Row 4 - what changed / why / next', allowed: ['admin', 'pmm', 'pm'] },
   { path: '/analytics', name: 'Analytics', matrix: 'Row 14 - approval metrics', allowed: ['admin', 'pmm', 'pm', 'viewer'] },
   { path: '/settings/competitors', name: 'Competitors', matrix: 'Row 10 - competitors, tiers, owners', allowed: ['admin', 'pmm', 'pm'] },
@@ -54,8 +53,8 @@ const SCREENS: { path: string; name: string; matrix: string; allowed: Role[] }[]
 
 /** What the sidebar should offer each role. */
 const EXPECTED_NAV: Record<Role, string[]> = {
-  admin: ['/signals', '/feed', '/review', '/dashboard', '/analytics', '/settings/competitors', '/settings/context', '/settings/users', '/settings/connectors'],
-  pmm: ['/signals', '/feed', '/review', '/dashboard', '/analytics', '/settings/competitors', '/settings/context'],
+  admin: ['/signals', '/feed', '/dashboard', '/analytics', '/settings/competitors', '/settings/context', '/settings/users', '/settings/connectors'],
+  pmm: ['/signals', '/feed', '/dashboard', '/analytics', '/settings/competitors', '/settings/context'],
   pm: ['/feed', '/dashboard', '/analytics', '/settings/competitors'],
   viewer: ['/feed', '/analytics'],
   consumer: [],

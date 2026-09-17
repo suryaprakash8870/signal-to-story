@@ -69,5 +69,48 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ signals: data });
+
+  const signals = data ?? [];
+  const ids = signals.map((s) => s.id);
+
+  // What used to be the separate Review queue: how much of each signal is still
+  // waiting, and how urgent it is. It lives here because both pages ended at
+  // the same place - every row on Review was a link to /signals/[id] - and the
+  // two screens counted the same work differently, one per artefact and one per
+  // signal, so "87 pending" and "6 pending" described the same fifteen items.
+  //
+  // Counted by AUDIENCE, not by artefact. The signal page groups its cards by
+  // team, and a count that disagrees with what the page then shows is worse
+  // than no count.
+  const [{ data: pending }, { data: classifications }] = await Promise.all([
+    supabase
+      .from('signal_outputs')
+      .select('signal_id, audience, unverified_claims')
+      .in('signal_id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000'])
+      .eq('approved', false)
+      .eq('rejected', false)
+      .is('published_at', null),
+    supabase
+      .from('signal_classification')
+      .select('signal_id, urgency')
+      .in('signal_id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']),
+  ]);
+
+  const teams = new Map<string, Set<string>>();
+  const unverified = new Set<string>();
+  for (const row of pending ?? []) {
+    if (!teams.has(row.signal_id)) teams.set(row.signal_id, new Set());
+    teams.get(row.signal_id)!.add(row.audience);
+    if ((row.unverified_claims ?? []).length > 0) unverified.add(row.signal_id);
+  }
+  const urgencyBySignal = new Map((classifications ?? []).map((c) => [c.signal_id, c.urgency]));
+
+  return NextResponse.json({
+    signals: signals.map((s) => ({
+      ...s,
+      urgency: urgencyBySignal.get(s.id) ?? null,
+      pendingTeams: teams.get(s.id)?.size ?? 0,
+      unverified: unverified.has(s.id),
+    })),
+  });
 }

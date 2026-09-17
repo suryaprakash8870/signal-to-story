@@ -76,7 +76,7 @@ export default function NotificationBell() {
             <button
               onClick={() => {
                 setOpen(false);
-                router.push('/review');
+                router.push('/signals');
               }}
               className="block w-full border-t border-gray-100 px-4 py-2.5 text-center text-sm font-medium text-accent hover:bg-accent-soft"
             >

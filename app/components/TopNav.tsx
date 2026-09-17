@@ -8,7 +8,6 @@ import { usePathname } from 'next/navigation';
 // the right. Pure UI - the search box and avatar are presentational.
 const TABS = [
   { href: '/intake', label: 'Intake' },
-  { href: '/review', label: 'Review' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/settings/competitors', label: 'Competitors' },

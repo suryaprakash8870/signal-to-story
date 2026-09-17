@@ -10,7 +10,7 @@ export default function NotificationBanner() {
   if (count === 0) return null;
   return (
     <Link
-      href="/review"
+      href="/signals"
       className="flex items-center gap-3 rounded-xl border border-accent-border bg-accent-soft px-4 py-3 transition-colors hover:bg-accent-soft"
     >
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-ink-on">

@@ -80,7 +80,7 @@ async function main() {
     console.log(`\n--- [${o.audience}] ${o.output_type}  (unverified: ${o.unverified_claims.length}) ---`);
     console.log(o.content);
   }
-  console.log(`\nSignal kept for the demo. View at /signals/${signal.id} and /review`);
+  console.log(`\nSignal kept for the demo. View at /signals/${signal.id}`);
 }
 
 main().catch((e) => {
