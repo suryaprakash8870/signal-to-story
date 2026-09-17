@@ -4,11 +4,34 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase/client';
 
-// Shared demo credentials - shown on the login screen and prefilled from the
-// home page "Try now" links (?demo=1).
+// Demo accounts, one per role, shown on the login screen so the app can be
+// explored as each of them. What a person sees is shaped entirely by their
+// role, so a single account only ever shows a third of the product.
+//
 // Local only - a page.tsx must not export arbitrary consts (breaks `next build`).
-const DEMO_EMAIL = 'demo@compete-agent.com';
 const DEMO_PASSWORD = '12345678';
+
+const DEMO_ACCOUNTS = [
+  {
+    role: 'Admin',
+    email: 'demo@compete-agent.com',
+    sees: 'Everything, including users and connectors',
+  },
+  {
+    role: 'Product Marketing Manager',
+    email: 'pmm@compete-agent.com',
+    sees: 'Reads the feed, and packages updates for each team',
+  },
+  {
+    role: 'Product Manager',
+    email: 'pm@compete-agent.com',
+    sees: 'Research only: the feed, the filters and the Ask box',
+  },
+] as const;
+
+// The "Try now" links from the home page (?demo=1) land on the admin account,
+// which is the one that can reach every screen.
+const DEMO_EMAIL = DEMO_ACCOUNTS[0].email;
 
 export default function LoginPage() {
   return (
@@ -79,25 +102,45 @@ function LoginForm() {
             <p className="muted mt-1 text-sm">Compete Agent</p>
           </div>
 
-          {/* Demo credentials - for exploring the app */}
+          {/* Demo accounts - pick a role and the fields fill themselves */}
           <div className="rounded-lg border border-accent-border bg-accent-soft p-3 text-xs">
-            <p className="font-semibold text-accent">Log in with these credentials to explore</p>
-            <p className="mt-1 text-gray-700">
-              Email: <span className="font-mono">{DEMO_EMAIL}</span>
+            <p className="font-semibold text-accent">Explore as one of the three roles</p>
+            <p className="mt-0.5 text-gray-600">
+              Each role sees a different application. Pick one to fill the form.
             </p>
-            <p className="text-gray-700">
-              Password: <span className="font-mono">{DEMO_PASSWORD}</span>
+
+            <div className="mt-2 space-y-1.5">
+              {DEMO_ACCOUNTS.map((account) => (
+                <button
+                  key={account.email}
+                  type="button"
+                  onClick={() => {
+                    setEmail(account.email);
+                    setPassword(DEMO_PASSWORD);
+                    setError(null);
+                  }}
+                  // `white` is left literal in this theme (see tailwind.config.js),
+                  // so a bg-white/40 panel renders pale under near-white text and
+                  // the description disappears. The theme's own surfaces are the
+                  // ones that darken correctly.
+                  className={`w-full rounded-md border px-2.5 py-1.5 text-left transition-colors ${
+                    email === account.email
+                      ? 'border-accent bg-surface-subtle'
+                      : 'border-transparent bg-surface hover:border-accent-border hover:bg-surface-subtle'
+                  }`}
+                >
+                  <span className="block font-semibold text-gray-800">{account.role}</span>
+                  <span className="block text-[11px] text-gray-500">{account.sees}</span>
+                  <span className="mt-0.5 block font-mono text-[11px] text-gray-400">
+                    {account.email}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <p className="mt-2 text-gray-600">
+              Password for all three: <span className="font-mono">{DEMO_PASSWORD}</span>
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail(DEMO_EMAIL);
-                setPassword(DEMO_PASSWORD);
-              }}
-              className="mt-2 font-medium text-accent hover:underline"
-            >
-              Fill these credentials →
-            </button>
           </div>
 
           <div className="space-y-1">

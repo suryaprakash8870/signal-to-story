@@ -121,15 +121,34 @@ export default function Sidebar() {
       style={{ width: collapsed ? 64 : 240, minWidth: collapsed ? 64 : 240 }}
       className="sticky top-0 flex h-screen shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-surface"
     >
-      {/* Brand - Litera logo links home */}
+      {/* Brand - the Litera mark, with the product name set in type beside it.
+          The full logo is a stacked lockup, mark above wordmark, so at the 32px
+          this header allows the word LITERA came out around 13px tall and read
+          as a coloured smudge. The mark alone is legible at this size, and the
+          name is clearer as live text than as part of an image. */}
       <div className={`flex h-14 items-center px-3 ${collapsed ? 'justify-center' : ''}`}>
         <Link
           href="/"
-          aria-label="Home"
-          className="flex h-9 items-center transition-transform hover:scale-105"
+          aria-label="Compete Agent, home"
+          className="flex items-center gap-2.5 transition-transform hover:scale-[1.03]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/litera-logo.png" alt="Litera" className="h-8 w-auto object-contain" />
+          <img
+            src="/litera-mark.png"
+            alt=""
+            aria-hidden
+            className="h-7 w-auto shrink-0 object-contain"
+          />
+          {!collapsed && (
+            <span className="flex flex-col leading-none">
+              <span className="text-[13px] font-semibold tracking-tight text-gray-900">
+                Compete Agent
+              </span>
+              <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-gray-500">
+                Litera
+              </span>
+            </span>
+          )}
         </Link>
       </div>
 
