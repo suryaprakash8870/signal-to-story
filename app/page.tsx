@@ -36,9 +36,20 @@ export default function HomePage() {
     <div className="min-h-screen bg-surface text-gray-900">
       {/* Nav */}
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <div className="flex items-center">
+        {/* The mark with the name in type. The full logo is a stacked lockup,
+            mark above wordmark, so at this height the word LITERA rendered too
+            small to read and the header showed a coloured smudge. */}
+        <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/litera-logo.png" alt="Litera" className="h-8 w-auto object-contain" />
+          <img src="/litera-mark.png" alt="" aria-hidden className="h-8 w-auto object-contain" />
+          <span className="flex flex-col leading-none">
+            <span className="text-[15px] font-semibold tracking-tight text-gray-900">
+              Compete Agent
+            </span>
+            <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+              Litera
+            </span>
+          </span>
         </div>
         <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
           <a href="#how" className="hidden hover:text-gray-900 sm:block">How it works</a>
@@ -226,8 +237,9 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-sm text-gray-500 sm:flex-row">
           <div className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/litera-logo.png" alt="Litera" className="h-6 w-auto object-contain" />
+            <img src="/litera-mark.png" alt="" aria-hidden className="h-6 w-auto object-contain" />
             <span className="font-medium text-gray-700">Compete Agent</span>
+            <span className="text-gray-500">by Litera</span>
           </div>
           <span>Competitive intelligence, from raw signal to audience-ready content.</span>
         </div>

@@ -92,7 +92,9 @@ function LoginForm() {
         <div className="mb-6 flex justify-center">
           <div className="rounded-xl bg-white/95 px-5 py-2.5 shadow-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/litera-logo.png" alt="Litera" className="h-8 w-auto object-contain" />
+            {/* The full stacked logo works here because there is room for it.
+                At the 32px it had, the wordmark was too small to read. */}
+            <img src="/litera-logo.png" alt="Litera" className="h-12 w-auto object-contain" />
           </div>
         </div>
 
@@ -103,13 +105,15 @@ function LoginForm() {
           </div>
 
           {/* Demo accounts - pick a role and the fields fill themselves */}
-          <div className="rounded-lg border border-accent-border bg-accent-soft p-3 text-xs">
-            <p className="font-semibold text-accent">Explore as one of the three roles</p>
-            <p className="mt-0.5 text-gray-600">
+          <div className="rounded-lg border border-accent-border bg-accent-soft p-3.5 text-xs">
+            <p className="text-[13px] font-semibold text-accent">
+              Explore as one of the three roles
+            </p>
+            <p className="mt-1 text-gray-600">
               Each role sees a different application. Pick one to fill the form.
             </p>
 
-            <div className="mt-2 space-y-1.5">
+            <div className="mt-2.5 space-y-2">
               {DEMO_ACCOUNTS.map((account) => (
                 <button
                   key={account.email}
@@ -123,23 +127,31 @@ function LoginForm() {
                   // so a bg-white/40 panel renders pale under near-white text and
                   // the description disappears. The theme's own surfaces are the
                   // ones that darken correctly.
-                  className={`w-full rounded-md border px-2.5 py-1.5 text-left transition-colors ${
+                  className={`w-full rounded-md border px-3 py-2 text-left transition-colors ${
                     email === account.email
                       ? 'border-accent bg-surface-subtle'
-                      : 'border-transparent bg-surface hover:border-accent-border hover:bg-surface-subtle'
+                      : 'border-border bg-surface hover:border-accent-border hover:bg-surface-subtle'
                   }`}
                 >
-                  <span className="block font-semibold text-gray-800">{account.role}</span>
-                  <span className="block text-[11px] text-gray-500">{account.sees}</span>
-                  <span className="mt-0.5 block font-mono text-[11px] text-gray-400">
+                  <span className="block text-[13px] font-semibold text-gray-900">
+                    {account.role}
+                  </span>
+                  <span className="mt-0.5 block text-[11.5px] leading-snug text-gray-600">
+                    {account.sees}
+                  </span>
+                  {/* gray-400 maps to the muted token, which is too dim against
+                      the surface at this size. gray-500/600 are the secondary
+                      token and hold up. */}
+                  <span className="mt-1 block font-mono text-[11px] text-gray-500">
                     {account.email}
                   </span>
                 </button>
               ))}
             </div>
 
-            <p className="mt-2 text-gray-600">
-              Password for all three: <span className="font-mono">{DEMO_PASSWORD}</span>
+            <p className="mt-2.5 text-gray-600">
+              Password for all three:{' '}
+              <span className="font-mono text-gray-900">{DEMO_PASSWORD}</span>
             </p>
           </div>
 
