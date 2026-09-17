@@ -12,6 +12,8 @@ import {
   stripAccountName,
   foreignEntity,
   fixProductContradiction,
+  dropSentenceWith,
+  normalizeDashes,
   type DraftOutput,
   type GuardContext,
 } from './verify';
@@ -72,6 +74,8 @@ const GROUNDING_TAIL =
   '- Do not state the unverified claims as fact; if a claim is unverified, leave ' +
   'it out (do not mention it, and do not write meta-instructions like "verify ' +
   'pricing").\n' +
+  '- PUNCTUATION: never use an em dash or an en dash. Use a comma, a full stop, ' +
+  'or a plain hyphen in a compound word.\n' +
   '- Write concise, ORIGINAL text in your own words - do NOT copy sentences, ' +
   'headers, or dialogue from the source signal.\n' +
   '- MATCH YOUR CERTAINTY TO THE EVIDENCE: a launch, webpage, demo, or single call ' +
@@ -436,12 +440,21 @@ export async function packageOutputs(
     }
 
     // Deterministic backstop (Invariant 3 - one competitor): a foreign vendor
-    // name that survived the gate must never ship → fail the whole signal.
+    // name must never ship. It used to fail the whole signal, which threw away
+    // three good cards to punish a sentence in the fourth. Drop the sentence
+    // instead, and only fail if what is left is too thin to send.
     const bleed = foreignEntity(content, otherCompetitors, rawText);
     if (bleed) {
-      throw new Error(
-        `The "${audience}" ${row.output_type} referenced an unrelated competitor "${bleed}" not in this signal. Retry, or switch to a stronger model.`
+      const trimmed = dropSentenceWith(content, bleed);
+      if (trimmed === null) {
+        throw new Error(
+          `The "${audience}" ${row.output_type} referenced an unrelated competitor "${bleed}" not in this signal, and removing it left too little to send. Retry, or switch to a stronger model.`
+        );
+      }
+      console.warn(
+        `[package] dropped a sentence naming "${bleed}" from the ${audience} ${row.output_type}`
       );
+      content = trimmed;
     }
 
     // A raw copy of the source that survived → fail the whole signal.
@@ -455,7 +468,10 @@ export async function packageOutputs(
       signal_id: signalId,
       audience,
       output_type: row.output_type,
-      content,
+      // The client asked for no em dashes in anything the tool writes. The
+      // prompt says so too, but it is a habit the model returns to, so this
+      // settles it deterministically rather than hoping.
+      content: normalizeDashes(content),
       // Outputs are always clean here (gated) or the signal errored above.
       unverified_claims: [] as string[],
     };

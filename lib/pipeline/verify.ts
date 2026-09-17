@@ -212,3 +212,48 @@ export function isRawDump(content: string, rawText: string): boolean {
   const copied = chunks.filter((chunk) => chunk.length > 20 && r.includes(chunk)).length;
   return copied / chunks.length > 0.6;
 }
+
+/**
+ * Removes the one sentence carrying a name that does not belong, instead of
+ * discarding the output that contains it.
+ *
+ * Returns null when removing it would leave nothing worth shipping, in which
+ * case the caller should still fail. Sentence splitting is deliberately crude:
+ * this runs after the gate, on prose, and the alternative it replaces is
+ * throwing four finished cards away.
+ */
+export function dropSentenceWith(content: string, name: string): string | null {
+  const re = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+  const kept = content
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => !re.test(sentence));
+  const out = kept.join(' ').replace(/\s{2,}/g, ' ').trim();
+
+  // Too little left to be useful, or the name survived inside a fragment that
+  // did not end in punctuation.
+  if (out.length < 60 || re.test(out)) return null;
+  return out;
+}
+
+/**
+ * Normalises dashes in finished copy.
+ *
+ * The client asked for no em dashes in anything the tool writes. Instructing
+ * the model is not enough on its own - it is a strong habit and it reappears -
+ * so this runs afterwards and settles it.
+ *
+ * An en dash between two words is a compound ("client-matter"), so it becomes a
+ * hyphen. A dash with space around it is a break in the sentence, so it becomes
+ * a comma. The non-breaking hyphen is invisible in most editors and copies
+ * badly into other documents, so it becomes a plain one.
+ */
+export function normalizeDashes(content: string): string {
+  return content
+    .replace(/\u2011/g, '-')
+    .replace(/(\w)\u2013(\w)/g, '$1-$2')
+    .replace(/\s*[\u2014\u2013]\s*/g, ', ')
+    .replace(/,\s*,/g, ',')
+    .replace(/\s+([,.;:])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}

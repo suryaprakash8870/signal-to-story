@@ -30,6 +30,13 @@ const ADMIN_ONLY: Role[] = ['admin'];
 const GROUPS: { title: string; items: Item[] }[] = [
   {
     title: 'Workspace',
+    // Neither "New signal" (/intake) nor "Signals" (/signals) is listed.
+    //
+    // Signals is reached by doing the thing that creates one: Send to Signals
+    // on a feed item opens that signal directly. The notification bell and the
+    // banner both link to the list for anything escalated earlier, so nothing
+    // is stranded - it just is not a place you go to browse.
+    //
     // "New signal" - the manual paste screen at /intake - is deliberately not
     // listed. Neither Dale's roles document nor the discovery questionnaire
     // describes anyone creating a signal by hand: section 4.1 names Crayon and
@@ -41,7 +48,6 @@ const GROUPS: { title: string; items: Item[] }[] = [
     // picked up while Gong is unconnected. It just does not belong in the daily
     // navigation. Add the item back here if that changes.
     items: [
-      { href: '/signals', label: 'Signals', icon: <Svg><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></Svg> , roles: DISTRIBUTE },
       { href: '/feed', label: 'Competitor feed', icon: <Svg><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></Svg> , roles: [...ALL_WORKING, 'viewer'] },
     ],
   },

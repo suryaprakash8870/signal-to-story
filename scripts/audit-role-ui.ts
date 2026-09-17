@@ -53,8 +53,8 @@ const SCREENS: { path: string; name: string; matrix: string; allowed: Role[] }[]
 
 /** What the sidebar should offer each role. */
 const EXPECTED_NAV: Record<Role, string[]> = {
-  admin: ['/signals', '/feed', '/dashboard', '/analytics', '/settings/competitors', '/settings/context', '/settings/users', '/settings/connectors'],
-  pmm: ['/signals', '/feed', '/dashboard', '/analytics', '/settings/competitors', '/settings/context'],
+  admin: ['/feed', '/dashboard', '/analytics', '/settings/competitors', '/settings/context', '/settings/users', '/settings/connectors'],
+  pmm: ['/feed', '/dashboard', '/analytics', '/settings/competitors', '/settings/context'],
   pm: ['/feed', '/dashboard', '/analytics', '/settings/competitors'],
   viewer: ['/feed', '/analytics'],
   consumer: [],
