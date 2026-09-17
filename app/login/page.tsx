@@ -67,7 +67,7 @@ function LoginForm() {
     }
     // Return to wherever the user was headed before being redirected here.
     const redirect = searchParams.get('redirect');
-    router.push(redirect && redirect.startsWith('/') ? redirect : '/intake');
+    router.push(redirect && redirect.startsWith('/') ? redirect : '/feed');
     router.refresh();
   }
 

@@ -52,10 +52,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Already signed in but sitting on /login → send to intake.
+  // Already signed in but sitting on /login → send to the feed.
   if (user && path.startsWith('/login')) {
     const url = request.nextUrl.clone();
-    url.pathname = '/intake';
+    url.pathname = '/feed';
     url.search = '';
     return NextResponse.redirect(url);
   }
