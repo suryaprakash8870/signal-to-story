@@ -483,3 +483,41 @@ export async function groundExternalAnswer(
     return null;
   }
 }
+
+/**
+ * The parts of Litera's own documents that bear on a given signal.
+ *
+ * The Feed has always had this: it is how a note could say "lead with Lito's
+ * Firm AI Search" rather than "emphasise your differentiation". The packaging
+ * stage had no equivalent, so it wrote the four team cards knowing nothing
+ * about Litera, and every card came back asking the rep to go and find out
+ * (confirm, define, capture requirements) instead of telling them what to say.
+ *
+ * Retrieval is the same BM25 pass the Feed uses: deterministic, no model call,
+ * no quota. Returning nothing is a normal answer - for a signal with no bearing
+ * on anything Litera has written down, "nothing to add" is correct, and the
+ * packaging prompts fall back to the same assume-nothing rule as before.
+ */
+export async function literaContextFor(text: string, limit = 4): Promise<string> {
+  let sections: SectionRow[];
+  try {
+    sections = await loadSections();
+  } catch (err) {
+    // Context is an enhancement, never a reason to fail a signal.
+    console.warn(
+      `[context] could not load sections: ${err instanceof Error ? err.message : String(err)}`
+    );
+    return '';
+  }
+  if (sections.length === 0) return '';
+
+  const chosen = selectSections(text, sections).slice(0, limit);
+  if (chosen.length === 0) return '';
+
+  return chosen
+    .map((s) => {
+      const doc = s.context_documents?.title ?? 'Litera document';
+      return `[${doc} - ${s.heading}]\n${s.content.trim()}`;
+    })
+    .join('\n\n');
+}

@@ -93,11 +93,14 @@ RULES (enforce every one):
    filler ("stay attuned", "remain relevant", "in today's evolving landscape",
    "meet their needs"). If a draft is mostly filler with no source-specific
    substance, tighten it to only what the source concretely supports.
-7. ONE COMPETITOR: The ONLY competitor that may appear is the one named in this
-   signal ("${ctx.competitorName}"). Remove EVERY mention of any OTHER company or
-   vendor - rewrite the sentence so it stands without it. In particular these
-   known competitors are NOT part of this signal and must never appear:
+7. ONE COMPETITOR: Remove EVERY mention of a company or vendor that the SOURCE
+   signal does not name - rewrite the sentence so it stands without it. These
+   in particular are not part of this signal and must never appear:
    ${ctx.otherCompetitors.length ? ctx.otherCompetitors.join(', ') : '(none)'}.
+   A third party the SOURCE itself names - an integration, a platform, a partner
+   - is part of what happened. KEEP it and keep it specific; do not generalise
+   it away ("iManage documents" must stay "iManage documents", not become
+   "documents").
 8. PERSPECTIVE: Only a sales "talk_track" may address the customer as "you". In
    EVERY other output, refer to the customer in the third person ("the client",
    "the firm") - rewrite any "you/your" that refers to the customer.
@@ -149,11 +152,31 @@ export function stripAccountName(content: string, account: string): string {
  * The caller treats a hit as a bleed the model failed to remove and errors the
  * signal - a foreign vendor name can never ship.
  */
-export function foreignEntity(content: string, names: string[]): string | null {
+export function foreignEntity(
+  content: string,
+  names: string[],
+  sourceText = ''
+): string | null {
   for (const n of names) {
     if (!n || n.length < 3) continue;
     const re = new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    if (re.test(content)) return n;
+    if (!re.test(content)) continue;
+
+    // A name the SOURCE itself uses is grounded, not bleed. The rule exists to
+    // stop the model importing a vendor from somewhere else, not to censor a
+    // fact Crayon reported.
+    //
+    // This matters more than it sounds. 46 of the 50 tracked competitors are
+    // legal software firms and they integrate with each other constantly, so
+    // 187 of 2,502 feed items - one in thirteen - name a second tracked
+    // competitor: DraftWise with NetDocuments, Draftable with iManage. Under
+    // the old rule each of those either lost its most specific detail or failed
+    // the whole signal. On the Entegrata item "iManage" was dropped from all
+    // six outputs, which turned "firms want iManage tied to matter data" into
+    // "firms want documents tied to data".
+    if (sourceText && re.test(sourceText)) continue;
+
+    return n;
   }
   return null;
 }

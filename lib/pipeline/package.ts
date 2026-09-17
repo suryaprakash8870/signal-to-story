@@ -27,8 +27,11 @@ import type { Audience, RoutingDecision } from './route';
 // rules come first because a fabricated Litera cert is the most damaging error.
 const GROUNDING_TAIL =
   'STRICT GROUNDING RULES:\n' +
-  '- LITERA: Only state facts about Litera that appear in "Confirmed facts about ' +
-  'Litera" above. Do NOT claim, imply, or invent any Litera capability, ' +
+  '- LITERA: Only state facts about Litera that appear above, either in ' +
+  '"Confirmed facts about Litera" or in "LITERA\'S OWN DOCUMENTS". Where those ' +
+  'documents cover the need in this signal, NAME the Litera product or ' +
+  'capability that answers it and say what it does - that is the whole point of ' +
+  'having them. Do NOT claim, imply, or invent any Litera capability, ' +
   'certification, product, feature, price, security posture, track record, or ' +
   'strength that is not listed. This includes VAGUE claims ("robust security", ' +
   '"proven track record", "enterprise-grade", "seamless integration") and ' +
@@ -41,8 +44,11 @@ const GROUNDING_TAIL =
   'instruction or bracketed flag - just state what happened and what the client ' +
   'asked, in their own terms.\n' +
   '- ENTITY: Never attribute the competitor\'s features, products, or claims to ' +
-  'Litera. They belong to the competitor, not Litera. Reference ONLY the one ' +
-  'competitor named in this signal - never any other vendor or company.\n' +
+  'Litera. They belong to the competitor, not Litera. Do NOT introduce any ' +
+  'vendor or company that the source signal does not mention. You MAY name a ' +
+  'third party the SOURCE itself names - an integration, a platform, a partner ' +
+  '- because that is part of what happened; keep it, do not generalise it away ' +
+  '("iManage documents" must not become "documents").\n' +
   '- COMPETITOR INFERENCE: State as fact ONLY what the source signal directly ' +
   'says about the competitor. If you draw a conclusion that goes beyond the ' +
   'source (what a move "indicates", "means", or where it is "heading"), word it ' +
@@ -81,17 +87,48 @@ interface PackContext {
   competitorName: string;
   competitorFacts: unknown[];
   literaFacts: string;
+  /** The original signal, so detail lost in summarising can still be reached. */
+  rawText: string;
+  /** Passages from Litera's own documents that bear on this signal. */
+  literaContext: string;
 }
 
 function sharedContext(ctx: PackContext) {
-  return `Signal summary: ${ctx.interp.signal_summary}
-Why it matters: ${ctx.interp.why_it_matters}
-Competitor in this signal: ${ctx.competitorName}
-Known facts about ${ctx.competitorName}: ${JSON.stringify(ctx.competitorFacts)}
-Confirmed facts about Litera (the ONLY Litera facts you may state): ${ctx.literaFacts}
-Unverified claims (do not present these as settled fact): ${JSON.stringify(
-    ctx.interp.unverified_claims
-  )}`;
+  const parts = [
+    // The source itself, first. Packaging used to see only the summary and the
+    // "why it matters" line, so anything dropped while interpreting was gone
+    // for good and could not be recovered no matter how the prompts were
+    // worded.
+    `SOURCE SIGNAL (the record of what actually happened):\n${ctx.rawText}`,
+    `Signal summary: ${ctx.interp.signal_summary}`,
+    `Why it matters: ${ctx.interp.why_it_matters}`,
+    `Competitor in this signal: ${ctx.competitorName}`,
+  ];
+
+  // Omitted when empty rather than sent as "[]". It is empty for all 50
+  // competitors today, and an empty list reads as "there is nothing to know
+  // about them", which is not what it means.
+  if (ctx.competitorFacts.length > 0) {
+    parts.push(`Known facts about ${ctx.competitorName}: ${JSON.stringify(ctx.competitorFacts)}`);
+  }
+
+  if (ctx.literaContext) {
+    parts.push(
+      `LITERA'S OWN DOCUMENTS (the only source for what Litera does. Use these ` +
+        `to say what Litera already offers, by name, rather than telling the rep ` +
+        `to go and find out):\n${ctx.literaContext}`
+    );
+  } else {
+    parts.push(`Confirmed facts about Litera (the ONLY Litera facts you may state): ${ctx.literaFacts}`);
+  }
+
+  parts.push(
+    `Unverified claims (do not present these as settled fact): ${JSON.stringify(
+      ctx.interp.unverified_claims
+    )}`
+  );
+
+  return parts.join('\n');
 }
 
 type OutputRow = { output_type: string; content: string };
@@ -160,6 +197,13 @@ Return a JSON object with:
       this is a messaging/positioning move, not a capability gap." and nothing
       about a gap.
   A signal that mentions a real competitor feature/capability is case (a).
+  This output is for people who BUILD the product. Write about the product:
+  the capability the competitor now has, how it compares to what Litera's
+  documents say Litera offers, the gap if there is one, or the roadmap question
+  it raises. Advice about how the field should talk to customers is Sales and
+  Leadership work, not this - never answer with "provide field guidance",
+  "give the team language" or similar. If Litera's documents name something
+  that already addresses this, say which and how it compares.
 
 ${GROUNDING_TAIL}${extra ? `\n${extra}` : ''}`,
           schema: productPackagingSchema,
@@ -212,6 +256,16 @@ Return a JSON object with:
   stake for Litera because of THIS signal (a specific account, deal, or market
   position), then the specific implication or decision it raises. Two or three
   tight sentences, no filler, no generic "monitor and stay competitive" padding.
+  The decision must be a CHOICE an executive makes - a direction to take, a
+  trade-off to settle, something to fund or stop. "Provide guidance to the
+  field", "set expectations for the team", "define how teams should respond" and
+  anything else that amounts to "somebody should write instructions" is NOT a
+  decision; it is the absence of one. If the only honest answer is that nothing
+  needs deciding yet, say what would have to change for it to matter, and say it
+  in one line.
+  Strip the engineering detail. Index names, API names, schema and
+  configuration specifics belong to Product, not here. An executive needs the
+  market consequence, not the mechanism.
 
 ${GROUNDING_TAIL}${extra ? `\n${extra}` : ''}`,
           schema: leadershipPackagingSchema,
@@ -272,13 +326,46 @@ export async function packageOutputs(
 
   // Every OTHER competitor on record - none of these may appear in an output for
   // THIS signal (deterministic guard against cross-signal entity bleed).
+  //
+  // Except the ones the source itself names. 46 of the 50 are legal software
+  // firms that integrate with each other, so one feed item in thirteen mentions
+  // a second tracked competitor - DraftWise with NetDocuments, Draftable with
+  // iManage. Listing those as forbidden made the gate rewrite a grounded fact
+  // out of the copy, which is how "iManage documents" became "documents" on the
+  // Entegrata signal, and the deterministic guard would then have failed the
+  // whole signal for any that survived.
   const { data: allComps } = await db.from('competitors').select('name');
+  const named = (n: string) =>
+    new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(rawText);
   const otherCompetitors = (allComps ?? [])
     .map((c) => c.name as string)
-    .filter((n) => n && n.toLowerCase() !== competitorName.toLowerCase());
+    .filter((n) => n && n.toLowerCase() !== competitorName.toLowerCase() && !named(n));
 
   const literaFacts = literaFactsBlock();
-  const ctx: PackContext = { interp, competitorName, competitorFacts, literaFacts };
+
+  // What Litera's own documents say about this signal, retrieved the same way
+  // the Feed retrieves it. Failure here is never a reason to fail a signal:
+  // an empty result simply restores the previous assume-nothing behaviour.
+  let literaContext = '';
+  try {
+    const { literaContextFor } = await import('../context/relevance');
+    literaContext = await literaContextFor(
+      `${interp.signal_summary}\n${interp.why_it_matters}\n${rawText}`
+    );
+  } catch (err) {
+    console.warn(
+      `[package] no Litera context: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
+
+  const ctx: PackContext = {
+    interp,
+    competitorName,
+    competitorFacts,
+    literaFacts,
+    rawText,
+    literaContext,
+  };
 
   const llm = await getLLMProvider();
 
@@ -313,7 +400,13 @@ export async function packageOutputs(
     rawText,
     competitorName,
     competitorFacts,
-    literaFacts,
+    // The gate must be given the SAME view of Litera the packaging stage had.
+    // It was handed the empty "assume nothing" block while packaging had the
+    // documents, so it dutifully deleted every Litera product the drafts named.
+    // Retrieval worked and the output still said nothing: Foundation Finance
+    // and Foundation Scoping came back for the Entegrata signal and neither
+    // reached a card.
+    literaFacts: literaContext || literaFacts,
     subjectAccount: interp.subject_account,
     otherCompetitors,
   };
@@ -344,7 +437,7 @@ export async function packageOutputs(
 
     // Deterministic backstop (Invariant 3 - one competitor): a foreign vendor
     // name that survived the gate must never ship → fail the whole signal.
-    const bleed = foreignEntity(content, otherCompetitors);
+    const bleed = foreignEntity(content, otherCompetitors, rawText);
     if (bleed) {
       throw new Error(
         `The "${audience}" ${row.output_type} referenced an unrelated competitor "${bleed}" not in this signal. Retry, or switch to a stronger model.`
