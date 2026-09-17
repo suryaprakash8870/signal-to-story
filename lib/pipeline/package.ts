@@ -74,6 +74,13 @@ const GROUNDING_TAIL =
   '- Do not state the unverified claims as fact; if a claim is unverified, leave ' +
   'it out (do not mention it, and do not write meta-instructions like "verify ' +
   'pricing").\n' +
+  '- USE THE LITERA CONTEXT, DO NOT RECITE IT: name the product and say in a ' +
+  'few words what it does for THIS need. Do not list every capability, ' +
+  'integration and customer outcome you were given. One well-chosen proof ' +
+  'point beats five.\n' +
+  '- LENGTH: every output is read in seconds, between meetings. Say the ' +
+  'specific thing and stop. If it does not fit in a short paragraph, it is too ' +
+  'long.\n' +
   '- PUNCTUATION: never use an em dash or an en dash. Use a comma, a full stop, ' +
   'or a plain hyphen in a compound word.\n' +
   '- Write concise, ORIGINAL text in your own words - do NOT copy sentences, ' +
@@ -171,7 +178,8 @@ Return a JSON object with:
 - live_talking_points: a short spoken briefing for the rep's own team sync -
   cover, concretely: what the competitor did (the specific move), why it matters
   for THIS account specifically, and the specific next step. Spoken style, no
-  filler.
+  filler. One short line each, three lines in total. This is said out loud in a
+  stand-up, so it has to be sayable.
 
 ${GROUNDING_TAIL}${extra ? `\n${extra}` : ''}`,
           schema: salesPackagingSchema,
@@ -232,6 +240,9 @@ Return a JSON object with:
   not a generic call to 'stay relevant'. If a strong angle would need a Litera
   positioning fact you don't have, do not invent it - just describe the market
   opening and what the competitor is doing.
+  ONE angle, at most three sentences. Not a list of positioning bullets, not a
+  tour of the portfolio. If you name Litera products, name at most two and only
+  because they answer this specific signal.
 
 IMPORTANT for marketing - this is MARKET POSITIONING only:
 - Do NOT name the specific customer, prospect, or account, and do NOT frame it
